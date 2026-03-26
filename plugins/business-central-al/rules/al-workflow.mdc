@@ -1,7 +1,7 @@
 ---
 description: Guidance for working in Microsoft Dynamics 365 Business Central AL repositories.
 alwaysApply: false
-globs: ["**/*.al", "app.json"]
+globs: app.json, **/*.al,
 ---
 
 # Business Central AL Workflow

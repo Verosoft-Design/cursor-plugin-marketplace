@@ -29,6 +29,14 @@ for direct local use without a marketplace repo.
 - `commands/scaffold-test-codeunit.md`
 - `commands/scaffold-handler-methods.md`
 - `commands/tdd-checklist.md`
+- `hooks/hooks.json`
+- `scripts/session-start-context.sh`
+
+## Session start hook
+
+This plugin registers a `sessionStart` hook for Agent sessions (new composer conversations on Agent-supported surfaces). When a session begins, the hook supplies a short Business Central AL reminder as `additional_context` in the initial conversation context. This is lightweight steering, not a substitute for the full skill or for repository-specific rules.
+
+The reminder reinforces the same TDD-first expectations and testing patterns covered by the skill and rules. It does not block prompts, gate tools, or enforce conventions the plugin cannot see. Keep project-specific guidance in repo-level rules; this hook adds additive context at session start only (not before every prompt).
 
 ## Behavior
 

@@ -1,7 +1,7 @@
 ---
 description: Reinforces TDD-first testing patterns for Business Central AL changes.
 alwaysApply: false
-globs: ["**/*.al", "app.json"]
+globs: app.json, **/*.al,
 ---
 
 # Business Central AL Testing

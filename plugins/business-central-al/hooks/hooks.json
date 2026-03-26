@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "scripts/session-start-context.sh"
+      }
+    ]
+  }
+}
