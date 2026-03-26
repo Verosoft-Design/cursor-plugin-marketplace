@@ -10,7 +10,8 @@
     {
       "name": "business-central-al",
       "source": "plugins/business-central-al",
-      "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance."
+      "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance.",
+      "logo": "plugins/business-central-al/assets/logo.svg"
     }
   ]
 }

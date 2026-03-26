@@ -1,10 +1,12 @@
 {
   "name": "business-central-al",
+  "displayName": "Business Central AL",
   "version": "0.1.0",
   "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance.",
   "author": {
     "name": "Alexis Sturgeon"
   },
+  "logo": "assets/logo.svg",
   "license": "MIT",
   "keywords": [
     "business-central",
