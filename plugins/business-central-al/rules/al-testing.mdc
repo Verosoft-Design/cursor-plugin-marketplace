@@ -1,0 +1,24 @@
+---
+description: Reinforces TDD-first testing patterns for Business Central AL changes.
+alwaysApply: false
+globs: ["**/*.al", "app.json"]
+---
+
+# Business Central AL Testing
+
+When adding or changing Business Central behavior:
+
+1. Prefer test-first development when the work introduces or changes behavior.
+2. Keep test code separate from production code.
+3. Use Business Central test codeunits for automated tests:
+   - `SubType = Test`
+   - `[Test]` procedures for test cases
+   - normal helper procedures for setup and shared assertions
+4. Use handler methods and `HandlerFunctions` when the tested code raises UI interactions.
+5. Cover both:
+   - positive paths that prove valid behavior
+   - negative paths that prove business-rule failures and expected errors
+6. Use `AssertError` only in test code, never in production logic.
+7. Keep tests deterministic, isolated, and readable.
+8. If the repository has no test scaffold, create the smallest sensible test codeunit before production changes instead of silently skipping tests.
+9. If tests cannot be executed in the current session, say so explicitly and describe what still needs to be run.

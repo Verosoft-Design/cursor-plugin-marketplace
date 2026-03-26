@@ -1,0 +1,21 @@
+---
+description: Guidance for working in Microsoft Dynamics 365 Business Central AL repositories.
+alwaysApply: false
+globs: ["**/*.al", "app.json"]
+---
+
+# Business Central AL Workflow
+
+When working in an AL repository:
+
+1. Identify the object type first: table, table extension, page, page extension, codeunit, report, query, enum, API page, or test codeunit.
+2. Follow existing repository structure and naming before inventing new patterns.
+3. Prefer focused edits that change one behavior or one object responsibility at a time.
+4. Keep Business Central logic in the most appropriate AL object instead of pushing everything into large codeunits.
+5. Use clear AL naming and formatting:
+   - PascalCase identifiers
+   - meaningful variable names
+   - lowercase reserved keywords
+   - four-space indentation
+6. Reference AL objects by name, not by numeric ID, inside code.
+7. Keep this plugin generic. Do not invent project-specific prefixes, object ranges, or folder conventions unless the repository already defines them.

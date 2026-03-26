@@ -1,0 +1,13 @@
+{
+  "name": "business-central-al",
+  "version": "0.1.0",
+  "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance.",
+  "author": "Alexis Sturgeon",
+  "license": "MIT",
+  "keywords": [
+    "business-central",
+    "al",
+    "dynamics-365",
+    "tdd"
+  ]
+}
