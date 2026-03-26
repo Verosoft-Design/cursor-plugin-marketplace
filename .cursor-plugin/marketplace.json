@@ -1,23 +1,16 @@
 {
   "name": "cursor-plugin-marketplace",
+  "owner": {
+    "name": "Verosoft Design"
+  },
+  "metadata": {
+    "description": "Private Cursor plugin marketplace"
+  },
   "plugins": [
     {
       "name": "business-central-al",
       "source": "plugins/business-central-al",
-      "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance.",
-      "keywords": [
-        "business-central",
-        "al",
-        "dynamics-365",
-        "tdd"
-      ],
-      "category": "development",
-      "tags": [
-        "business-central",
-        "al",
-        "testing",
-        "tdd"
-      ]
+      "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance."
     }
   ]
 }
