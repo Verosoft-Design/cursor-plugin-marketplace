@@ -8,7 +8,7 @@
   },
   "plugins": [
     {
-      "name": "business-central-al",
+      "name": "Business Central AL",
       "source": "plugins/business-central-al",
       "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance."
     }
