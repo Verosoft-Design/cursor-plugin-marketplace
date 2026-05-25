@@ -12,6 +12,17 @@ The original 5-phase rebuild is complete. Future work:
 
 - **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
 
+## [0.6.4] — 2026-05-25
+
+### Fixed — first-call MCP server identifier mistake
+
+Observed in the wild: the agent's first AL MCP tool call in a session fails with `MCP server does not exist: al`, then the agent self-recovers by reading the `mcps/` cache descriptors. Root cause: every doc and config uses the friendly name `al`, but Cursor namespaces plugin-provided MCP servers as `plugin-<plugin-name>-<server-name>`, so the actual identifier the agent must pass to a meta MCP-call tool is `plugin-business-central-al-al`. The agent had no way to know that without first reading `SERVER_METADATA.json`.
+
+- `rules/al-mcp-usage.mdc` — added a new "Server identifier (READ FIRST)" section at the top of the body that maps friendly name `al` → identifier `plugin-business-central-al-al`, points at the `SERVER_METADATA.json` source of truth, and explicitly tells the agent never to pass `server="al"` to a meta MCP tool. Description also updated to mention this so the rule is more likely to be auto-loaded before the first AL MCP attempt.
+- `rules/al-mcp-usage.mdc` — frontmatter now scopes the rule with `globs: ["**/*.al", "**/app.json"]` so it auto-attaches the moment the agent looks at any AL workspace, instead of relying purely on the description being matched in time.
+
+Net effect: the agent should make the correct first MCP call without the recovery round-trip.
+
 ## [0.6.3] — 2026-05-25
 
 ### Fixed — eliminate per-session `al_addproject` round-trip
@@ -31,12 +42,7 @@ The fix: when run in an AL workspace, `/al-setup` now offers to write a workspac
   "mcpServers": {
     "al": {
       "command": "altool",
-      "args": [
-        "launchmcpserver",
-        "--transport",
-        "stdio",
-        "${workspaceFolder}"
-      ]
+      "args": ["launchmcpserver", "--transport", "stdio", "${workspaceFolder}"]
     }
   }
 }
