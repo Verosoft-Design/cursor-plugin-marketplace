@@ -1,0 +1,116 @@
+---
+description: Guidelines for creating TAG API pages in Business Central
+globs: API/*.al
+---
+
+# TAG API Page Development Guidelines
+
+## API Page Template
+
+    page [ID] "TAG API [EntityName]"
+    {
+        PageType = API;
+
+        APIVersion = 'v1.0';
+        APIPublisher = 'verosoftdesign';
+        APIGroup = 'tag';
+
+        EntityCaption = 'TAG API [EntityName]';
+        EntitySetCaption = 'TAG API [EntityNames]';
+        EntityName = '[entityName]';
+        EntitySetName = '[EntityNames]';
+
+        SourceTable = "TAG [EntityName]";
+        ODataKeyFields = SystemId;
+
+        Extensible = true;
+        InsertAllowed = true;
+        ModifyAllowed = true;
+        DeleteAllowed = true;
+        DelayedInsert = true;
+
+        layout
+        {
+            area(Content)
+            {
+                repeater(Group)
+                {
+                    // System Fields - Always include first
+                    field(id; Rec.SystemId)
+                    {
+                        Editable = false;
+                    }
+                    field(systemCreatedAt; Rec.SystemCreatedAt)
+                    {
+                        Editable = false;
+                    }
+                    field(systemModifiedAt; Rec.SystemModifiedAt)
+                    {
+                        Editable = false;
+                    }
+                    
+                    // Entity fields
+                    field(code; Rec.Code)
+                    {
+                    }
+                    field(description; Rec.Description)
+                    {
+                    }
+                }
+            }
+        }
+    }
+
+## API Naming Conventions
+
+- EntityName: camelCase singular (e.g., keySafe, workOrder)
+- EntitySetName: PascalCase plural (e.g., KeySafes, WorkOrders)
+- Field names: camelCase (e.g., serialNo, masterLock)
+
+## Standard API Properties
+
+    APIVersion = 'v1.0';
+    APIPublisher = 'verosoftdesign';
+    APIGroup = 'tag';
+    ODataKeyFields = SystemId;
+
+## System Fields
+
+Always include these system fields first in every API page:
+
+    field(id; Rec.SystemId)
+    {
+        Editable = false;
+    }
+    field(systemCreatedAt; Rec.SystemCreatedAt)
+    {
+        Editable = false;
+    }
+    field(systemModifiedAt; Rec.SystemModifiedAt)
+    {
+        Editable = false;
+    }
+
+## Calculated Fields
+
+Expose table procedures as API fields:
+
+    field(available; Rec.Available())
+    {
+    }
+    field(isolationPoint; Rec.IsolationPoint())
+    {
+    }
+
+## Permission Settings
+
+    InsertAllowed = true;   // Allow POST
+    ModifyAllowed = true;   // Allow PATCH
+    DeleteAllowed = true;   // Allow DELETE
+    DelayedInsert = true;   // Recommended for API pages
+
+## API Endpoints
+
+The resulting API endpoint will be:
+
+    /api/verosoftdesign/tag/v1.0/companies({companyId})/[EntitySetName]

@@ -1,0 +1,139 @@
+---
+description: Guidelines for creating TAG pages in Business Central
+globs: Pages/*.al,Page_Extension/*.al
+alwaysApply: false
+---
+# TAG Page Development Guidelines
+
+## List Page Template
+
+    page [ID] "TAG [EntityName] List"
+    {
+        PageType = List;
+        SourceTable = "TAG [EntityName]";
+        UsageCategory = Lists;
+        ApplicationArea = All;
+
+        layout
+        {
+            area(Content)
+            {
+                repeater(Group)
+                {
+                    field("Code"; Rec."Code")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Description"; Rec."Description")
+                    {
+                        ApplicationArea = All;
+                    }
+                }
+            }
+        }
+
+        actions
+        {
+            area(Navigation)
+            {
+                action(RelatedEntries)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Related Entries';
+                    Image = Ledger;
+                    RunObject = page "TAG Related Entries";
+                    RunPageLink = "Parent Code" = field("Code");
+                }
+            }
+        }
+    }
+
+## Card Page Template
+
+    page [ID] "TAG [EntityName] Card"
+    {
+        PageType = Card;
+        SourceTable = "TAG [EntityName]";
+        UsageCategory = None;
+        ApplicationArea = All;
+
+        layout
+        {
+            area(Content)
+            {
+                group(General)
+                {
+                    Caption = 'General';
+                    
+                    field("Code"; Rec."Code")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Description"; Rec."Description")
+                    {
+                        ApplicationArea = All;
+                    }
+                }
+            }
+            area(FactBoxes)
+            {
+                systempart(Links; Links)
+                {
+                    ApplicationArea = All;
+                }
+                systempart(Notes; Notes)
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+
+## Page Properties
+
+Always set these properties:
+
+- ApplicationArea = All - Required for all fields and actions
+- UsageCategory - Set appropriately:
+  - Lists for list pages
+  - Documents for document pages
+  - Tasks for task pages
+  - None for card pages opened from lists
+
+## Actions Structure
+
+    actions
+    {
+        area(Navigation)
+        {
+            // Links to related pages
+        }
+        area(Processing)
+        {
+            // Action buttons
+        }
+        area(Promoted)
+        {
+            group(Category_Process)
+            {
+                Caption = 'Process';
+                actionref(ProcessRef; Process) { }
+            }
+        }
+    }
+
+## Page Extensions
+
+    pageextension [ID] "TAG [BasePage] Extension" extends "[BasePage]"
+    {
+        layout
+        {
+            addafter(Description)
+            {
+                field("TAG Custom Field"; Rec."TAG Custom Field")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }

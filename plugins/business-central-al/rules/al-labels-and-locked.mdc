@@ -1,0 +1,93 @@
+---
+description: Label and TextConst suffix and Locked-property conventions for Business Central AL. Auto-applied to AL source. Enforces Err/Msg/Qst/Lbl/Tok/Txt suffixes (CodeCop AA0074), mandatory Comment for placeholders, and Locked=true on URLs, tokens, and telemetry strings.
+alwaysApply: true
+globs: **/*.al
+---
+
+# AL Labels and TextConsts — Suffix and `Locked`
+
+CodeCop **AA0074** requires every `Label` / `TextConst` identifier to end with an approved suffix. The suffix signals at the call site how the text is consumed and what translation behavior it should get.
+
+## Approved suffixes (the only valid set)
+
+| Suffix | Used with                                                         | Example identifier                   |
+| ------ | ----------------------------------------------------------------- | ------------------------------------ |
+| `Err`  | `Error(...)`, `ErrorInfo`                                         | `CustomerNotFoundErr`                |
+| `Msg`  | `Message(...)`, `Notification.Message(...)`                       | `UpdateCompleteMsg`                  |
+| `Qst`  | `Confirm(...)`, `StrMenu(...)`                                    | `DeleteRecordQst`                    |
+| `Lbl`  | Captions, tooltips, field captions                                | `CustomerNameLbl`                    |
+| `Tok`  | Locked tokens (URLs, GUIDs, JSON keys, single-string identifiers) | `GetMethodTok`, `EmailViewPolicyTok` |
+| `Txt`  | General text, telemetry message text                              | `TelemetryDataTxt`                   |
+
+Pick the suffix that matches the actual usage. `Tok` vs `Lbl` vs `Txt` is a judgment call when more than one is valid for the case — what matters is that the suffix is on the approved list AND matches the call.
+
+## Placeholder labels MUST declare `Comment`
+
+When a label contains `%1`, `%2`, etc., the `Comment` property MUST document each placeholder. Translators rely on this; without it, the translation pipeline produces nonsense.
+
+```al
+MissingSecretErr: Label 'The secret %1 is either missing or empty.',
+                  Comment = '%1 = Secret Name.';
+
+EmailSentMsg: Label 'Email sent to %1 at %2.',
+              Comment = '%1 = recipient email, %2 = timestamp.';
+```
+
+## `Locked = true` for non-translatable strings
+
+Use `Locked = true` whenever the label MUST NOT be translated. This applies to:
+
+- URLs and URIs (`https://...`)
+- HTTP method names (`GET`, `POST`, `PUT`, `DELETE`)
+- GUIDs / token strings
+- JSON keys, XML element names, OData query strings
+- Telemetry message text (telemetry strings are read by the BC team and external tools that don't expect translations)
+- Technical identifiers used to key into the platform (e.g. `Session.LogMessage` category labels)
+
+```al
+ApiBaseUrlTok: Label 'https://api.example.com/v1', Locked = true;
+GetMethodTok: Label 'GET', Locked = true;
+
+TelemetryRetrieveEmailsUsedTxt: Label 'Retrieving emails is used', Locked = true;
+
+EmailViewPolicyTok: Label 'Email View Policy', Locked = true;  // category for telemetry
+```
+
+When the label is shown to a user (captions, error messages, prompts), do NOT set `Locked = true` — the user-facing translation pipeline depends on these being translatable.
+
+## Pass parameters DIRECTLY to `Error`, `Message`, `Confirm`
+
+Never wrap the label with `StrSubstNo` at the call site, and never concatenate strings into the call.
+
+```al
+// GOOD
+Error(CustomerNotFoundErr, CustomerNo);
+
+// BAD - hides placeholders from the translation pipeline
+Error(StrSubstNo(CustomerNotFoundErr, CustomerNo));
+
+// BAD - untranslatable, unanalyzable
+Error('Customer ' + CustomerNo + ' not found');
+```
+
+The platform performs the substitution itself. `StrSubstNo`-then-`Error` removes the format-string identity from the call site so analyzers cannot match the call to its label and translators lose the link.
+
+The same rule applies to `Message`, `Confirm`, and other UI primitives.
+
+## Detection heuristics for review
+
+When reviewing AL code, flag:
+
+- Any `Label` / `TextConst` whose name does NOT end with one of the six approved suffixes.
+- Any `Label` with `%1`/`%2`/... but no `Comment` property.
+- Any `Label` containing `://` (URL marker) but not `Locked = true`.
+- Any `Label` whose name ends in `Tok` but lacks `Locked = true` (tokens by definition are not translatable).
+- Any `Label` referenced inside `Session.LogMessage(...)` without `Locked = true`.
+- Any `Error(StrSubstNo(...))`, `Message(StrSubstNo(...))`, or `Confirm(StrSubstNo(...))` call.
+- Any `Error('literal' + var)` or `Message('literal' + var)` string concatenation.
+
+## References
+
+- CodeCop `AA0074` (approved label suffixes) — in `content/bcapps-rulesets/CodeCop.ruleset.json`.
+- BCApps examples: every `.Codeunit.al` in `microsoft/BCApps/src/System Application/App/` follows this convention.
+- BCApps review prompt `content/bcapps-review-prompts/style.md` covers the full reasoning.

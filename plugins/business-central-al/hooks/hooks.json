@@ -5,6 +5,11 @@
       {
         "command": "scripts/session-start-context.sh"
       }
+    ],
+    "userPromptSubmit": [
+      {
+        "command": "scripts/detect-al-repo.sh"
+      }
     ]
   }
 }

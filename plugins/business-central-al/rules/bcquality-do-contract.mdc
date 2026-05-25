@@ -1,0 +1,33 @@
+---
+description: BCQuality DO meta-skill contract. Agent-requestable. Loads when the agent needs to produce a findings-report JSON — the canonical action-skill template (Source / Relevance / Worklist / Action / Output), the strict JSON output schema, severity taxonomy, agent-findings encoding, and super-skill composition rules.
+alwaysApply: false
+---
+
+# BCQuality DO contract
+
+The authoritative DO meta-skill is vendored at `<plugin>/content/bcquality/do.md` (sourced from `microsoft/BCQuality/skills/do.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you need to produce findings-report output.** This rule is just a pointer.
+
+## What DO defines
+
+- **Action-skill template**: every action skill has 5 required sections in order: `## Source` → `## Relevance` → `## Worklist` → `## Action` → `## Output`.
+- **JSON output contract**: every action skill emits a single JSON document with `skill`, `outcome`, `outcome-reason`, `summary`, `findings[]`, `suppressed[]`, and (for super-skills) `sub-results[]` + `skipped-sub-skills[]`.
+- **Outcome values**: `completed`, `not-applicable`, `no-knowledge`, `partial`, `failed`. Each has precise semantics — orchestrators MUST NOT conflate them.
+- **Severity taxonomy**: `blocker` / `major` / `minor` / `info`. `blocker` is reserved for platform-level guarantees.
+- **Finding `id` rules**: for citation-based findings, `id` MUST equal `references[0].path`. For non-citation findings (agent self-review), prefix with `agent:`. For sub-skill rollup of non-citation findings, prefix with `<sub-skill-id>:`.
+- **Agent findings** (super-skills only): `from-sub-skill: "agent"`, `references: []`, `confidence ≤ medium`, self-contained `message`. Before emitting, validate against the loaded knowledge — matching file upgrades to knowledge-backed, contradicting file suppresses.
+- **Composition**: super-skills compose leaves only (no nesting). Outcome rolls up by precise rules in DO.
+
+## Output rendering in Cursor
+
+After an action skill produces its JSON, the plugin's `scripts/render-findings.sh` pretty-prints it for terminal display. The agent should:
+
+1. Emit the canonical JSON exactly per DO.
+2. Optionally pipe through `bash <plugin>/scripts/render-findings.sh` for a human-friendly summary table in chat.
+3. Surface each finding's `location.file:line` as a clickable link in the chat output.
+
+## When to load this rule
+
+- Before composing a super-skill's findings-report.
+- Before emitting any action-skill output.
+- When deciding whether an emit-able finding qualifies as a knowledge-backed finding (cite the file) or an agent finding (`from-sub-skill: "agent"`, capped at `medium` confidence).
+- When deciding which `outcome` value to set on partial / no-knowledge / not-applicable runs.

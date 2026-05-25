@@ -1,8 +1,8 @@
 {
   "name": "business-central-al",
   "displayName": "Business Central AL",
-  "version": "0.1.0",
-  "description": "Reusable Cursor plugin for Business Central AL development with TDD-first guidance.",
+  "version": "0.6.0",
+  "description": "Full-lifecycle Cursor plugin for Business Central AL development. End-to-end from new repo through AppSource Go Live: the official Microsoft AL MCP server for the inner dev loop, AL-Go for GitHub workflow dispatch, microsoft/BCApps canonical analyzer rulesets, microsoft/BCQuality structured review (super-skill + 6 leaves, strict JSON contract, layered knowledge with TAG custom-layer pre-seeded), microsoft/BC-Bench's measured-winner ALTest domain-agent prompt for AL test generation (+10.7 pt vs baseline), the BCApps al-docs hierarchical-documentation skill, and a userPromptSubmit hook that auto-surfaces BC project metadata on every prompt. Session-start hook recommends the BC-Bench-measured top models (Claude Opus 4.7, Sonnet 4.6) and warns against gpt-4.1 for AL tasks. 40+ slash commands. BC runtime MCP (Phase 6) remains deferred.",
   "author": {
     "name": "Alexis Sturgeon"
   },
@@ -12,6 +12,28 @@
     "business-central",
     "al",
     "dynamics-365",
-    "tdd"
+    "tdd",
+    "mcp",
+    "altool",
+    "al-mcp",
+    "al-go",
+    "appsource",
+    "ci-cd",
+    "lifecycle",
+    "bcapps",
+    "rulesets",
+    "codecop",
+    "appsourcecop",
+    "library-assert",
+    "scaffolding",
+    "bcquality",
+    "code-review",
+    "knowledge-base",
+    "findings-report",
+    "bc-bench",
+    "altest",
+    "test-generation",
+    "al-docs",
+    "documentation"
   ]
 }

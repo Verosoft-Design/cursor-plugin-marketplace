@@ -1,24 +1,176 @@
 ---
-description: Reinforces TDD-first testing patterns for Business Central AL changes.
-alwaysApply: false
-globs: app.json, **/*.al,
+description: TDD-first testing patterns for Business Central AL, aligned with microsoft/BCApps conventions. Auto-applied to AL source. Mandates Library Assert (codeunit 130002), EventSubscriberInstance = Manual on test codeunits, [TransactionModel(...)] matching the code under test's Commit behavior, and Given/When/Then narrative comments.
+alwaysApply: true
+globs: app.json, **/*.al, **/test/**/*.al, **/Test/**/*.al, **/Tests/**/*.al
 ---
 
 # Business Central AL Testing
 
 When adding or changing Business Central behavior:
 
-1. Prefer test-first development when the work introduces or changes behavior.
-2. Keep test code separate from production code.
-3. Use Business Central test codeunits for automated tests:
-   - `SubType = Test`
-   - `[Test]` procedures for test cases
-   - normal helper procedures for setup and shared assertions
-4. Use handler methods and `HandlerFunctions` when the tested code raises UI interactions.
-5. Cover both:
-   - positive paths that prove valid behavior
-   - negative paths that prove business-rule failures and expected errors
-6. Use `AssertError` only in test code, never in production logic.
-7. Keep tests deterministic, isolated, and readable.
-8. If the repository has no test scaffold, create the smallest sensible test codeunit before production changes instead of silently skipping tests.
-9. If tests cannot be executed in the current session, say so explicitly and describe what still needs to be run.
+## Core discipline
+
+1. **Test-first** when the work introduces or changes behavior. Write the failing test, then the production code.
+2. **Test code separate from production.** Tests live in a test app (`Subtype = Test` codeunits in a dependent test extension), never inline with production logic.
+3. **Be explicit when tests cannot be executed in the current session.** Do not pretend verification happened. State that execution was not verified and describe what still needs to be run.
+
+## Test codeunit shape (BCApps convention)
+
+```al
+codeunit 134685 "Email Test"
+{
+    Subtype = Test;
+    Permissions = tabledata "Email Message" = rd,
+                  tabledata "Email Outbox" = rimd;
+    EventSubscriberInstance = Manual;
+
+    var
+        Assert: Codeunit "Library Assert";
+        PermissionsMock: Codeunit "Permissions Mock";
+        // ... feature-specific library codeunits ...
+}
+```
+
+Required properties on every test codeunit:
+
+- `Subtype = Test`
+- `EventSubscriberInstance = Manual` — prevents subscribers from firing unless the test explicitly binds them. Without this, tests interfere with each other.
+- `Permissions = tabledata ... = rd|rimd` — declare narrowly. Avoid wildcard grants.
+
+## Use Library Assert, NOT plain `Error` / `TestField`
+
+Inject `Assert: Codeunit "Library Assert"` (BCApps codeunit **130002**, NOT the legacy NAV Assert codeunit 9). Library Assert is shipped in BCApps under `src/Tools/Test Framework/Test Libraries/Assert/` and its own `app.json` says:
+
+> In test code Library Assert should be used to compare the values and throw errors. TESTFIELD and ERROR must not be used in test code.
+
+Library Assert exposes the assertion methods you want — `Assert.AreEqual`, `Assert.AreNotEqual`, `Assert.IsTrue`, `Assert.IsFalse`, `Assert.IsEmpty`, `Assert.RecordCount`, `Assert.ExpectedError`, `Assert.ExpectedErrorCode`, etc. Use these for every assertion.
+
+## Test procedure attribute pattern
+
+```al
+[Test]
+[Scope('OnPrem')]
+[TransactionModel(TransactionModel::AutoRollback)]
+[HandlerFunctions('CloseEmailEditorHandler')]
+procedure OpenMessageInEditorTest()
+```
+
+Required attributes:
+
+- `[Test]` — marks the procedure as a test method.
+- `[Scope('OnPrem')]` — explicit scope declaration. Required when the codeunit is `Access = Public` and consumed by other apps.
+
+Required when relevant:
+
+- `[TransactionModel(TransactionModel::AutoRollback)]` — DEFAULT. Opens a write transaction, runs the test, rolls back. Use unless the code under test calls `Commit()`.
+- `[TransactionModel(TransactionModel::AutoCommit)]` — when the code under test genuinely calls `Commit()` (posting routines, job-queue handlers, integration flows). Pair with a `TestIsolation`-enabled test runner so committed changes are reverted at a higher scope.
+- `[TransactionModel(TransactionModel::None)]` — read-only tests or tests that drive UI code without writing.
+- `[HandlerFunctions('<handler1>,<handler2>')]` — list every handler the test invokes. Every handler named here MUST be invoked during the test.
+
+`AutoRollback` on a test that triggers `Commit` produces a runtime error on first Commit, not an assertion failure — the test does not complete. Match the model to the code under test.
+
+## Given / When / Then narrative
+
+Use inline `//` comments to make tests self-document. The shape:
+
+```al
+procedure NonExistingEmailMessageFailsTest()
+begin
+    // [Scenario] User cannot save as draft, enqueue, send or open a non-existing email message
+    PermissionsMock.Set('Email Edit');
+
+    // [Given] Create an Email Message and delete the underlying record
+    CreateEmail(EmailMessage);
+    Assert.IsTrue(Message.Get(EmailMessage.GetId()), 'Record should exist after creation');
+    Message.Delete();
+    Assert.IsFalse(EmailMessage.Get(EmailMessage.GetId()), 'Email should not exist after delete');
+
+    // [When] Saving a non-existing email message as draft
+    ClearLastError();
+    asserterror Email.SaveAsDraft(EmailMessage);
+
+    // [Then] An error occurs
+    Assert.ExpectedError(EmailMessageDoesNotExistMsg);
+end;
+```
+
+Tags: `[Scenario]` (one per test), then `[Given]` / `[When]` / `[Then]` sections in order. Each section can have multiple lines of code; the comment just marks the boundary.
+
+## Handler functions
+
+When the tested code raises UI (Message, Confirm, ModalPage, Page, StrMenu, Notification), declare handler procedures and list them in `[HandlerFunctions(...)]`.
+
+```al
+[Test]
+[HandlerFunctions('MessageHandler,ConfirmHandler')]
+procedure ShouldHandleUiInteraction()
+begin
+    // ...
+end;
+
+[MessageHandler]
+procedure MessageHandler(Message: Text[1024])
+begin
+    Assert.AreEqual(ExpectedMessageLbl, Message, 'Wrong message shown');
+end;
+
+[ConfirmHandler]
+procedure ConfirmHandler(Question: Text[1024]; var Reply: Boolean)
+begin
+    Assert.AreEqual(ExpectedQuestionLbl, Question, 'Wrong question shown');
+    Reply := true;
+end;
+```
+
+Available handler attributes: `[MessageHandler]`, `[ConfirmHandler]`, `[ModalPageHandler]`, `[PageHandler]`, `[StrMenuHandler]`, `[SendNotificationHandler]`, `[ReportHandler]`, `[RequestPageHandler]`, `[RecallNotificationHandler]`, `[HyperlinkHandler]`, `[FilterPageHandler]`, `[SessionSettingsHandler]`.
+
+Handler procedures SHOULD assert on the values they receive — without that, the handler just swallows the UI and the test loses coverage.
+
+## Negative tests with `asserterror`
+
+For expected failures:
+
+```al
+// [When] Posting an invalid sales order
+asserterror SalesPost.Run(SalesHeader);
+
+// [Then] An error is raised with the expected text
+Assert.ExpectedError(InvalidQuantityErr);
+// or, for code-based assertion:
+Assert.ExpectedErrorCode('Dialog');
+```
+
+`asserterror` catches the next error and lets `Assert.ExpectedError(text)` / `Assert.ExpectedErrorCode(code)` verify it. Never use `asserterror` outside test code.
+
+## Standard test dependencies
+
+Test apps depend on these BCApps libraries (declare in `app.json` → `dependencies`):
+
+- `Library Assert` (id `dd0be2ea-f733-4d65-bb34-a28f4624fb14`, codeunit 130002) — the assertion library.
+- `Any` (id `e7320ebb-...`) — random value generator. `Any.AlphabeticText(10)`, `Any.IntegerInRange(1, 100)`, etc.
+- `Library Variable Storage` (id `5095f467-...`) — `LibraryVariableStorage.Enqueue(...)` / `.Dequeue()` pattern for getting data into handler procedures.
+- `Permissions Mock` (id `40860557-...`) — `PermissionsMock.Set('<role>')` to test permission-restricted code without changing the actual session permissions.
+- Domain libraries like `Library Sales`, `Library Inventory`, `Library Job` — domain-specific test data builders.
+
+## Test ID ranges
+
+Microsoft uses `130000..139999` for test framework codeunits — those are reserved. Choose a test ID range that fits the consuming repo's allocation (e.g. TAG uses its own allocated band, NOT `134000..139999` which belongs to BCApps tests).
+
+## When the repo has NO test scaffold
+
+Do not skip tests silently. Instead:
+
+1. Check whether the repo already has a test app folder.
+2. If not, create the smallest sensible starting point:
+   - One test app folder with its own `app.json` declaring dependencies on `Test Framework` + `Library Assert` + `Any` (+ `Library Variable Storage` and `Permissions Mock` if needed).
+   - One test codeunit with `Subtype = Test`, `EventSubscriberInstance = Manual`, `Assert: Codeunit "Library Assert"`.
+   - One `[Test]` procedure for the requested behavior, with `[TransactionModel(TransactionModel::AutoRollback)]` and Given/When/Then.
+3. Document any missing environment or dependency that blocks execution.
+
+The `/al-add-test-app` command scaffolds the test app folder via the AL-Go workflow. The `/scaffold-test-codeunit` command produces a fresh test codeunit skeleton.
+
+## References
+
+- BCApps test conventions: every test under `microsoft/BCApps/src/System Application/Test/` follows this shape.
+- Library Assert: `microsoft/BCApps/src/Tools/Test Framework/Test Libraries/Assert/`.
+- Performance Toolkit (BCPT) tests: `microsoft/BCApps/src/Tools/Performance Toolkit/App/src/BCPTTestContext.Codeunit.al`.

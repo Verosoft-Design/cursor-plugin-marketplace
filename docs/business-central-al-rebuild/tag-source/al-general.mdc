@@ -1,0 +1,100 @@
+---
+description: General AL language coding standards and best practices for Business Central development
+globs: ["**/*.al"]
+alwaysApply: true
+---
+
+# AL Language General Guidelines
+
+## Code Style and Structure
+
+- Write concise, technical AL code with accurate examples
+- Follow Microsoft's AL coding standards and best practices
+- Use built-in functions and standard AL design patterns
+- Prefer modularization over code duplication
+- Use descriptive variable names (e.g., IsPostingDateValid, HasCreditLimitExceeded)
+
+## Naming Conventions
+
+- Use **PascalCase** for all identifiers (variables, procedures, functions)
+- Prefix record variables with meaningful abbreviations:
+  - CustRec for Record Customer
+  - ItemRec for Record Item
+  - EquipmentRec for Record "TAG Equipment"
+- Use meaningful procedure names that reflect their purpose
+- Boolean variables should read as questions: IsValid, HasPermission, CanProcess
+
+## Variable Declaration
+
+    var
+        TAGSetup: Record "TAG Setup";
+        EquipmentRec: Record "TAG Equipment";
+        WOHeader: Record "TAG Work Order Header";
+        NoSeriesMgt: Codeunit "No. Series";
+        IsProcessed: Boolean;
+        TotalAmount: Decimal;
+
+## Procedure Structure
+
+- Keep procedures short and focused on a single responsibility
+- Use clear parameter names prefixed with p for parameters
+- Return named values when it improves readability
+
+    procedure ProcessEquipment(pEquipmentID: Code[20]; pProcessDate: Date): Boolean
+    var
+        EquipmentRec: Record "TAG Equipment";
+    begin
+        if not EquipmentRec.Get(pEquipmentID) then
+            exit(false);
+        
+        // Processing logic here
+        exit(true);
+    end;
+
+## Error Handling
+
+- Use TryFunction for error handling without displaying system messages
+- Use TestField for required field validation
+- Use Error() for business rule violations with clear messages
+
+    TAGSetup.Get();
+    TAGSetup.TestField("Key Safe Nos.");
+
+## Database Operations
+
+- Minimize database calls within loops; retrieve necessary data beforehand
+- Use SetLoadFields to optimize field loading
+- Use SetRange, SetFilter, and SetCurrentKey for efficient filtering
+- Use FindSet when iterating, FindFirst for single records
+- Use IsEmpty instead of Count = 0 for existence checks
+
+    EquipmentRec.SetLoadFields(Description, "Equipment ID");
+    EquipmentRec.SetRange(Status, EquipmentRec.Status::Active);
+    if EquipmentRec.FindSet() then
+        repeat
+            // Process each record
+        until EquipmentRec.Next() = 0;
+
+## Preprocessor Directives
+
+Use preprocessor symbols for version compatibility:
+
+    #if CLEAN24
+        NoSeriesMgt: Codeunit "No. Series";
+    #else
+        NoSeriesMgt: Codeunit NoSeriesManagement;
+    #endif
+
+Available preprocessor symbols: CLEAN18, CLEAN19, CLEAN20, CLEAN22, CLEAN23, CLEAN24
+
+## Comments
+
+- Use comments to explain complex logic or business rules
+- Document public procedures and APIs
+- Keep comments up-to-date with code changes
+
+## Security
+
+- Set appropriate permission properties for objects
+- Avoid hardcoding sensitive information
+- Use secure storage methods for credentials

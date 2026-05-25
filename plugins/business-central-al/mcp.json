@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "al": {
+      "command": "altool",
+      "args": ["launchmcpserver", "--transport", "stdio"]
+    }
+  }
+}

@@ -1,0 +1,101 @@
+---
+description: XML documentation comment requirements for public AL procedures, integration events, and interface methods. Auto-applied to AL source. Mirrors BCApps' convention of XML-doc-on-every-public-surface.
+alwaysApply: true
+globs: **/*.al
+---
+
+# XML Documentation on Public AL Surface
+
+Every public procedure, integration event, internal event, and interface method gets an XML documentation block. This is the convention Microsoft applies across BCApps; it powers the `aldoc` generator and lets consumers understand the public contract without reading the implementation.
+
+## When XML doc is required
+
+- Any procedure on a codeunit with `Access = Public` or `Access = Internal` (when `internalsVisibleTo` exposes it to tests / consumers).
+- Every `[IntegrationEvent(...)]` declaration.
+- Every `[InternalEvent(...)]` declaration.
+- Every method on an `interface` declaration.
+- Public procedures on tables that expose business logic to other modules.
+
+NOT required for:
+
+- `local procedure` declarations.
+- Event subscribers (`[EventSubscriber(...)]` decorations) — the publisher's doc is the authoritative reference.
+- Page triggers, table triggers (their semantics are documented by the platform).
+- `[Test]` procedures (tests document themselves via Given/When/Then comments; see the `al-testing` rule).
+
+## Required tags
+
+| Tag                | Required for                       | Notes                                                                                                                              |
+| ------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `<summary>`        | every documented procedure         | One-paragraph description of what the procedure does and why a caller would use it.                                                |
+| `<param name="X">` | every parameter `X`                | One line per parameter.                                                                                                            |
+| `<returns>`        | every procedure with a return type | Describe the return value's meaning.                                                                                               |
+| `<remarks>`        | optional                           | Use for contract caveats (e.g. "This procedure commits the transaction.", "This is a TryFunction."), threading, performance notes. |
+
+## Canonical example (from BCApps Email module)
+
+```al
+/// <summary>
+/// Saves the email message as a draft so it can be edited later.
+/// </summary>
+/// <param name="EmailMessage">The email message to save.</param>
+/// <param name="EmailAccountId">The account id under which to save the draft.</param>
+/// <returns>True if the message was saved; otherwise, false.</returns>
+/// <remarks>This procedure does not send the email. Call Send to dispatch it.</remarks>
+procedure SaveAsDraft(EmailMessage: Codeunit "Email Message"; EmailAccountId: Guid): Boolean
+begin
+    exit(Impl.SaveAsDraft(EmailMessage, EmailAccountId));
+end;
+```
+
+Integration event:
+
+```al
+/// <summary>
+/// Raised before the system finds related attachments for an email message.
+/// Subscribers can inspect the message and contribute additional attachments.
+/// </summary>
+/// <param name="EmailMessage">The email message being processed.</param>
+/// <param name="RelatedRecord">The record the email is related to.</param>
+[IntegrationEvent(false, false)]
+internal procedure OnFindRelatedAttachments(
+    EmailMessage: Codeunit "Email Message";
+    var RelatedRecord: RecordRef)
+begin
+end;
+```
+
+Interface method:
+
+```al
+interface "Symmetric Algorithm"
+{
+    /// <summary>
+    /// Encrypts plaintext using the provided key and initialization vector.
+    /// </summary>
+    /// <param name="Plaintext">The text to encrypt.</param>
+    /// <param name="Key">The symmetric key.</param>
+    /// <param name="IV">The initialization vector.</param>
+    /// <returns>Base64-encoded ciphertext.</returns>
+    procedure Encrypt(Plaintext: SecretText; Key: SecretText; IV: SecretText): Text
+}
+```
+
+## Detection heuristics for review
+
+Flag any:
+
+- `procedure` (non-`local`, non-`[Test]`) inside a codeunit with `Access = Public` that lacks `/// <summary>`.
+- `[IntegrationEvent(...)]` or `[InternalEvent(...)]` declaration with no XML doc above it.
+- `<param name="X">` tag where `X` is not an actual parameter (likely stale from copy-paste).
+- Procedure with `: <ReturnType>` but no `<returns>` tag.
+
+## Configuring `aldoc`
+
+When the repo deploys reference documentation (via `/al-deploy-docs`), only procedures with XML doc comments appear in the generated site. Document the public surface fully and the resulting site is genuinely useful; leave it sparse and the site documents nothing.
+
+## References
+
+- BCApps facade codeunits document every public procedure: `microsoft/BCApps/src/System Application/App/Email/src/Email/Email.Codeunit.al`.
+- BCApps interface examples: `microsoft/BCApps/src/System Application/App/Cryptography Management/src/SymmetricAlgorithm.Interface.al`.
+- BCApps review prompt `content/bcapps-review-prompts/style.md` discusses XML doc requirements in depth.

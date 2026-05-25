@@ -1,0 +1,42 @@
+---
+description: BCQuality READ meta-skill contract. Agent-requestable. Loads when the agent needs to interpret a BCQuality knowledge file — frontmatter schema, sections, layer precedence, sample-file conventions, frontmatter matching semantics.
+alwaysApply: false
+---
+
+# BCQuality READ contract
+
+The authoritative READ meta-skill is vendored at `<plugin>/content/bcquality/read.md` (sourced from `microsoft/BCQuality/skills/read.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you need to interpret a knowledge file.** This rule is just a pointer to ensure the agent loads it.
+
+## What READ defines
+
+- **Knowledge file shape**: YAML frontmatter (6 required fields) + `## Description` (required) + optional `## Best Practice` / `## Anti Pattern` (normative) + any other `##` section (non-normative). NO fenced code blocks in the body.
+- **Frontmatter schema (v1)**: `bc-version`, `domain`, `keywords`, `technologies`, `countries`, `application-area` — all required, all with specific value constraints documented in READ.
+- **Sample-file naming**: `<slug>.good.al` and `<slug>.bad.al` siblings live next to each article. Articles MAY have neither, one, or both.
+- **Frontmatter matching semantics**: how a knowledge file is matched against a task context's `bc-version` / `technologies` / `countries` / `application-area`. Includes the "conditionally applicable" rule for partial contexts (confidence cap at `medium`, must record unknown dimensions in the finding's message).
+- **Layer precedence**: `/custom/` wins over `/community/` wins over `/microsoft/`. Conflicts surface in the output's `suppressed[]` with `reason: "layer-precedence"`.
+
+## Layer locations in this plugin
+
+- `<plugin>/content/bcquality/microsoft/knowledge/<domain>/<slug>.md` — Microsoft-endorsed (vendored, pinned).
+- `<plugin>/content/bcquality/community/knowledge/<domain>/<slug>.md` — community (vendored, pinned).
+- `<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md` — local plugin content. Highest precedence. Seeded with TAG-specific articles.
+
+## Citing references
+
+When emitting a finding that cites a knowledge file, the `references[0].path` MUST be the repo-relative path (forward slashes). When the plugin has pinned a specific SHA (it has — see `content/PINNED.json` → `bcquality.ref`), the reference SHOULD also include the `sha` field for reproducibility.
+
+Example reference object:
+
+```json
+{
+  "path": "microsoft/knowledge/performance/use-setloadfields-for-partial-records.md",
+  "sha": "4d59fb73bcdfb17865c875c84c7ff8fd4a170fe2"
+}
+```
+
+## When to load this rule
+
+- Before parsing any knowledge file's frontmatter.
+- Before deciding whether a file is applicable to the task at hand.
+- Before resolving a conflict between layers.
+- Before authoring a new knowledge file (also pair with `bcquality-write-contract`).

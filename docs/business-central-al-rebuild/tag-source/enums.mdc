@@ -1,0 +1,102 @@
+---
+description: Guidelines for creating TAG enums in Business Central
+globs: Enums/*.al
+---
+
+# TAG Enum Development Guidelines
+
+## Enum Template
+
+    enum [ID] "TAG [EnumName]"
+    {
+        Extensible = true;
+        Caption = '[Enum Caption]';
+
+        value(0; " ")
+        {
+            Caption = ' ';
+        }
+        value(1; "Option1")
+        {
+            Caption = 'Option 1';
+        }
+        value(2; "Option2")
+        {
+            Caption = 'Option 2';
+        }
+    }
+
+## Enum Naming Conventions
+
+- Enum name: TAG [DescriptiveName]
+- Use PascalCase for value names
+- Include spaces in multi-word captions
+- Start with value(0; " ") for optional fields
+
+## Common TAG Enums
+
+### Status Enums
+
+    enum [ID] "TAG Work Order Status"
+    {
+        Extensible = true;
+        
+        value(0; " ") { Caption = ' '; }
+        value(1; Planned) { Caption = 'Planned'; }
+        value(2; Released) { Caption = 'Released'; }
+        value(3; "In Progress") { Caption = 'In Progress'; }
+        value(4; Completed) { Caption = 'Completed'; }
+        value(5; Cancelled) { Caption = 'Cancelled'; }
+    }
+
+### Type Enums
+
+    enum [ID] "TAG Equipment Type"
+    {
+        Extensible = true;
+        
+        value(0; " ") { Caption = ' '; }
+        value(1; Asset) { Caption = 'Asset'; }
+        value(2; Location) { Caption = 'Location'; }
+        value(3; Component) { Caption = 'Component'; }
+    }
+
+## Enum Extensions
+
+    enumextension [ID] "TAG [BaseEnum] Extension" extends "[BaseEnum]"
+    {
+        value(100; "TAG Custom Value")
+        {
+            Caption = 'TAG Custom Value';
+        }
+    }
+
+## Using Enums in Tables
+
+    field(10; Status; Enum "TAG Work Order Status")
+    {
+        DataClassification = CustomerContent;
+        Caption = 'Status';
+    }
+
+    field(15; Type; Enum "TAG Equipment Type")
+    {
+        DataClassification = CustomerContent;
+        InitValue = Asset;
+        ValuesAllowed = Asset, Location;
+    }
+
+## Enum Value Numbering
+
+- 0: Empty/blank option
+- 1-99: Core values
+- 100+: Extension values
+
+Leave gaps for future additions within each range.
+
+## Best Practices
+
+- Always set Extensible = true for partner extensibility
+- Provide meaningful Captions for UI display
+- Use Enum instead of Option for new development
+- Keep enum values descriptive and self-documenting

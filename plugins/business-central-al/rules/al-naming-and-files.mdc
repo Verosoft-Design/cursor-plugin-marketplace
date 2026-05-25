@@ -1,0 +1,89 @@
+---
+description: BCApps-derived naming and file conventions for Business Central AL. Auto-applied to AL source files. Enforces PascalCase identifiers, the file-name pattern, namespace declarations, ≤30-character object names, and lowercase reserved keywords.
+alwaysApply: true
+globs: **/*.al
+---
+
+# AL Naming and File Conventions
+
+These are the conventions Microsoft uses for the System Application and Business Foundation modules in `microsoft/BCApps`. Apply them by default. Repo-specific deviations (e.g. TAG's `[ObjectType] [ObjectID] - TAG [Name].al` filename pattern) live in the consuming repo's own `.cursor/rules/` and override these via Cursor's normal rule precedence.
+
+## Identifiers
+
+- **PascalCase** for every identifier: variables, parameters, procedures, types, fields, actions.
+- Boolean variables read as a question: `IsValid`, `HasPermission`, `CanProcess`.
+- Object names are **≤ 30 characters** (AppSourceCop `AS0006` will fail otherwise). Choose the shortest descriptive name.
+- Reserved keywords are **lowercase**: `procedure`, `var`, `begin`, `end`, `if`, `then`, `else`, `repeat`, `until`, `case`, `of`, `record`, `codeunit`, `page`, `table`. (CodeCop `AA0241`.)
+
+## File naming (BCApps convention)
+
+The canonical pattern is `<ObjectName>.<ObjectType>.al`:
+
+- `EmailImpl.Codeunit.al`
+- `EmailAccount.Table.al`
+- `EmailAccounts.Page.al`
+- `EmailConnector.Enum.al`
+- `SymmetricAlgorithm.Interface.al`
+- `EmailAdmin.PermissionSet.al`
+
+One object per file. The object name in the file ends with the object type (in PascalCase, no abbreviation). Files live in a folder structure that groups feature areas — e.g. `Account/`, `Connector/`, `Email/`, `RateLimit/`.
+
+**When the consuming repo uses a different filename convention** (e.g. TAG's `[ObjectType] [ObjectID] - TAG [ObjectName].al` numeric-ID-first format), the agent must honor whatever pattern already exists in the repo. Detect by sampling 2–3 existing `.al` files; do not introduce a new naming pattern in a project that already has one.
+
+## Namespace and `using`
+
+Every `.al` file declares a `namespace` at the top, before any other statement. `using` imports come next.
+
+```al
+namespace MyPublisher.Sales.Posting;
+
+using Microsoft.Foundation.NoSeries;
+using System.Email;
+
+codeunit 50100 "Sales Posting Helper"
+{
+    // ...
+}
+```
+
+The namespace tree groups related modules. Use a stable root (e.g. `<Publisher>.<Domain>.<SubDomain>`) consistent across the repo. Microsoft's reserved roots — `Microsoft.*` and `System.*` — are off-limits for non-Microsoft apps (`AS0008`, `PTE0021`).
+
+## Record variable naming
+
+Prefix record variables with a short identifier that signals the table:
+
+- `CustRec` for `Record Customer`
+- `ItemRec` for `Record Item`
+- `EmailMessage` for `Record "Email Message"` (drop the `Rec` suffix when the table name already reads as an entity)
+
+Be consistent across the repo. When the repo already uses a different convention (e.g. TAG uses `EquipmentRec`, `WOHeader`, `WOLine`, `TechRec`, `TAGSetup`), follow the established vocabulary rather than inventing new short names.
+
+## Procedure parameter naming
+
+BCApps does not prefix procedure parameters. The disambiguation between parameter and local variable comes from the type-suffix convention on locals (e.g. parameter `CustomerNo: Code[20]` vs local `Customer: Record Customer`).
+
+**When the consuming repo uses a different convention** (e.g. TAG prefixes every parameter with lowercase `p`: `procedure ProcessEquipment(pEquipmentID: Code[20])`), follow the repo's existing pattern. Detect by reading the most-recently-edited codeunit in the project.
+
+## Variable declaration order
+
+Inside `var` blocks, declare variables in this order:
+
+1. Records (longest to shortest, or alphabetical)
+2. Codeunits
+3. Pages / Reports
+4. Simple types (Integer, Decimal, Boolean, Option/Enum)
+5. Text / Code / SecretText
+
+Group same-type variables together. Single blank line between groups is optional.
+
+## What this rule does NOT cover
+
+- Label suffixes and `Locked = true` — see `al-labels-and-locked`.
+- File-level license header — see `al-license-header`.
+- XML doc comments — see `al-xmldoc-public-procedures`.
+- ID ranges (publisher-specific) — repo-level concern; codify in the consuming repo's `.cursor/rules/`.
+
+## References
+
+- BCApps source: `microsoft/BCApps` at the pinned SHA in `content/PINNED.json`.
+- AppSourceCop and CodeCop rule numbers come from the rulesets in `content/bcapps-rulesets/`.

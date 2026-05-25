@@ -1,0 +1,204 @@
+---
+description: Guidelines for creating TAG reports in Business Central
+globs: Reports/*.al
+---
+# TAG Report Development Guidelines
+
+## Report Template
+
+    report [ID] "TAG [ReportName]"
+    {
+        Caption = '[Report Caption]';
+        UsageCategory = ReportsAndAnalysis;
+        ApplicationArea = All;
+        DefaultRenderingLayout = RDLCLayout;
+
+        dataset
+        {
+            dataitem(MainDataItem; "TAG [TableName]")
+            {
+                RequestFilterFields = "Code", "Description";
+
+                column(Code; Code) { }
+                column(Description; Description) { }
+
+                dataitem(ChildDataItem; "TAG [ChildTable]")
+                {
+                    DataItemLink = "Parent Code" = field(Code);
+                    DataItemTableView = sorting("Line No.");
+
+                    column(ChildCode; Code) { }
+                    column(ChildDescription; Description) { }
+                }
+            }
+        }
+
+        requestpage
+        {
+            layout
+            {
+                area(Content)
+                {
+                    group(Options)
+                    {
+                        Caption = 'Options';
+
+                        field(StartDate; StartDateVar)
+                        {
+                            ApplicationArea = All;
+                            Caption = 'Start Date';
+                        }
+                        field(EndDate; EndDateVar)
+                        {
+                            ApplicationArea = All;
+                            Caption = 'End Date';
+                        }
+                    }
+                }
+            }
+        }
+
+        rendering
+        {
+            layout(RDLCLayout)
+            {
+                Type = RDLC;
+                LayoutFile = './Reports/TAG [ReportName].rdlc';
+            }
+        }
+
+        var
+            StartDateVar: Date;
+            EndDateVar: Date;
+    }
+
+## Processing-Only Reports
+
+    report [ID] "TAG [ProcessName]"
+    {
+        Caption = '[Process Caption]';
+        ProcessingOnly = true;
+        UsageCategory = Tasks;
+        ApplicationArea = All;
+
+        dataset
+        {
+            dataitem(Equipment; "TAG Equipment")
+            {
+                RequestFilterFields = "Equipment ID", Status;
+
+                trigger OnAfterGetRecord()
+                begin
+                    ProcessEquipment(Equipment);
+                    RecordsProcessed += 1;
+                end;
+
+                trigger OnPostDataItem()
+                begin
+                    Message('%1 records processed.', RecordsProcessed);
+                end;
+            }
+        }
+
+        var
+            RecordsProcessed: Integer;
+
+        local procedure ProcessEquipment(var pEquipment: Record "TAG Equipment")
+        begin
+            // Processing logic
+        end;
+    }
+
+## Request Page Patterns
+
+    requestpage
+    {
+        SaveValues = true;
+
+        layout
+        {
+            area(Content)
+            {
+                group(Options)
+                {
+                    Caption = 'Options';
+
+                    field(ThroughDate; ThroughDateVar)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Through Date';
+                    }
+                    field(IncludeActive; IncludeActiveVar)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Include Active';
+                    }
+                }
+                group(Filters)
+                {
+                    Caption = 'Filters';
+
+                    field(FacilityFilter; FacilityFilterVar)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Facility';
+                        TableRelation = "TAG Facility";
+                    }
+                }
+            }
+        }
+
+        trigger OnOpenPage()
+        begin
+            if ThroughDateVar = 0D then
+                ThroughDateVar := WorkDate();
+        end;
+    }
+
+## DataItem Triggers
+
+    dataitem(WorkOrder; "TAG Work Order Header")
+    {
+        trigger OnPreDataItem()
+        begin
+            SetRange(Status, Status::Released);
+            if FacilityFilterVar <> '' then
+                SetFilter(Facility, FacilityFilterVar);
+        end;
+
+        trigger OnAfterGetRecord()
+        begin
+            CalcFields("Total Hours", "Estimated Cost");
+            // Additional processing
+        end;
+
+        trigger OnPostDataItem()
+        begin
+            // Cleanup or summary
+        end;
+    }
+
+## RDLC Layout Files
+
+- Store RDLC files in the Reports folder
+- Name format: TAG [ReportName].rdlc
+- Use consistent styling across reports
+- Include company logo placeholder
+
+## Report Categories
+
+| UsageCategory | Purpose |
+|---------------|---------|
+| ReportsAndAnalysis | Standard reports |
+| Tasks | Processing reports |
+| Documents | Document printing |
+| None | Sub-reports or called reports |
+
+## Best Practices
+
+- Use RequestFilterFields for common filters
+- Set SaveValues = true on request pages
+- Initialize default values in OnOpenPage
+- Use CalcFields before accessing FlowFields
+- Keep processing logic in separate procedures
+- Add meaningful captions for user clarity

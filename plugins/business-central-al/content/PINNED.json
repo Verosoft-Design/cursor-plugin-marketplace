@@ -1,0 +1,123 @@
+{
+  "$schema_version": 1,
+  "_comment": "Pinned upstream content sources. Refresh via /bcq-update or by re-running scripts/vendor-<source>.sh.",
+  "bcapps": {
+    "repo": "microsoft/BCApps",
+    "ref": "dc1242e31a055ec355b6b8ccf8e7ed94e68016d7",
+    "ref_branch": "main",
+    "fetched_at": "2026-05-25T18:36:12Z",
+    "license": "MIT",
+    "license_url": "https://github.com/microsoft/BCApps/blob/dc1242e31a055ec355b6b8ccf8e7ed94e68016d7/LICENSE",
+    "categories": {
+      "rulesets": {
+        "dir": "content/bcapps-rulesets/",
+        "files": [
+          "ruleset.json",
+          "Analyzer.ruleset.json",
+          "AppSourceCop.ruleset.json",
+          "CodeCop.ruleset.json",
+          "Compiler.ruleset.json",
+          "PTECop.ruleset.json",
+          "UICop.ruleset.json",
+          "internal.module.ruleset.json",
+          "minorrelease.ruleset.json"
+        ],
+        "source_path": "src/rulesets/"
+      },
+      "defaults": {
+        "dir": "content/bcapps-defaults/",
+        "files": ["DefaultSettings.json"],
+        "source_path": "build/scripts/DevEnv/"
+      },
+      "review_prompts": {
+        "dir": "content/bcapps-review-prompts/",
+        "files": [
+          "security.md",
+          "performance.md",
+          "style.md",
+          "accessibility.md",
+          "upgrade.md",
+          "privacy.md"
+        ],
+        "source_path": "tools/Code Review/instructions/"
+      },
+      "al_docs": {
+        "dir": "content/al-docs-references/",
+        "files": [
+          "SKILL.md",
+          "al-docs-init.md",
+          "al-docs-update.md",
+          "al-docs-audit.md",
+          "al-scoring.md"
+        ],
+        "source_path": "tools/al-docs-plugin/skills/al-docs/",
+        "_note": "BCApps' MIT-licensed al-docs skill for hierarchical AL documentation generation. The Cursor adapter at skills/al-docs/SKILL.md routes init/update/audit modes to the corresponding reference file."
+      }
+    }
+  },
+  "bcquality": {
+    "repo": "microsoft/BCQuality",
+    "ref": "4d59fb73bcdfb17865c875c84c7ff8fd4a170fe2",
+    "ref_branch": "main",
+    "fetched_at": "2026-05-25T18:50:00Z",
+    "license": "MIT",
+    "license_url": "https://github.com/microsoft/BCQuality/blob/4d59fb73bcdfb17865c875c84c7ff8fd4a170fe2/LICENSE",
+    "_note": "Repo is in active preview; README warns of breaking changes. Pinning to a SHA so findings carry stable references (per the DO output-contract's optional references[].sha field).",
+    "categories": {
+      "meta_skills": {
+        "dir": "content/bcquality/",
+        "files": ["entry.md", "read.md", "do.md", "write.md"],
+        "source_path": "skills/"
+      },
+      "microsoft_skills": {
+        "dir": "content/bcquality/microsoft/skills/",
+        "source_path": "microsoft/skills/",
+        "_note": "Includes al-code-review super-skill plus 6 leaves under review/"
+      },
+      "microsoft_knowledge": {
+        "dir": "content/bcquality/microsoft/knowledge/",
+        "source_path": "microsoft/knowledge/",
+        "domains": [
+          "performance",
+          "privacy",
+          "security",
+          "style",
+          "testing",
+          "ui",
+          "upgrade"
+        ]
+      },
+      "community_knowledge": {
+        "dir": "content/bcquality/community/knowledge/",
+        "source_path": "community/knowledge/",
+        "domains": ["performance", "security"]
+      },
+      "custom_knowledge": {
+        "dir": "content/bcquality/custom/knowledge/",
+        "_note": "Local plugin content, NOT vendored. Highest layer-precedence per READ. Seeded with TAG-specific articles."
+      }
+    },
+    "validator": {
+      "dir": "scripts/",
+      "files": ["validate-bcquality-frontmatter.py"],
+      "source_path": ".github/scripts/",
+      "_note": "586-line upstream validator implementing rules R01..R25. Run via: python3 scripts/validate-bcquality-frontmatter.py --root content/bcquality"
+    }
+  },
+  "bcbench": {
+    "repo": "microsoft/BC-Bench",
+    "ref": "ef4f466827a01483e99b0a9d40218cffc62cf4af",
+    "ref_branch": "main",
+    "fetched_at": "2026-05-25T19:10:00Z",
+    "license": "MIT",
+    "license_url": "https://github.com/microsoft/BC-Bench/blob/ef4f466827a01483e99b0a9d40218cffc62cf4af/LICENSE",
+    "_note": "Vendoring ONLY the ALTest.agent.md domain-agent prompt. BC-Bench measured this prompt at +10.7 pt mean and ~2x pass^5 on test-generation tasks (Opus 4.6 / Copilot, 5 runs, 101 tasks). Bundling it is the single highest-ROI test-generation lever.",
+    "categories": {
+      "altest_prompt": {
+        "dir": "content/altest-prompt/",
+        "files": ["ALTest.agent.md"],
+        "source_path": "src/bcbench/agent/shared/instructions/microsoftInternal-NAV/agents/"
+      }
+    }
+  }
+}

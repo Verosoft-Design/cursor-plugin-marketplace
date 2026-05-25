@@ -1,0 +1,162 @@
+---
+description: Guidelines for creating and modifying TAG tables in Business Central
+globs: tables/*.al,Table_Extension/*.al
+alwaysApply: false
+---
+# TAG Table Development Guidelines
+
+## Table Structure Template
+
+    table [ID] "TAG [TableName]"
+    {
+        DataClassification = CustomerContent;
+        LookupPageId = "TAG [TableName] List";
+        DrillDownPageId = "TAG [TableName] List";
+
+        fields
+        {
+            field(1; Code; Code[20])
+            {
+                DataClassification = CustomerContent;
+            }
+            field(3; Description; Text[250])
+            {
+                DataClassification = CustomerContent;
+            }
+            // Additional fields...
+        }
+
+        keys
+        {
+            key(Key1; Code)
+            {
+                Clustered = true;
+            }
+        }
+
+        trigger OnInsert()
+        begin
+            // Auto-numbering logic if needed
+        end;
+    }
+
+## Data Classification
+
+Always specify DataClassification for each field:
+
+- CustomerContent - Customer-entered business data
+- ToBeClassified - Temporary, must be updated before release
+- SystemMetadata - System-generated data
+- EndUserIdentifiableInformation - PII data
+
+## Field Numbering Convention
+
+| Range | Purpose |
+|-------|---------|
+| 1-9 | Primary key fields |
+| 10-99 | Core fields |
+| 100-999 | Standard fields |
+| 1000+ | Extended/custom fields |
+
+Leave gaps between field numbers for future additions.
+
+## Auto-Numbering Pattern
+
+Use this pattern for automatic number series:
+
+    trigger OnInsert()
+    var
+        TAGSetup: Record "TAG Setup";
+    #if CLEAN24
+        NoSeriesMgt: Codeunit "No. Series";
+    #else
+        NoSeriesMgt: Codeunit NoSeriesManagement;
+    #endif
+    begin
+        if Code = '' then begin
+            TAGSetup.Get();
+            TAGSetup.TestField("[TableName] Nos.");
+            Code := NoSeriesMgt.GetNextNo(TAGSetup."[TableName] Nos.", 0D, true);
+        end;
+    end;
+
+## FlowFields and CalcFormulas
+
+    field(20; "Master Key"; Code[20])
+    {
+        FieldClass = FlowField;
+        CalcFormula = lookup("TAG Key Safe Key".Code where("Key Safe" = field(Code), "Master Key" = const(true)));
+        Caption = 'Master Lock';
+    }
+
+    field(25; "Total Count"; Integer)
+    {
+        FieldClass = FlowField;
+        CalcFormula = count("TAG Related Table" where("Parent Code" = field(Code)));
+    }
+
+## Table Relations
+
+    field(4; "Equipment ID"; Code[20])
+    {
+        DataClassification = CustomerContent;
+        TableRelation = "TAG Equipment";
+    }
+
+    field(5; Manufacturer; Code[10])
+    {
+        DataClassification = CustomerContent;
+        TableRelation = Manufacturer;
+    }
+
+## Enum Fields
+
+    field(16; "Type"; Enum "TAG Key Safe Type")
+    {
+        DataClassification = CustomerContent;
+    }
+
+    field(18; "Lock Type"; Enum "TAG LOTO Lock Type")
+    {
+        DataClassification = CustomerContent;
+        InitValue = Group;
+        ValuesAllowed = Group, Keysafe;
+    }
+
+## Table Procedures
+
+Add business logic as table procedures:
+
+    procedure Available(): Boolean
+    var
+        RelatedRec: Record "TAG Related Table";
+    begin
+        Rec.CalcFields(Keys);
+        if Rec.Keys > 0 then begin
+            RelatedRec.SetRange("Parent Code", Rec.Code);
+            RelatedRec.CalcFields(Available);
+            RelatedRec.SetRange(Available, true);
+            exit(not RelatedRec.IsEmpty());
+        end;
+    end;
+
+## Table Extensions
+
+    tableextension [ID] "TAG [BaseTable] Extension" extends "[BaseTable]"
+    {
+        fields
+        {
+            field([ID]; "TAG Custom Field"; Code[20])
+            {
+                DataClassification = CustomerContent;
+                Caption = 'Custom Field';
+            }
+        }
+    }
+
+## Performance Best Practices
+
+- Use SetLoadFields before reading records
+- Define appropriate keys for common query patterns
+- Use SumIndexFields for frequently summed fields
+- Avoid triggers that call external services

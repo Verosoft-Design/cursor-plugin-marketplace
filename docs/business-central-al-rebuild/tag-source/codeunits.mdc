@@ -1,0 +1,157 @@
+---
+description: Guidelines for creating TAG codeunits in Business Central
+globs: CodeUnit/*.al
+---
+
+# TAG Codeunit Development Guidelines
+
+## Codeunit Template
+
+    codeunit [ID] "TAG [CodeunitName]"
+    {
+        trigger OnRun()
+        begin
+            // Main entry point logic
+        end;
+
+        var
+            TAGSetup: Record "TAG Setup";
+            // Global variables
+
+        procedure PublicProcedure(pParameter: Code[20]): Boolean
+        var
+            LocalVar: Record "TAG Equipment";
+        begin
+            // Implementation
+            exit(true);
+        end;
+
+        local procedure PrivateProcedure()
+        begin
+            // Internal logic
+        end;
+    }
+
+## Variable Organization
+
+Declare variables in this order:
+1. Record variables
+2. Codeunit variables  
+3. Page/Report variables
+4. Simple types (Integer, Decimal, Boolean, etc.)
+5. Text/Code variables
+
+    var
+        TAGManagementCU: Codeunit "TAG Management";
+        WOWorksheet: Record "TAG Work Order Worksheet";
+        EquipmentRec: Record "TAG Equipment";
+        lineNo: Integer;
+        ThroughDate: Date;
+        RequestPageActive: Boolean;
+
+## Procedure Patterns
+
+### Setter Procedures
+
+    procedure SetWoWorksheet(var pLineNo: Integer)
+    begin
+        lineNo := pLineNo;
+    end;
+
+    procedure SetRequestPageParameters(pThroughDate: Date; pDutyType: Option)
+    begin
+        ThroughDate := pThroughDate;
+        DutyType := pDutyType;
+    end;
+
+### Getter Procedures
+
+    procedure GetLineNo(): Integer
+    var
+        LastWOWorkSheet: Record "TAG Work Order Worksheet";
+    begin
+        LastWOWorkSheet.SetRange("Line No.");
+        if LastWOWorkSheet.FindLast() then
+            exit(LastWOWorkSheet."Line No." + 10000)
+        else
+            exit(10000);
+    end;
+
+### Processing Procedures
+
+    procedure ProcessEquipment(var pEquipID: Code[20]): Boolean
+    begin
+        if EquipmentRec.Get(pEquipID) then begin
+            // Processing logic
+            exit(true);
+        end;
+        exit(false);
+    end;
+
+## Event Subscribers
+
+    [EventSubscriber(ObjectType::Table, Database::"TAG Equipment", 'OnAfterInsertEvent', '', false, false)]
+    local procedure OnAfterInsertEquipment(var Rec: Record "TAG Equipment")
+    begin
+        // Handle equipment insert
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"TAG Management", 'OnBeforeProcess', '', false, false)]
+    local procedure OnBeforeProcess(var IsHandled: Boolean)
+    begin
+        // Pre-processing logic
+        IsHandled := false;
+    end;
+
+## Integration Events
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeProcessWorkOrder(var WOHeader: Record "TAG Work Order Header"; var IsHandled: Boolean)
+    begin
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnAfterProcessWorkOrder(var WOHeader: Record "TAG Work Order Header")
+    begin
+    end;
+
+## TryFunction Pattern
+
+    [TryFunction]
+    procedure TryProcessRecord(RecordID: Code[20])
+    var
+        EquipmentRec: Record "TAG Equipment";
+    begin
+        EquipmentRec.Get(RecordID);
+        EquipmentRec.Validate(Status, EquipmentRec.Status::Active);
+        EquipmentRec.Modify(true);
+    end;
+
+    // Usage:
+    if not TryProcessRecord(EquipmentID) then
+        Message('Processing failed: %1', GetLastErrorText());
+
+## Background Processing
+
+    codeunit [ID] "TAG Background Process"
+    {
+        TableNo = "Job Queue Entry";
+
+        trigger OnRun()
+        begin
+            ProcessInBackground();
+        end;
+
+        local procedure ProcessInBackground()
+        begin
+            // Long-running process
+        end;
+    }
+
+## Best Practices
+
+- Keep codeunits focused on a single responsibility
+- Use meaningful names that describe the purpose
+- Expose integration events for extensibility
+- Use TryFunction for operations that might fail
+- Avoid UI interactions in background codeunits

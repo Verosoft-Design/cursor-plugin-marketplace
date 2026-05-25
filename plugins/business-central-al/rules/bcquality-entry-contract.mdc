@@ -1,0 +1,39 @@
+---
+description: BCQuality entry-point routing contract. Agent-requestable. Loads when the agent needs to route a task to the right action skill — the dispatch-record shape, goal matching, super-skill precedence, and layer precedence rules.
+alwaysApply: false
+---
+
+# BCQuality entry-point contract
+
+The authoritative entry-point skill is vendored at `<plugin>/content/bcquality/entry.md` (sourced from `microsoft/BCQuality/skills/entry.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you need to route a task.** This rule is just a pointer.
+
+## What Entry defines
+
+- **Task context input**: `goal`, `inputs-available[]`, optional dimension filters (`technologies`, `bc-version`, `countries`, `application-area`), `enabled-layers`, `disabled-skills`.
+- **Candidate set**: all action skills under `*/skills/**/*.md` across enabled layers (meta-skills in `/skills/` are excluded — Entry never dispatches Entry).
+- **Relevance**: candidates pass if their `kind` is `action-skill`, their declared `inputs` intersect with `inputs-available`, and their dimension filters match.
+- **Worklist (the 3-tier ranking)**:
+  1. Goal match — score `description` and `id` against the task goal. Prefer exact keyword overlap before fuzzy signals.
+  2. Super-skill precedence — when goal broadly matches a super-skill, dispatch the super-skill and drop the listed sub-skills (`superseded-by-super-skill`). When goal specifically names a concern a sub-skill handles, dispatch the sub-skill and drop the super-skill (`narrower-sub-skill-selected`).
+  3. Layer precedence — when two skills share the same `id` across layers, keep the highest-precedence one (`/custom/` > `/community/` > `/microsoft/`).
+- **Dispatch record output**: `{ outcome: "routed" | "no-match" | "failed", dispatch[], skipped[] }`. Each `dispatch[]` entry names a skill, its rationale, and the strict intersection of inputs to pass.
+
+## Skill discovery in this plugin
+
+Action skills live in:
+
+- `<plugin>/content/bcquality/microsoft/skills/review/` — `al-code-review.md` (super-skill) + 6 leaves.
+- `<plugin>/content/bcquality/community/skills/` — empty in upstream today.
+- `<plugin>/content/bcquality/custom/skills/` — empty by default. Add local action skills here.
+
+## How the plugin's commands consume Entry
+
+- `/bcq-review` invokes the `al-entry` Cursor skill, which reads `entry.md`, builds the dispatch record, and invokes each named skill in turn.
+- `/bcq-review-performance`, `/bcq-review-security`, etc. bypass Entry and dispatch the corresponding leaf skill directly with goal-specific dispatch.
+- `/al-entry` (the Cursor skill name) NEVER dispatches Entry recursively.
+
+## When to load this rule
+
+- Before invoking `al-entry` to route a task.
+- When debugging why a particular leaf review skill was or was not dispatched.
+- Before adding a custom action skill (to understand discovery semantics).

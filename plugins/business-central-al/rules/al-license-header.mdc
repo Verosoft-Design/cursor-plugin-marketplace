@@ -1,0 +1,75 @@
+---
+description: Standard file-header license block for Business Central AL files. Auto-applied to AL source. The header text mirrors what Microsoft uses in BCApps; the publisher line is configurable per repo so partners (Verosoft, etc.) can swap in their own header.
+alwaysApply: true
+globs: **/*.al
+---
+
+# AL File Header — License Comment
+
+Every `.al` file begins with a 4-line comment block declaring copyright and license. This is what Microsoft uses in every file of `microsoft/BCApps`:
+
+```al
+// ------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+// ------------------------------------------------------------------------------------------------
+```
+
+The block sits at the **very top of the file**, before the `namespace` declaration. No blank line before it; one blank line after it.
+
+## Publisher line is configurable
+
+When the consuming repo declares a different publisher convention, replace line 2 to match. The structure of the block (4 lines, `//` prefix, 96-character horizontal rule on lines 1 and 4) stays the same.
+
+Common variants by publisher:
+
+```al
+// Verosoft Design INC. (TAG)
+// ------------------------------------------------------------------------------------------------
+// Copyright (c) Verosoft Design INC. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+// ------------------------------------------------------------------------------------------------
+```
+
+```al
+// Single-vendor proprietary
+// ------------------------------------------------------------------------------------------------
+// Copyright (c) <Publisher> <Year>. All rights reserved.
+// Confidential — distribution prohibited.
+// ------------------------------------------------------------------------------------------------
+```
+
+The agent can detect the right publisher line by:
+
+1. Reading an existing `.al` file in the repo and matching its header.
+2. Reading `app.json` → `publisher`.
+3. Asking the user when the repo is brand-new and no existing header is detectable.
+
+## Detection heuristics for review
+
+Flag any `.al` file that:
+
+- Has no comment block at all in the first 6 lines.
+- Has a comment block that mentions a different publisher than the rest of the repo (likely copy-paste error).
+- Has a license declaration that contradicts the repo's `LICENSE` file (e.g. file claims MIT but repo `LICENSE` is proprietary).
+
+## Opting out
+
+For repos that intentionally do NOT carry per-file license headers (e.g. internal-only PTEs where the repo-level `LICENSE` is considered sufficient), opt out by adding a more specific rule in the consuming repo's `.cursor/rules/`:
+
+```yaml
+---
+description: Disable the global AL license header rule.
+alwaysApply: true
+globs: **/*.al
+---
+
+# This repo does not use per-file license headers.
+# The global al-license-header rule should be ignored.
+```
+
+The local rule wins on conflict.
+
+## References
+
+- BCApps source: every `.al` file in `microsoft/BCApps/src/` carries the standard block. Sample: `microsoft/BCApps/src/System Application/App/Email/src/Email/Email.Codeunit.al` lines 1–4.

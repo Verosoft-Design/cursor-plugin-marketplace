@@ -1,0 +1,67 @@
+---
+description: BCQuality WRITE meta-skill contract for authoring new knowledge files. Agent-requestable. Loads when the agent helps the user write a new knowledge article — admission test, frontmatter authoring guidance, choosing bc-version, the pre-PR checklist.
+alwaysApply: false
+---
+
+# BCQuality WRITE contract
+
+The authoritative WRITE meta-skill is vendored at `<plugin>/content/bcquality/write.md` (sourced from `microsoft/BCQuality/skills/write.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you author a new knowledge file.** This rule is just a pointer plus plugin-specific guidance for the `/custom/` layer.
+
+## What WRITE defines
+
+- **Admission test**: a knowledge file only earns a place in the repo if "a modern LLM reviewing or generating BC code would make a mistake this file would have prevented." Generic software-engineering guidance (don't hardcode secrets, use HTTPS) is OFF-topic — those facts are already in the LLM. BCQuality is _remedial_ knowledge: BC-specific things LLMs get wrong.
+- **Atomicity**: one concern per file. Symptoms a file is trying to be two: two `## Best Practice` sections, a Description joined by "and", `keywords` spanning two unrelated vocabularies.
+- **Target length**: under 100 lines (ideal under 50). Long files almost always mean two concerns; split, do not compress.
+- **Choosing `bc-version`**: default to `[all]` unless the guidance is tied to a version-gated API, deprecation, or platform behavior that genuinely differs across versions. Reach for `[26, 27, 28]` or `[26..28]` only with a concrete reason.
+- **Pre-PR checklist**: 7 mandatory items (frontmatter complete, `## Description` present, no fenced code blocks, ≤ 100 lines, one concern, correct layer + domain folder, kebab-case name). Agents scaffolding new files SHOULD run the checklist programmatically.
+
+## Authoring into the plugin's custom layer
+
+For Verosoft / TAG / partner-specific guidance, the right destination is:
+
+```
+<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md
+```
+
+Plus optional sibling `<slug>.good.al` and/or `<slug>.bad.al` sample files (those CAN contain AL code — the no-fenced-code rule applies only to the article, not its samples).
+
+Per the READ contract, `/custom/` is the highest-precedence layer. A custom article that contradicts a microsoft or community article wins on conflict — and the loser appears in the output's `suppressed[]` with `reason: "layer-precedence"` so reviewers can see what was overridden.
+
+## After authoring — run the validator
+
+The vendored upstream validator implements rules R01–R25. Run it before committing any new knowledge file:
+
+```bash
+python3 <plugin>/scripts/validate-bcquality-frontmatter.py --root <plugin>/content/bcquality
+```
+
+Requires `pyyaml` (`pip3 install --user pyyaml`).
+
+The 25 rules are:
+
+| Rule     | Applies to               | Checks                                                                                                     |
+| -------- | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| R01      | all                      | Frontmatter parses, opening/closing `---`, valid YAML mapping, UTF-8                                       |
+| R02      | knowledge                | 6 required keys, no extras, no empty values                                                                |
+| R03      | knowledge                | `bc-version` is `[all]`, list of positive ints, or `[N..M]` shorthand                                      |
+| R04      | knowledge                | `domain` non-empty string                                                                                  |
+| R05      | knowledge                | `keywords` non-empty list of lowercase-kebab-case strings; warns >10                                       |
+| R06      | knowledge                | `technologies` non-empty list; `'all'` forbidden                                                           |
+| R07      | knowledge                | `countries` is `[w1]` or list of lowercase ISO codes                                                       |
+| R08      | knowledge                | `application-area` is `[all]` or list; mutually exclusive                                                  |
+| R09      | knowledge                | Contains `## Description`                                                                                  |
+| R10      | knowledge                | No fenced code blocks in body                                                                              |
+| R11      | knowledge                | ≤ 100 lines                                                                                                |
+| R12      | knowledge                | Filename is kebab-case                                                                                     |
+| R13      | knowledge                | Path shape `<layer>/knowledge/<domain>/<slug>.md`                                                          |
+| R14      | samples                  | `<slug>.<kind>.<ext>` naming; only `good` and `bad` standard                                               |
+| R15..R21 | action-skill             | required keys, kebab-case id, positive int version, valid `inputs`/`outputs`, 5 required sections in order |
+| R22..R23 | meta-skill / entry-point | required keys, `entry` id locked                                                                           |
+| R24      | global                   | Skill `id` unique within kind                                                                              |
+| R25      | path/kind                | `kind` in frontmatter matches file's path role                                                             |
+
+## When to load this rule
+
+- Before invoking `/bcq-write-knowledge` to author a new article.
+- Before suggesting the user codify a repo-specific convention as a custom-layer article.
+- Before editing an existing knowledge file (the same rules apply — also re-run the validator after).

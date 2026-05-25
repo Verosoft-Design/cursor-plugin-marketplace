@@ -1,0 +1,100 @@
+---
+description: TAG-specific naming conventions, ID ranges, and project structure
+globs: */*.al
+alwaysApply: true
+---
+
+# TAG Project Naming and Structure
+
+## Application Information
+
+- **App Name**: The Asset Guardian (TAG) CMMS-EAM
+- **Publisher**: Verosoft Design INC. (VSD)
+- **Runtime**: 12.0
+- **Application Version**: 22.0.0.0
+
+## Object ID Ranges
+
+Always use IDs within these assigned ranges:
+
+| Range | From | To | Purpose |
+|-------|------|-----|---------|
+| Primary | 70015000 | 70016999 | Main TAG objects |
+| API | 23085634 | 23085783 | API pages and related objects |
+
+## Object Naming Pattern
+
+All TAG objects must follow this naming convention:
+
+    [ObjectType] [ObjectID] - TAG [ObjectName].al
+
+### Examples by Object Type
+
+| Type | Example Filename |
+|------|------------------|
+| Table | Table 70016325 - TAG Key Safe.al |
+| Page | Page 23085760 - TAG Key Safe List.al |
+| Codeunit | Codeunit 70015921 - TAG Evalulate AutoPlan.al |
+| Report | Report 70015908 - TAG Evaluate Policies.al |
+| Enum | Enum 70015900 - TAG Equipment Status.al |
+| Query | Query 70015900 - TAG Equipment Query.al |
+| XMLport | XMLport 70015900 - TAG Import Equipment Groups.al |
+
+### API Pages
+
+API pages use camelCase for entity names:
+
+    Page [ID] - TAG API [EntityName].al
+
+Example: Page 23085779 - TAG API Key Safes.al
+
+## Internal Object Names
+
+Object names in code must include the "TAG" prefix:
+
+    table 70016325 "TAG Key Safe"
+    page 23085760 "TAG Key Safe List"
+    codeunit 70015921 "TAG Evalulate AutoPlan"
+    enum 70015900 "TAG Equipment Status"
+
+## Field Naming
+
+- Use descriptive field names with proper spacing
+- Primary key fields are typically Code or No.
+- Reference fields should indicate the relationship
+
+    field(1; Code; Code[20])
+    field(3; Description; Text[250])
+    field(4; "Equipment ID"; Code[20])
+    field(5; "Work Order No."; Code[20])
+
+## Directory Structure
+
+    BC/
+    +-- API/              # API pages (PageType = API)
+    +-- CodeUnit/         # Codeunits
+    +-- controladdin/     # Control add-ins
+    +-- Enums/            # Enum definitions
+    +-- Page_Extension/   # Page extensions
+    +-- Pages/            # Standard pages
+    +-- permissionSets/   # Permission sets
+    +-- Profile/          # Role center profiles
+    +-- Queries/          # Query objects
+    +-- Reports/          # Reports and RDLC layouts
+    +-- Table_Extension/  # Table extensions
+    +-- tables/           # Table definitions
+    +-- TAGProject/       # Project management tables/pages
+    +-- Translations/     # XLF translation files
+    +-- XMLport/          # XMLport definitions
+
+## Common TAG Record Prefixes
+
+| Record Type | Variable Prefix |
+|-------------|-----------------|
+| Equipment | EquipmentRec, Equipment |
+| Work Order Header | WOHeader, woHeader |
+| Work Order Line | WOLine |
+| Technician | TechRec |
+| TAG Setup | TAGSetup |
+| DateMeter | DMPolicy, DateMeterHeader |
+| Template | MaintHeader, TemplateRec |
