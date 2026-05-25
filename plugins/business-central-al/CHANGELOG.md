@@ -12,6 +12,43 @@ The original 5-phase rebuild is complete. Future work:
 
 - **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
 
+## [0.6.2] — 2026-05-25
+
+### Changed — migrated all `commands/` to slash-invokable skills
+
+Cursor 2.4+ is actively migrating away from the `commands` plugin component type. The built-in `/migrate-to-skills` skill converts user-level and workspace-level commands to skills with `disable-model-invocation: true` (which makes a skill behave like a traditional slash command — no auto-activation, only fires when the user types `/name`). The Cursor `CursorPluginsAgentSkillsService` plugin loader only reports `ruleCount` and `skillCount`; commands never reach the slash picker in the current plugin pipeline.
+
+This release applies the same migration to the plugin's vendored commands so every `/al-*` and `/bcq-*` entry surfaces in the slash picker.
+
+- **38 command files converted to skills** with `disable-model-invocation: true`:
+  - Inner loop: `al-build`, `al-compile`, `al-symbols`, `al-symbol-search`, `al-publish-sandbox`, `al-setup`
+  - Scaffolding: `al-new-pte`, `al-new-appsource`, `al-add-test-app`, `al-add-bcpt-app`, `al-import-existing-app`, `al-create-online-dev-env`
+  - CI/CD & release: `al-current`, `al-next-minor`, `al-next-major`, `al-troubleshoot`, `al-update-system-files`, `al-increment-version`, `al-release`, `al-publish-to-environment`, `al-publish-appsource`, `al-deploy-docs`, `al-go-live`
+  - Secrets: `al-secrets-setup`, `al-init-keyvault`
+  - Quality: `al-apply-rulesets`, `al-apply-vscode-defaults`
+  - BCQuality review: `bcq-review`, `bcq-review-performance`, `bcq-review-security`, `bcq-review-privacy`, `bcq-review-upgrade`, `bcq-review-style`, `bcq-review-ui`, `bcq-update`
+  - Original TDD set: `scaffold-test-codeunit`, `scaffold-handler-methods`, `tdd-checklist`
+- **3 command files deleted** because a skill of the same name already exists and is the better surface for that workflow:
+  - `commands/al-docs.md` → `skills/al-docs/SKILL.md` (BCApps al-docs adapter, agent-decided)
+  - `commands/al-write-test.md` → `skills/al-write-test/SKILL.md` (BC-Bench ALTest adapter, agent-decided)
+  - `commands/bcq-write-knowledge.md` → `skills/bcq-write-knowledge/SKILL.md` (BCQuality knowledge authoring, agent-decided)
+- **`commands/` folder removed entirely.** `"commands": "commands"` field dropped from `.cursor-plugin/plugin.json`.
+
+After this release the plugin ships **53 skills total**:
+
+- 40 with `disable-model-invocation: true` — slash-invokable only, behave exactly like the old commands (user types `/al-build`, agent runs that exact workflow)
+- 13 without that flag — agent-decided orchestration skills the agent picks based on conversation context: `al-build-and-publish`, `al-code-review`, `al-docs`, `al-entry`, `al-go-lifecycle`, `al-performance-review`, `al-privacy-review`, `al-scaffold-module`, `al-security-review`, `al-style-review`, `al-ui-review`, `al-upgrade-review`, `al-write-test`, `bcq-write-knowledge`, `business-central-al-tdd`
+
+### Why the 0.6.1 manifest fix wasn't enough
+
+0.6.1 added `"commands": "commands"` to the plugin manifest after observing that `cursor-public/vercel` and `cursor-public/superpowers` both declare component paths explicitly. That fix was necessary but not sufficient: Cursor `CursorPluginsAgentSkillsService` loads only skills and rules from plugins — commands are not registered with the slash-command picker at all in the current pipeline. Confirmed by reading Cursor's own session log:
+
+```text
+CursorPluginsAgentSkillsService load completed {durationMs:481, ruleCount:65, skillCount:56}
+```
+
+No `commandCount`. The migration to skills is the supported path.
+
 ## [0.6.1] — 2026-05-25
 
 ### Fixed — slash-command registration

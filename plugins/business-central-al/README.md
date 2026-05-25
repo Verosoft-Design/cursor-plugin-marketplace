@@ -14,11 +14,11 @@ The plugin wires the official Microsoft AL MCP server (`altool launchmcpserver`)
 - Download and search symbols.
 - Read filtered diagnostics with stable diagnostic codes.
 
-Five inner-loop commands wrap the AL MCP tools, plus an orchestration skill (`al-build-and-publish`) that chains them into the canonical validate / build-and-deploy / AppSourceCop workflows.
+Five inner-loop skills wrap the AL MCP tools (each with `disable-model-invocation: true` so they only fire when you type the slash), plus an orchestration skill (`al-build-and-publish`) that chains them into the canonical validate / build-and-deploy / AppSourceCop workflows.
 
 ### Full AL-Go lifecycle — via `gh workflow run`
 
-Nineteen commands wrap [AL-Go for GitHub](https://github.com/microsoft/AL-Go) workflows:
+Nineteen slash-invokable skills wrap [AL-Go for GitHub](https://github.com/microsoft/AL-Go) workflows:
 
 - **Scaffold** a new PTE or AppSource repo, add test apps, import existing `.app` artifacts.
 - **CI/CD** — promote builds to specific environments, re-test against current / next minor / next major BC versions.
@@ -69,7 +69,7 @@ The plugin now embeds the full BCQuality contract — Microsoft's machine-readab
 | Phase                       | Status    | Scope                                                                                                                                                                           |
 | --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1 — AL MCP inner loop       | ✅ v0.2.0 | build / compile / publish / symbols / diagnostics                                                                                                                               |
-| 2 — AL-Go lifecycle         | ✅ v0.3.0 | 19 commands wrapping AL-Go workflows for scaffold → CI/CD → release → AppSource                                                                                                 |
+| 2 — AL-Go lifecycle         | ✅ v0.3.0 | 19 slash-invokable skills wrapping AL-Go workflows for scaffold → CI/CD → release → AppSource                                                                                    |
 | 3 — BCApps quality baseline | ✅ v0.4.0 | vendored rulesets + VS Code defaults + 6 MIT review prompts; 5 always-on style rules; project-layout-aware module scaffolder; Library Assert testing baseline                   |
 | 4 — BCQuality review        | ✅ v0.5.0 | 154+ knowledge articles, super-skill + 6 leaves, strict JSON contract, layered knowledge with TAG custom layer pre-seeded, upstream validator, findings renderer                |
 | 5 — BC-Bench wins           | ✅ v0.6.0 | ALTest domain-agent test-generation prompt (+10.7 pt measured), BCApps al-docs skill (init/update/audit), session-start model recommendation, userPromptSubmit BC-metadata hook |
