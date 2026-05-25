@@ -92,7 +92,7 @@ If you'd rather install manually, pick **one** of:
 
 Restart Cursor after install so the MCP server picks up the new binary.
 
-### `gh` CLI (for AL-Go lifecycle commands)
+### `gh` CLI (for AL-Go lifecycle skills)
 
 ```bash
 gh auth login          # one-time, with `workflow` scope
@@ -147,7 +147,7 @@ Verify the AL MCP wiring by asking the agent in a Cursor chat:
 
 | Rule                          | Scope                                                                                                                                        |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `al-overview`                 | Plugin-capability summary so the agent knows what commands and skills are on hand. Pattern-matched on `app.json` and AL files.               |
+| `al-overview`                 | Plugin-capability summary so the agent knows what skills are on hand. Pattern-matched on `app.json` and AL files.                            |
 | `al-workflow`                 | General AL repository workflow. Pattern-matched on `*.al` and `app.json`.                                                                    |
 | `al-testing`                  | BCApps-aligned testing rules: `Library Assert` (codeunit 130002), `EventSubscriberInstance = Manual`, `[TransactionModel]`, Given/When/Then. |
 | `al-naming-and-files`         | PascalCase identifiers, `<Object>.<Type>.al` filename pattern (with detection for repo-specific overrides), namespace and `using` order.     |
@@ -252,7 +252,7 @@ Verify the AL MCP wiring by asking the agent in a Cursor chat:
 
 - `mcp.json` — registers the `al` server (`altool launchmcpserver --transport stdio`). The Business Central runtime MCP (`https://mcp.businesscentral.dynamics.com`) is deferred to Phase 6.
 
-## Safety rules baked into the lifecycle commands
+## Safety rules baked into the lifecycle skills
 
 - **Production deployments** require explicit user confirmation containing the word "production" in the current turn. AL-Go's `(PROD)` / `(FAT)` environment-name convention is honored.
 - **AppSource Go Live** requires explicit user confirmation containing "go live" or "production". Default is Preview-only submission.
