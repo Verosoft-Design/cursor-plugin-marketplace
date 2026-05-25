@@ -112,7 +112,60 @@ Faster but gets overwritten when the plugin is updated from the marketplace. War
 
 With explicit confirmation, edit `<plugin-root>/mcp.json` and change `"command": "altool"` to `"command": "al"`. Print the change diff so the user sees exactly what was modified.
 
-## Step 4 — Verify
+## Step 4 — Workspace project-path injection (highly recommended)
+
+By default the plugin's `mcp.json` runs `altool launchmcpserver --transport stdio` with **no positional `<projects>` argument**, so every new Cursor session starts the AL MCP with zero loaded projects. The agent then has to call `al_addproject` before any tool that operates on AL code (`al_build`, `al_compile`, `al_symbolsearch`, etc.) will work. That's an extra round-trip every single session.
+
+The fix is a tiny workspace-level `mcp.json` that re-declares the `al` server with `${workspaceFolder}` passed in as a positional argument. Cursor expands `${workspaceFolder}` to the folder that **contains** the `.cursor/mcp.json`, so the AL MCP launches with the current AL project already loaded.
+
+### When to offer this
+
+Only when **all** of these are true:
+
+1. The current workspace has an `app.json` at its root (it's an AL project — run `test -f "$PWD/app.json"`).
+2. There's no existing `.cursor/mcp.json` in the workspace (`test -f .cursor/mcp.json` returns false), OR the existing file does not define an `al` server.
+3. The probe from Step 1 reported `altool:<version>` (the AL MCP is actually working).
+
+If any check fails, skip this step entirely.
+
+### What to ask
+
+> About to write `<workspace>/.cursor/mcp.json` with this content:
+>
+> ```json
+> {
+>   "mcpServers": {
+>     "al": {
+>       "command": "altool",
+>       "args": [
+>         "launchmcpserver",
+>         "--transport",
+>         "stdio",
+>         "${workspaceFolder}"
+>       ]
+>     }
+>   }
+> }
+> ```
+>
+> This overrides the plugin's default `al` server for this workspace only, so every new Cursor session starts with the project already loaded. No more manual `al_addproject` calls. Proceed?
+
+Only write the file after explicit confirmation.
+
+### Edge cases
+
+- If `.cursor/mcp.json` already exists in the workspace but defines a different server (e.g. a project-specific MCP), **merge** the `al` entry in rather than overwriting — read the existing JSON, add the `al` key under `mcpServers`, write it back. Print the diff before writing.
+- If `.cursor/mcp.json` already defines an `al` server, leave it alone and tell the user it's already wired up.
+- If the user declines, suggest they re-run `/al-setup` later when they're ready to make sessions less chatty.
+
+### After writing
+
+Tell the user:
+
+- The new `.cursor/mcp.json` takes effect **after the next full Cursor restart** (Cmd+Q + reopen, not just window reload — MCP servers are launched at process start). A window reload usually picks up MCP config changes but not always; full restart is the reliable signal.
+- They can verify it worked by running `/al-symbols` (or any AL MCP tool) in the first turn of a new session — it should succeed without an `al_addproject` round-trip first.
+
+## Step 5 — Verify
 
 After any install or fix, re-run the probe from Step 1. Expect `altool:<version>`. Tell the user the AL MCP is now ready and they can use:
 

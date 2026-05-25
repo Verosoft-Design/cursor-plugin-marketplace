@@ -106,12 +106,24 @@ al_getdiagnostics   (areas: ["AppSourceCop"])
 
 When the workspace contains multiple AL projects, pass `projectPath` (absolute path to the `app.json` folder) on `al_build`, `al_compile`, `al_publish`, `al_downloadsymbols`, `al_getdiagnostics`, and `al_getpackagedependencies`. Without it, the tools target "the first project in the workspace" which can be wrong.
 
-## Related plugin commands
+## Initial project load — call `al_addproject` if no projects are loaded
+
+The plugin's default `mcp.json` launches `altool launchmcpserver` with **no positional `<projects>` argument**, so a fresh session starts with **zero projects loaded**. Any tool that operates on AL code (`al_build`, `al_compile`, `al_symbolsearch`, `al_getdiagnostics`, `al_getpackagedependencies`) will return an empty/no-project result until at least one project is registered.
+
+Before issuing the first project-scoped tool call in a session, the agent must either:
+
+1. Verify a workspace-level `.cursor/mcp.json` exists that already injects the project path (e.g. `"args": [..., "${workspaceFolder}"]`) — in that case, projects are pre-loaded and no `al_addproject` is needed.
+2. Call `al_addproject` with the absolute path to the workspace's `app.json` folder once, before any other tool call.
+
+If `al_addproject` is needed every session, suggest the user run `/al-setup` — Step 4 of that skill offers to write a workspace-level `.cursor/mcp.json` that bakes in `${workspaceFolder}` so this becomes a one-time setup per project.
+
+## Related plugin skills
 
 - `/al-symbols` — wraps `al_downloadsymbols`
 - `/al-symbol-search` — wraps `al_symbolsearch` (handles the `parameters` wrapper)
 - `/al-compile` — wraps `al_compile` + `al_getdiagnostics`
 - `/al-build` — wraps `al_build`
 - `/al-publish-sandbox` — wraps `al_auth_login` + `al_publish`
+- `/al-setup` — diagnose-and-install; Step 4 also offers workspace-level `.cursor/mcp.json` injection so projects pre-load on session start.
 
-The `al-build-and-publish` skill composes these into the canonical workflows above.
+The `al-build-and-publish` skill composes the build/deploy skills into the canonical workflows above.

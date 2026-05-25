@@ -12,6 +12,38 @@ The original 5-phase rebuild is complete. Future work:
 
 - **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
 
+## [0.6.3] — 2026-05-25
+
+### Fixed — eliminate per-session `al_addproject` round-trip
+
+The plugin's default `mcp.json` runs `altool launchmcpserver --transport stdio` with no positional `<projects>` argument, so every new Cursor session starts the AL MCP with **zero loaded projects**. Any project-scoped tool (`al_build`, `al_compile`, `al_symbolsearch`, …) then returns empty until the agent calls `al_addproject` first. That's an extra round-trip every single session.
+
+The fix: when run in an AL workspace, `/al-setup` now offers to write a workspace-level `.cursor/mcp.json` that re-declares the `al` server with `${workspaceFolder}` as a positional argument. Cursor's variable substitution resolves it to the workspace root containing the `.cursor/mcp.json`, so the AL MCP launches with the project already loaded. One-time per workspace, zero plugin-side changes.
+
+- `skills/al-setup/SKILL.md` — added Step 4 "Workspace project-path injection (highly recommended)". Gated on three preconditions: workspace has `app.json`, no conflicting `al` server in existing `.cursor/mcp.json`, AL MCP probe is green. Handles the "merge into existing `.cursor/mcp.json`" edge case (rather than overwriting other servers).
+- `rules/al-mcp-usage.mdc` — new section "Initial project load — call `al_addproject` if no projects are loaded" tells the agent: if there's no workspace-level pre-load and a project-scoped tool is about to be called, either call `al_addproject` first OR suggest `/al-setup` to bake the path in once.
+- The plugin's default `mcp.json` is **unchanged** — keeping it generic means the plugin loads safely in non-AL workspaces, while AL workspaces opt in via the workspace-level override.
+
+### What an injected workspace `.cursor/mcp.json` looks like
+
+```json
+{
+  "mcpServers": {
+    "al": {
+      "command": "altool",
+      "args": [
+        "launchmcpserver",
+        "--transport",
+        "stdio",
+        "${workspaceFolder}"
+      ]
+    }
+  }
+}
+```
+
+Workspace config wins over plugin config when they share a server name, so the plugin's generic `al` server stays defined for other workspaces while this one gets the project-path injection.
+
 ## [0.6.2] — 2026-05-25
 
 ### Changed — migrated all `commands/` to slash-invokable skills
