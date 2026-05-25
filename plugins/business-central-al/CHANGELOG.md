@@ -6,6 +6,18 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## [Unreleased]
 
+Planned for upcoming phases (see `docs/business-central-al-rebuild/PLAN.md`):
+
+The original 5-phase rebuild is complete. Future work:
+
+- **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
+
+## [0.6.1] — 2026-05-25
+
+### Fixed — slash-command registration
+
+- **`.cursor-plugin/plugin.json` now explicitly declares component paths.** Without `"commands": "commands"` (and `"skills": "skills"`, `"rules": "rules"`) in the manifest, Cursor silently dropped the entire `commands/` folder during plugin load. Skills and the MCP server registered correctly via auto-discovery, but every `/al-*` and `/bcq-*` slash command was missing from the slash picker. Confirmed by comparing with `cursor-public/vercel` and `cursor-public/superpowers`, both of which declare component paths explicitly. Adding the three explicit paths restores all 40 commands.
+
 ### Fixed (Phase 1 follow-up)
 
 - `mcp.json` previously included a `$schema` reference to a non-existent URL (`https://raw.githubusercontent.com/modelcontextprotocol/spec/main/schema/2025-03-26/schema.json`). Cursor's `mcp.json` format does not require or support a `$schema` field; the reference produced a 404 in any editor that resolves `$schema` URLs. Removed.
@@ -17,12 +29,6 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 - `scripts/session-start-context.sh` (updated) — now probes for the AL MCP binary at session start and surfaces the result in the session context, with a hint pointing at `/al-setup` whenever something is missing or misconfigured. Three states reported: `altool` ready, `al`-but-needs-fix, or missing-run-`/al-setup`.
 - `skills/al-build-and-publish/SKILL.md` (updated) — the "when the AL MCP is unavailable" section now defers to `/al-setup` instead of walking the user through manual install.
 - `README.md` (updated) — Prerequisites section recommends `/al-setup` as the easiest install path; commands table includes a new Setup section with `/al-setup`.
-
-Planned for upcoming phases (see `docs/business-central-al-rebuild/PLAN.md`):
-
-The original 5-phase rebuild is complete. Future work:
-
-- **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
 
 ## [0.6.0] — 2026-05-25
 
