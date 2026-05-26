@@ -2,8 +2,8 @@
 description: AL MCP server tool catalog and usage rules. Apply when the agent needs to build, compile, publish, search symbols, or read diagnostics on a Business Central AL project via the altool launchmcpserver MCP. Documents the Cursor server identifier (`plugin-business-central-al-al`) so the agent never tries `server="al"` on a meta MCP tool call.
 alwaysApply: false
 globs:
-  - "**/*.al"
-  - "**/app.json"
+  - '**/*.al'
+  - '**/app.json'
 ---
 
 # AL MCP Server — Tool Catalog and Usage Rules
@@ -14,10 +14,10 @@ The plugin wires `altool launchmcpserver --transport stdio` as the `al` MCP serv
 
 When the agent has access to a meta tool that calls MCP servers by name (e.g. `CallMcpTool(server=..., toolName=..., arguments=...)`), the `server` argument must be the **identifier**, not the friendly name:
 
-| Surface                    | Value to use                                       |
-| -------------------------- | -------------------------------------------------- |
-| Friendly name (docs, UI)   | `al`                                               |
-| Cursor server identifier   | `plugin-business-central-al-al`                    |
+| Surface                  | Value to use                    |
+| ------------------------ | ------------------------------- |
+| Friendly name (docs, UI) | `al`                            |
+| Cursor server identifier | `plugin-business-central-al-al` |
 
 The identifier prefix is `plugin-<plugin-name>-`, which Cursor adds automatically when a plugin defines an MCP server. Source of truth: `~/.cursor/projects/<workspace-id>/mcps/plugin-business-central-al-al/SERVER_METADATA.json` contains `{"serverIdentifier": "plugin-business-central-al-al", "serverName": "al"}`.
 

@@ -3,12 +3,12 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": "scripts/session-start-context.sh"
+        "command": "python3 scripts/session-start-context.py"
       }
     ],
     "userPromptSubmit": [
       {
-        "command": "scripts/detect-al-repo.sh"
+        "command": "python3 scripts/detect-al-repo.py"
       }
     ]
   }

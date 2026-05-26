@@ -10,7 +10,7 @@ Guide the user through diagnosing and (with explicit confirmation) installing th
 
 ## Step 1 — Diagnose
 
-Run the probe script at `<plugin-root>/scripts/check-altool.sh`. To find the plugin root:
+Run the probe script at `<plugin-root>/scripts/check-altool.py` using `python3`. To find the plugin root:
 
 - Look at this command file's path. The plugin root is the folder containing `.cursor-plugin/plugin.json`, `mcp.json`, and the `scripts/` folder. Typical locations are `~/.cursor/plugins/local/business-central-al/`, `~/.cursor/plugins/<marketplace>/business-central-al/`, or inside the user's cursor-plugin-marketplace repo.
 - If you cannot resolve the path, ask the user where the plugin is installed.
