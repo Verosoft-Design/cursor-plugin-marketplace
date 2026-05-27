@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "qdrant-knowledge": {
+      "type": "http",
+      "url": "https://verovia.ai/api/mcp-kb/mcp",
+      "headers": {
+        "Authorization": "Bearer mcp_c0aba0ab08ce79364738e1f982f162e67c3830f920ee6c24a9b94aba234b7c24"
+      }
+    }
+  }
+}

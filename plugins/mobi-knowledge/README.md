@@ -7,7 +7,7 @@ Cursor plugin that gives agents semantic search over the Verosoft/Mobi Qdrant kn
 - **Rules** — tells the agent when and how to call the MCP search tools
 - **Skills** — slash-invokable search workflows for common queries
 
-The MCP server itself lives in the mobi monorepo at `apps/mobi-knowledge-mcp` and is deployed to Vercel.
+The MCP server is hosted on Vercel at `https://verovia.ai/api/mcp-kb/mcp`. This plugin wires it in via `mcp.json` so Cursor marketplace installs pick it up automatically.
 
 ## Collections available
 
@@ -24,33 +24,28 @@ The MCP server itself lives in the mobi monorepo at `apps/mobi-knowledge-mcp` an
 | `tool_memories`       | Tool usage memory                            |
 | `daily_notes`         | Daily notes                                  |
 
-## MCP server setup
+## MCP server
 
-The server is deployed via Vercel from `mobi/apps/qdrant-mcp`. Set these env vars in the Vercel dashboard:
+The hosted endpoint is `https://verovia.ai/api/mcp-kb/mcp` (Streamable HTTP on Vercel). Authentication uses a Bearer token in the `Authorization` header.
 
-| Variable         | Value                      |
-| ---------------- | -------------------------- |
-| `QDRANT_URL`     | `https://qdrant.veliox.ai` |
-| `QDRANT_API_KEY` | Qdrant API key             |
-| `GEMINI_API_KEY` | Google AI / Gemini API key |
+Installing this plugin from the marketplace loads `mcp.json` automatically. After install, restart Cursor (Cmd+Q and reopen) so the MCP server is picked up.
 
-Once deployed, the MCP endpoint is at `https://<your-deployment>.vercel.app/mcp`.
-
-### Connecting to Cursor (local desktop)
+To override credentials locally, use an env var in your user or workspace MCP config:
 
 ```json
 {
   "mcpServers": {
-    "mobi-knowledge": {
-      "url": "https://<your-deployment>.vercel.app/mcp"
+    "qdrant-knowledge": {
+      "url": "https://verovia.ai/api/mcp-kb/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:MOBI_KNOWLEDGE_MCP_TOKEN}"
+      }
     }
   }
 }
 ```
 
-### Connecting to Linear cloud agents
-
-Add the same URL in the Cursor dashboard under **Integrations → MCP Servers** as a remote server. Linear agents pick it up automatically.
+For Linear cloud agents, add the same URL under **Integrations → MCP Servers** in the Cursor dashboard.
 
 ## Tools exposed
 
