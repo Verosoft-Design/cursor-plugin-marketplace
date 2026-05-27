@@ -1,40 +1,28 @@
 ---
 name: search-business-answers
-description: Search curated business Q&A pairs in the knowledge base. Use when the user asks a question that is likely to have a pre-written answer (policies, FAQs, standard procedures).
+description: DEPRECATED — do not call search_business_answers. The hosted server returns a Qdrant named-vector error. Use search-knowledge instead for FAQ and procedural questions.
 disable-model-invocation: true
 ---
 
-# Search business answers
+# Search business answers (deprecated)
 
-Call the `search_business_answers` MCP tool.
+**Do not call `search_business_answers`.** The hosted MCP server returns:
 
-## Minimal call
-
-```json
-{ "query": "<question or topic>" }
+```
+Collection requires specified vector name in the request, available names: answer, question
 ```
 
-## Full parameter reference
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `query` | string | required | The question or topic to search for |
-| `limit` | number | 5 | Max results (max 20) |
-| `tenant_id` | string | — | Filter to a specific tenant |
-| `score_threshold` | number | 0.3 | Minimum similarity score (0–1). Use 0.6+ for exact policy lookups. |
-
-## Example
+Use `search_knowledge` instead for FAQ-style and procedural questions:
 
 ```json
 {
-  "query": "what is the refund policy",
-  "tenant_id": "acme-corp",
-  "score_threshold": 0.55
+  "query": "<question or topic>",
+  "limit": 5,
+  "score_threshold": 0.3
 }
 ```
 
-## After the call
+For BC-specific Q&A, use `search_bc_knowledge`.
 
-Surface the highest-scoring answer's `content` directly. Cite the `title` as the
-source. If no result scores above 0.5, fall back to `search_knowledge` with the
-same query.
+This skill remains only so slash-invocations redirect to the working tool. Follow
+the `search-knowledge` skill for parameters and examples.

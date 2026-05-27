@@ -1,37 +1,53 @@
 ---
-description: When to use the Mobi knowledge base MCP tools for semantic search
+description: When to use the Mobi Knowledge Base MCP tools for semantic search — BC vs Mobi routing, tool selection, and known limitations
 globs:
 alwaysApply: false
 ---
 
 # Mobi Knowledge Base — usage rules
 
-The `Mobi Knowledge Base` MCP server is available as a tool. Use it whenever you need
-information that may live in the organisation's knowledge base, business answers,
-uploaded documents, or connector specifications.
+The **Mobi Knowledge Base** MCP server is available. Use it whenever you need
+information from the organisation's knowledge base, BC/AL documentation, uploaded
+documents, or connector specifications.
 
-## When to search
+## BC vs Mobi routing
 
-- A question about a product, process, policy, or internal workflow → `search_knowledge`
-- A question that is likely a pre-answered business FAQ → `search_business_answers`
-- Looking for content from an uploaded file (PDF, Word, Excel) → `search_documents`
-- Anything related to a specific connector or its capabilities → `search_collection` with `connector_knowledge` or `connector_specs`
-- You are unsure which collection holds the answer → call `list_collections` then `search_collection`
+| Context                                                               | Tool                                  |
+| --------------------------------------------------------------------- | ------------------------------------- |
+| Business Central, AL, tag-bc, codeunits, tables, pages, `.al` files   | `search_bc_knowledge`                 |
+| Mobi platform, frontend, API, connectors, configuration, "how do I …" | `search_knowledge`                    |
+| Issue spans both                                                      | call both tools with tailored queries |
 
 ## Tool selection guide
 
-| Situation                         | Tool                                           |
-| --------------------------------- | ---------------------------------------------- |
-| General "how does X work"         | `search_knowledge`                             |
-| "What is our policy on Y"         | `search_business_answers`                      |
-| "Find the onboarding PDF content" | `search_documents`                             |
-| Connector-specific lookup         | `search_collection` with `connector_knowledge` |
-| Exploring what's available        | `list_collections`                             |
+| Situation                                        | Tool                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------- |
+| General "how does X work" (Mobi)                 | `search_knowledge`                                                  |
+| "How do I create / configure / use …" (Mobi)     | `search_knowledge` — use `layer` when known                         |
+| BC domain, AL objects, posting flows             | `search_bc_knowledge`                                               |
+| Content from an uploaded file (PDF, Word, Excel) | `search_documents`                                                  |
+| Connector-specific lookup                        | `search_collection` with `connector_knowledge` or `connector_specs` |
+| Exploring what's available                       | `list_collections`                                                  |
+
+## Do not use `search_business_answers`
+
+`search_business_answers` is **broken** on the hosted server (Qdrant requires a
+named vector: `answer` or `question`). Calling it returns an error. For FAQ-style
+or procedural questions, use `search_knowledge` instead.
+
+## Layer and category hints (Mobi)
+
+Pass `layer` on `search_knowledge` when the domain is clear:
+
+- `layer1-configuration` — setup, config, admin
+- `layer2-frontend-flows` — UI flows, user-facing guides
+- `business_logic` — domain rules and behaviour
+
+Pass `category` to narrow scope: `overview`, `integration`, `api`, `guide`, etc.
 
 ## Always filter by tenant when known
 
-If you know the `tenant_id`, always pass it. It dramatically narrows results and
-improves relevance:
+If you know the `tenant_id`, always pass it:
 
 ```json
 { "query": "...", "tenant_id": "the-tenant-id" }
@@ -39,12 +55,16 @@ improves relevance:
 
 ## Score threshold
 
-The default is `0.3`. For high-precision answers (e.g. exact policy text), raise it
-to `0.6–0.75`. For broad discovery, leave it at `0.3` or lower.
+Default is `0.3`. For high-precision answers, raise to `0.6–0.75`. For broad
+discovery, leave at `0.3` or lower.
+
+## Analyzing a work item
+
+When analyzing an issue, ticket, or task end-to-end (knowledge + code), follow
+the `analyze-work-item` skill.
 
 ## Result shape
 
-Each result includes: `id`, `score`, `content`, `title`, `heading`, `chunk_index`,
-`prev_context`, `next_context`, `tenant_id`, `category`, `layer`, `tags`.
-
-Always cite `title` and `heading` when surfacing knowledge to the user.
+Each result includes: `title`, `file_name`, `file_path`, `layer`, `category`,
+`tags`, `score`, and content fields. Always cite `title` and `file_path` (or
+`heading` when present) when surfacing knowledge to the user.
