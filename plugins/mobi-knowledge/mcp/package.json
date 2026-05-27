@@ -1,7 +1,7 @@
 {
   "name": "@mobi/mobi-knowledge-mcp",
   "version": "1.0.0",
-  "description": "MCP server — semantic search over the Qdrant knowledge base via Gemini embeddings",
+  "description": "MCP server — semantic search over the Mobi knowledge base via Gemini embeddings",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

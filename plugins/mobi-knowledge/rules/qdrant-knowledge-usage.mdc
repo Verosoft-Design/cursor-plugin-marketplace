@@ -1,10 +1,10 @@
 ---
-description: When to use the Qdrant knowledge base MCP tools for semantic search
+description: When to use the Mobi knowledge base MCP tools for semantic search
 globs:
 alwaysApply: false
 ---
 
-# Qdrant Knowledge Base — usage rules
+# Mobi Knowledge Base — usage rules
 
 The `qdrant-knowledge` MCP server is available as a tool. Use it whenever you need
 information that may live in the organisation's knowledge base, business answers,
@@ -20,13 +20,13 @@ uploaded documents, or connector specifications.
 
 ## Tool selection guide
 
-| Situation | Tool |
-|---|---|
-| General "how does X work" | `search_knowledge` |
-| "What is our policy on Y" | `search_business_answers` |
-| "Find the onboarding PDF content" | `search_documents` |
-| Connector-specific lookup | `search_collection` with `connector_knowledge` |
-| Exploring what's available | `list_collections` |
+| Situation                         | Tool                                           |
+| --------------------------------- | ---------------------------------------------- |
+| General "how does X work"         | `search_knowledge`                             |
+| "What is our policy on Y"         | `search_business_answers`                      |
+| "Find the onboarding PDF content" | `search_documents`                             |
+| Connector-specific lookup         | `search_collection` with `connector_knowledge` |
+| Exploring what's available        | `list_collections`                             |
 
 ## Always filter by tenant when known
 
