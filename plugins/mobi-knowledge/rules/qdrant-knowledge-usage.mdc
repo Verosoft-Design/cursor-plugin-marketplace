@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Mobi Knowledge Base — usage rules
 
-The `qdrant-knowledge` MCP server is available as a tool. Use it whenever you need
+The `Mobi Knowledge Base` MCP server is available as a tool. Use it whenever you need
 information that may live in the organisation's knowledge base, business answers,
 uploaded documents, or connector specifications.
 

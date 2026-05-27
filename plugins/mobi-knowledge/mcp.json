@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "qdrant-knowledge": {
+    "Mobi Knowledge Base": {
       "type": "http",
       "url": "https://verovia.ai/api/mcp-kb/mcp",
       "headers": {

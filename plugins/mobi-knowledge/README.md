@@ -35,7 +35,7 @@ To override credentials locally, use an env var in your user or workspace MCP co
 ```json
 {
   "mcpServers": {
-    "qdrant-knowledge": {
+    "Mobi Knowledge Base": {
       "url": "https://verovia.ai/api/mcp-kb/mcp",
       "headers": {
         "Authorization": "Bearer ${env:MOBI_KNOWLEDGE_MCP_TOKEN}"
