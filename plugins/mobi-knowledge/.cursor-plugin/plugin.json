@@ -6,6 +6,7 @@
   "author": {
     "name": "Alexis Sturgeon"
   },
+  "logo": "assets/icon.png",
   "license": "MIT",
   "rules": "rules",
   "skills": "skills",
