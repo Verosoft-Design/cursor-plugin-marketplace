@@ -1,0 +1,50 @@
+---
+description: When to use the Qdrant knowledge base MCP tools for semantic search
+globs:
+alwaysApply: false
+---
+
+# Qdrant Knowledge Base — usage rules
+
+The `qdrant-knowledge` MCP server is available as a tool. Use it whenever you need
+information that may live in the organisation's knowledge base, business answers,
+uploaded documents, or connector specifications.
+
+## When to search
+
+- A question about a product, process, policy, or internal workflow → `search_knowledge`
+- A question that is likely a pre-answered business FAQ → `search_business_answers`
+- Looking for content from an uploaded file (PDF, Word, Excel) → `search_documents`
+- Anything related to a specific connector or its capabilities → `search_collection` with `connector_knowledge` or `connector_specs`
+- You are unsure which collection holds the answer → call `list_collections` then `search_collection`
+
+## Tool selection guide
+
+| Situation | Tool |
+|---|---|
+| General "how does X work" | `search_knowledge` |
+| "What is our policy on Y" | `search_business_answers` |
+| "Find the onboarding PDF content" | `search_documents` |
+| Connector-specific lookup | `search_collection` with `connector_knowledge` |
+| Exploring what's available | `list_collections` |
+
+## Always filter by tenant when known
+
+If you know the `tenant_id`, always pass it. It dramatically narrows results and
+improves relevance:
+
+```json
+{ "query": "...", "tenant_id": "the-tenant-id" }
+```
+
+## Score threshold
+
+The default is `0.3`. For high-precision answers (e.g. exact policy text), raise it
+to `0.6–0.75`. For broad discovery, leave it at `0.3` or lower.
+
+## Result shape
+
+Each result includes: `id`, `score`, `content`, `title`, `heading`, `chunk_index`,
+`prev_context`, `next_context`, `tenant_id`, `category`, `layer`, `tags`.
+
+Always cite `title` and `heading` when surfacing knowledge to the user.

@@ -1,0 +1,24 @@
+{
+  "name": "qdrant-knowledge",
+  "displayName": "Qdrant Knowledge Base",
+  "version": "1.0.0",
+  "description": "Semantic search over the Verosoft/Mobi Qdrant knowledge base. Gives Cursor and Linear agents access to knowledge_base, business_answers, document_chunks, connector_knowledge, and more via gemini-embedding-2-preview vectors. Supports both local stdio (Cursor desktop) and remote HTTP (Linear cloud agents).",
+  "author": {
+    "name": "Alexis Sturgeon"
+  },
+  "license": "MIT",
+  "rules": "rules",
+  "skills": "skills",
+  "keywords": [
+    "qdrant",
+    "knowledge-base",
+    "semantic-search",
+    "vector-search",
+    "gemini",
+    "embeddings",
+    "mobi",
+    "verovia",
+    "linear",
+    "mcp"
+  ]
+}

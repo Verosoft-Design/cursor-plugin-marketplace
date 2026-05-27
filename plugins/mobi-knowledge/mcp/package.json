@@ -1,0 +1,25 @@
+{
+  "name": "@mobi/mobi-knowledge-mcp",
+  "version": "1.0.0",
+  "description": "MCP server — semantic search over the Qdrant knowledge base via Gemini embeddings",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mobi-knowledge-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
