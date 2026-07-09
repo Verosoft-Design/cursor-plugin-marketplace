@@ -18,6 +18,11 @@
       "source": "plugins/mobi-knowledge",
       "description": "Semantic search over the Verosoft/Mobi Qdrant knowledge base. Gives Cursor and Linear cloud agents access to knowledge_base, business_answers, document_chunks, connector_knowledge, and more via gemini-embedding-2-preview vectors.",
       "logo": "plugins/mobi-knowledge/assets/icon.png"
+    },
+    {
+      "name": "vsd-code-review",
+      "source": "plugins/vsd-code-review",
+      "description": "Verosoft pre-merge review gate: thermo-nuclear structural audit, KISS/YAGNI ponytail pass, Fallow dead-code hygiene, deslop AI-slop audit, and TDD test bar — one shot, report only."
     }
   ]
 }

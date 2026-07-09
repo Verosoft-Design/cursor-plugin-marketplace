@@ -1,0 +1,38 @@
+---
+description: Fallow codebase intelligence — dead code, dupes, deps, architecture. Applies only when Fallow is installed in the workspace; loaded on demand by the vsd-code-review skill.
+alwaysApply: false
+---
+
+# Fallow — Codebase Hygiene
+
+This rule applies **only when Fallow is installed** in the workspace: a `fallow` binary on PATH, a `fallow` devDependency, or a `dead-code:audit` package script. If none of those exist, skip Fallow steps and note that they were skipped — do not install Fallow, and do not substitute knip, jscpd, or parallel dead-code tools.
+
+## When to run
+
+| Situation | Command |
+|-----------|---------|
+| After substantial TS/JS changes | the repo's dead-code audit script (e.g. `bun run dead-code:audit`) or `fallow audit --format json` |
+| Before deleting exports/files | `fallow inspect --symbol <file>:<export>` |
+| Duplication / overlap suspicion | `fallow dupes --trace <file>:<line>` |
+| Full hygiene scan | the repo's full dead-code script (e.g. `bun run dead-code`) |
+| CI regression gate | the repo's dead-code check script (e.g. `bun run dead-code:check`) |
+
+## Agent workflow
+
+1. Edit code
+2. Run the dead-code audit (script or `fallow audit --format json` for structured output)
+3. Fix introduced findings; prefer deletion over suppression
+4. Do not increase the dead-code regression baseline without intentional cleanup
+
+Before merge on substantial bug/feature work, run **`/vsd-code-review`** (this plugin's `skills/vsd-code-review/SKILL.md`) — thermo-nuclear structure audit, KISS/YAGNI pass, Fallow checks, deslop audit, and test bar in one shot. Use `/vsd-code-review rerun` after fixes to score prior blockers. Run **`/deslop`** separately to auto-remove AI slop from the branch diff.
+
+## Config
+
+Project config: `.fallowrc.jsonc`. Baselines live in `regression.baseline` — update only when intentionally paying down debt, never when adding dead code.
+
+## MCP & editor
+
+- MCP: repos may wire `fallow-mcp` into `.cursor/mcp.json` (trace imports, inspect targets, audit JSON)
+- VS Code extension: `fallow-rs.fallow-vscode`
+
+Docs: [docs.fallow.tools](https://docs.fallow.tools) · [github.com/fallow-rs/fallow](https://github.com/fallow-rs/fallow)

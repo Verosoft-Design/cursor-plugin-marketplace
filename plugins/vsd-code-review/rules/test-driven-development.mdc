@@ -1,0 +1,79 @@
+---
+description: Enforce TDD for substantial behavior-changing development. Loaded on demand by the vsd-code-review skill's test bar.
+alwaysApply: false
+---
+
+# Test-Driven Development
+
+Use TDD as the required workflow for substantial behavior-changing development.
+
+Small changes and bug fixes do not require test-first work, but TDD is still recommended for them whenever it is practical.
+
+## Required Test Level
+
+The required default is unit-level or similarly targeted automated testing.
+
+- Prefer unit, helper, hook, component, or narrowly scoped integration tests first
+- Start from the smallest test seam that can prove the behavior
+- Treat page-level and end-to-end tests as optional broader verification unless the user specifically asks for them or an existing workflow already depends on them
+
+E2E coverage is valuable for larger features and critical user workflows, but it is not the default required proof for completing a change. The minimum required testing for substantial behavior changes is still targeted automated coverage driven by TDD.
+
+## Required Workflow
+
+- Start with a failing test that captures the behavior you are adding or changing
+- Run the smallest relevant test command first and confirm the test fails for the expected reason
+- Implement the minimal code needed to make the test pass
+- Re-run the targeted tests, then broaden verification as needed
+- Refactor only after the behavior is protected by passing tests
+
+## When TDD Is Required
+
+- New features
+- Significant changes to business logic, route handlers, server actions, integrations, or data transforms
+- Refactors that could change observable behavior
+- Any substantial change where user-visible behavior, returned data, side effects, or integration output could change
+
+## Recommended But Not Required
+
+TDD is still recommended, but it is not required for the following:
+
+- Small changes
+- Bug fixes
+- Documentation, comments, or rule updates
+- Formatting-only edits
+- Generated files
+- Purely mechanical renames or moves with no behavior change
+- Configuration changes where no meaningful automated test exists
+
+## Codebase Expectations
+
+- Use the existing test patterns already present near the code you are changing
+- Prefer the repo's existing test runner and its most targeted commands first, then broader verification only after the focused tests pass
+- Add or update tests close to the changed feature instead of creating disconnected coverage
+- Prefer unit or component tests over E2E as the first line of protection
+- Do not make substantial behavior changes before a failing test exists unless an explicit exception applies
+- If you skip TDD, be able to point to the exception that applies
+
+## Legacy And Hard-To-Test Code
+
+- If the code is hard to test, improve the seam first instead of skipping tests by default
+- When needed, add characterization tests to lock current behavior before changing it
+- If automated coverage is genuinely impractical, say so explicitly, explain why, and use the smallest safe change with appropriate follow-up notes
+
+## E2E Guidance
+
+Use E2E tests as a higher-level safety net when they add clear value, especially for:
+
+- Large multi-step user workflows
+- Cross-page behavior
+- Browser-specific regressions
+- Critical end-to-end business paths
+
+E2E tests are recommended for those cases, but they do not replace the requirement to start with a smaller TDD seam when one is available.
+
+## Decision Rule
+
+If the change is substantial and could alter user-visible behavior, returned data, side effects, or integration output, TDD is required.
+
+If the work is a small change or a bug fix, TDD remains recommended but is not mandatory.

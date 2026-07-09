@@ -1,0 +1,21 @@
+{
+  "name": "vsd-code-review",
+  "displayName": "VSD Code Review",
+  "version": "1.0.0",
+  "description": "Verosoft pre-merge review: thermo-nuclear structure, KISS/YAGNI, Fallow hygiene, deslop, and TDD bar.",
+  "author": {
+    "name": "Alexis Sturgeon"
+  },
+  "license": "MIT",
+  "rules": "rules",
+  "skills": "skills",
+  "agents": "agents",
+  "keywords": [
+    "code-review",
+    "vsd",
+    "ponytail",
+    "deslop",
+    "fallow",
+    "tdd"
+  ]
+}

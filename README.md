@@ -6,6 +6,7 @@ It currently contains:
 
 - `business-central-al`
 - `mobi-knowledge`
+- `vsd-code-review`
 
 ## Structure
 
@@ -21,12 +22,19 @@ cursor-plugin-marketplace/
     │   ├── rules/
     │   ├── skills/
     │   └── commands/
-    └── mobi-knowledge/
+    ├── mobi-knowledge/
+    │   ├── .cursor-plugin/plugin.json
+    │   ├── README.md
+    │   ├── rules/
+    │   ├── skills/
+    │   └── mcp/              ← deployable Node.js MCP server
+    └── vsd-code-review/
         ├── .cursor-plugin/plugin.json
         ├── README.md
+        ├── LICENSE
+        ├── agents/
         ├── rules/
-        ├── skills/
-        └── mcp/              ← deployable Node.js MCP server
+        └── skills/
 ```
 
 ## Current Plugins
@@ -46,6 +54,14 @@ Semantic search over the Verosoft/Mobi knowledge base. It provides:
 - rules telling agents when and how to call the search MCP tools
 - skills for `search_knowledge`, `search_business_answers`, `search_documents`, and `search_connector_knowledge`
 - a deployable MCP server (`mcp/`) that supports both stdio (local Cursor) and Streamable HTTP (Linear cloud agents)
+
+### `vsd-code-review`
+
+The Verosoft Design pre-merge quality gate, migrated from the Mobi repo. It provides:
+
+- slash-invokable review skills: `/vsd-code-review`, `/deslop`, and the `/ponytail*` family
+- a `thermo-nuclear-code-quality-review` Task subagent plus its strict maintainability rubric
+- soft (`alwaysApply: false`) rules for ponytail (KISS/YAGNI), Fallow hygiene, and TDD that the review loads on demand — Fallow steps skip gracefully when the tooling is absent
 
 ## Publishing And Use
 
