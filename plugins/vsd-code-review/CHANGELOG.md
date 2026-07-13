@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] — 2026-07-13
+
+### Added
+
+- Skill: `pr-logic-walkthrough` — report-only PR business-logic walkthrough with optional Linear requirement traceability (invokable via PR automation or `/pr-logic-walkthrough`).
+
 ## [1.0.0] — 2026-07-09
 
 ### Added

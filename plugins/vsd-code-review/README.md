@@ -1,10 +1,10 @@
 # vsd-code-review
 
-Cursor plugin for the Verosoft Design (VSD) pre-merge quality gate — a one-shot, report-only review that combines a thermo-nuclear structural audit, a KISS/YAGNI pass, Fallow dead-code hygiene, an AI-slop (deslop) audit, and a TDD test bar.
+Cursor plugin for the Verosoft Design (VSD) pre-merge quality gate — a one-shot, report-only review that combines a thermo-nuclear structural audit, a KISS/YAGNI pass, Fallow dead-code hygiene, an AI-slop (deslop) audit, and a TDD test bar. Also includes a report-only PR business-logic walkthrough with optional Linear requirement traceability.
 
 ## What it provides
 
-- **Skills** — slash-invokable review workflows (`/vsd-code-review`, `/deslop`, `/ponytail*`) plus the vendored thermo-nuclear review rubric
+- **Skills** — slash-invokable review workflows (`/vsd-code-review`, `/pr-logic-walkthrough`, `/deslop`, `/ponytail*`) plus the vendored thermo-nuclear review rubric
 - **Agent** — `thermo-nuclear-code-quality-review`, a Task subagent the review skill launches for the structural audit
 - **Rules** — soft (non-always-on) versions of the ponytail (KISS/YAGNI), Fallow hygiene, and test-driven-development guidance the review skill loads on demand
 
@@ -15,6 +15,7 @@ Everything is repo-agnostic. Fallow steps run only when Fallow tooling is presen
 | Skill | Purpose |
 | --- | --- |
 | `vsd-code-review` | Pre-merge gate: thermo-nuclear structure + KISS/YAGNI + Fallow + deslop + test bar (report only). `rerun` argument adds a prior-blockers scorecard. |
+| `pr-logic-walkthrough` | Report-only PR business-logic walkthrough and Linear requirement traceability (when an issue is linked). Not a code-quality review. |
 | `deslop` | Remove AI-generated slop from the branch diff vs main (edits allowed). |
 | `thermo-nuclear-code-quality-review` | The strict maintainability rubric used by the structural audit subagent. |
 | `ponytail` | Switch ponytail intensity level (lite/full/ultra/off). |
@@ -28,6 +29,7 @@ Everything is repo-agnostic. Fallow steps run only when Fallow tooling is presen
 
 - `/vsd-code-review` — review uncommitted + staged changes (or say "branch" / name a base for a branch diff)
 - `/vsd-code-review rerun` — same review with a Fixed/Partial/Remaining scorecard against the previous review in the thread
+- `/pr-logic-walkthrough` — explain changed business processes from a PR diff (with Linear traceability when linked)
 - `/deslop` — auto-remove AI slop from the branch diff vs main
 - `/ponytail-review` — quick KISS/YAGNI-only pass on current changes
 
@@ -37,5 +39,6 @@ Install from this marketplace repository (import the repo URL in Cursor, then in
 
 ## Notes
 
-- The review is report-only: it never edits code, commits, or fixes findings unless explicitly asked afterwards. `/deslop` is the edit-allowed companion.
+- The VSD review and `/pr-logic-walkthrough` are report-only: they never edit code, commits, or fix findings unless explicitly asked afterwards. `/deslop` is the edit-allowed companion.
+- `/pr-logic-walkthrough` covers business intent and requirement traceability only; style, security, maintainability, and test-quality judgments belong to `/vsd-code-review`.
 - The bundled rules ship with `alwaysApply: false`; they inform the review without injecting themselves into every conversation. Repos that want the always-on behavior can copy them into their own `.cursor/rules/` with `alwaysApply: true`.
