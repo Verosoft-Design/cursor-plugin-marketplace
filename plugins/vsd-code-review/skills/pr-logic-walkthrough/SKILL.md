@@ -42,35 +42,22 @@ Use repo-relative paths with line numbers for every material claim, rule, and re
 
 Prefer the concrete implementation site over a filename alone (`route.ts:152-160`, not just `route.ts`). Diff hunks may supplement citations but do not replace them. If a claim cannot be pinned to a path and line, label it **inference** and say why.
 
-## Walkthrough method
-
-For each meaningful scenario, describe the process in business language:
-
-`actor or trigger → authorization/input → reads and writes → rules and branches → side effects → observable result`
-
-Include both successful and material alternate or failure paths exposed by the change. Identify unchanged dependencies only when they are necessary to understand the changed outcome. Do not speculate about paths that the diff and direct call chain do not support.
-
 ## Required report
 
 Use exactly these sections, in this order:
 
-## Business intent
+## Summary
 
-State the likely business outcome, evidence citations, and any uncertainty.
+In concise business language, explain:
 
-## Changed process map
+- what the change adds or removes
+- how the application's observable behavior changes
+- the main successful flow and any material branch or failure behavior
+- important boundaries or uncertainty
 
-Map each changed end-to-end process with the walkthrough method. Cite `path:line` for each stage (actor/trigger, auth/input, reads/writes, branches, side effects, result).
+Synthesize the end-to-end behavior instead of listing files or narrating every implementation step. Use `path:line` citations for material claims. Label unsupported conclusions **inference**.
 
-## Scenario walkthroughs
-
-Explain representative success, branch, validation, authorization, and asynchronous/integration scenarios affected by the PR. End each scenario with evidence citations.
-
-## Rules and invariants
-
-List business rules, data constraints, permissions, validation conditions, idempotency or state-transition expectations, and observable side effects. Each item needs a `path:line` citation, or must be marked **inference**.
-
-## Requirement traceability (implemented/partial/absent/unverifiable)
+## Requirements vs code
 
 When Linear was found and read, begin with `Linear issue: <key> — <title>`. Map every stated requirement to its status and source evidence. Give each requirement one status:
 
@@ -79,11 +66,16 @@ When Linear was found and read, begin with `Linear issue: <key> — <title>`. Ma
 - **absent** — changed path does not implement it
 - **unverifiable** — evidence is insufficient
 
-Evidence cells must use `path:line` citations (or state why none exist). If no issue is linked, or lookup is unavailable, say `Traceability unavailable: no readable Linear issue was provided.` Do not infer requirements from the PR title alone.
+Use a compact matrix with exactly these columns:
 
-## Reviewer decisions
+| Linear requirement | Status | Code behavior and evidence |
+| ------------------ | ------ | -------------------------- |
 
-State the business decisions a reviewer should confirm, including deliberately retained branches, ownership/permission assumptions, data effects, and integration outcomes. These are questions for product or domain review, not quality verdicts.
+Keep one row per distinct Linear requirement. Evidence cells must explain what the code does and include `path:line` citations, or state why verification is unavailable. If no issue is linked or readable, say `Traceability unavailable: no readable Linear issue was provided.` Do not infer requirements from the PR title alone.
+
+## Review decisions
+
+Make this the most useful and focused section. List only concrete business or product decisions that a reviewer can act on, such as scope boundaries, permission assumptions, data effects, state transitions, and integration outcomes. Do not repeat settled behavior from the Summary or manufacture questions merely to populate the section.
 
 Every decision must include:
 
@@ -94,10 +86,6 @@ Every decision must include:
 Do not list a decision without citations. Example shape:
 
 `Confirm operators should be able to print with attachments — button roles include operator (`components/.../toolbar-buttons.tsx:9`).`
-
-## Out of scope pointing to VSD
-
-State that code style, security, maintainability, architecture, dead code, duplication, and test-quality judgments are out of scope and belong to VSD review.
 
 ## Boundaries
 
@@ -112,8 +100,10 @@ State that code style, security, maintainability, architecture, dead code, dupli
 Before returning the report, verify:
 
 - Every material business claim has a `path:line` citation or is explicitly labeled **inference**.
-- Every Reviewer decision includes `path:line` evidence for the code that raises the question.
-- The direct path covers applicable entry point, authorization/input, data effects, rules, side effects, and result.
+- The report contains exactly Summary, Requirements vs code, and Review decisions, in that order.
+- The Summary explains changed app behavior rather than enumerating implementation details.
+- Every Review decision is actionable and includes `path:line` evidence for the code that raises the question.
+- Every readable Linear requirement appears once in the matrix.
 - Linear was read only through `get_issue` with an ID/key, or traceability is clearly unavailable.
 - Documentation context did not override source code, and contradictions are flagged.
 - No mutation, VSD concern, or quality verdict appears in the report.
