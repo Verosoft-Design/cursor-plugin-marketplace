@@ -1,11 +1,11 @@
 ---
-name: pr-logic-walkthrough
+name: vsd-logic-review
 description: Produces a report-only PR business-logic walkthrough and requirement traceability when a Linear issue is linked. Use when explicitly invoked by PR automation or manually to explain changed business processes from a PR diff, base, title, and body.
 disable-model-invocation: true
 user-invokable: true
 ---
 
-# PR Logic Walkthrough
+# VSD Logic Review
 
 Produce a read-only explanation of the business behavior changed by a pull request. This is not a code-quality review and must not modify files, the PR, Linear, or any other system.
 

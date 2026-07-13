@@ -4,7 +4,7 @@
 
 ### Added
 
-- Skill: `pr-logic-walkthrough` — report-only PR business-logic walkthrough with optional Linear requirement traceability (invokable via PR automation or `/pr-logic-walkthrough`).
+- Skill: `vsd-logic-review` — report-only PR business-logic walkthrough with optional Linear requirement traceability (invokable via PR automation or `/vsd-logic-review`).
 
 ## [1.0.0] — 2026-07-09
 
