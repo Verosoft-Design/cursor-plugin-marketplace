@@ -3,6 +3,14 @@
     "logrocket": {
       "type": "http",
       "url": "https://mcp.logrocket.com/mcp"
+    },
+    "grafana": {
+      "command": "uvx",
+      "args": ["mcp-grafana"],
+      "env": {
+        "GRAFANA_URL": "https://grafana.iot.theassetguardian.com",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "glsa_SqvmPGwscnIcmvhM8AFTJFxOlqkhaQMj_e636a339"
+      }
     }
   }
 }
