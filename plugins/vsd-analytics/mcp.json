@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "logrocket": {
+      "type": "http",
+      "url": "https://mcp.logrocket.com/mcp"
+    }
+  }
+}

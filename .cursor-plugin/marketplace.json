@@ -23,6 +23,11 @@
       "name": "vsd-code-review",
       "source": "plugins/vsd-code-review",
       "description": "Verosoft pre-merge review gate: thermo-nuclear structural audit, KISS/YAGNI ponytail pass, Fallow dead-code hygiene, deslop AI-slop audit, and TDD test bar — one shot, report only."
+    },
+    {
+      "name": "vsd-analytics",
+      "source": "plugins/vsd-analytics",
+      "description": "Verosoft analytics — LogRocket MCP for session replay and product analytics investigation."
     }
   ]
 }
