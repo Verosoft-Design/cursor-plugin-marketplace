@@ -30,7 +30,17 @@ Never write to Linear. A missing, inaccessible, or unlinked Linear issue must no
    - jobs, events, queues, and integrations
    - focused tests that demonstrate the path
 4. Consult `packages/knowledge-base/bc/business-logic/INDEX.md` and `PROCESS-FLOWS.md` only when they add relevant TAG/Business Central domain context. Source code is authoritative. Call out any documentation contradiction without resolving it by assumption.
-5. Cite evidence for every material claim using file paths and line ranges (and relevant diff hunks when useful). Separate evidence from inference.
+5. Cite evidence for every material claim. Separate evidence from inference.
+
+## Evidence citations
+
+Use repo-relative paths with line numbers for every material claim, rule, and reviewer decision:
+
+- Single line: `path/to/file.ts:42`
+- Inclusive range: `path/to/file.ts:42-58`
+- Multiple locations: list each citation; do not collapse unrelated files into one vague pointer
+
+Prefer the concrete implementation site over a filename alone (`route.ts:152-160`, not just `route.ts`). Diff hunks may supplement citations but do not replace them. If a claim cannot be pinned to a path and line, label it **inference** and say why.
 
 ## Walkthrough method
 
@@ -46,19 +56,19 @@ Use exactly these sections, in this order:
 
 ## Business intent
 
-State the likely business outcome, evidence, and any uncertainty.
+State the likely business outcome, evidence citations, and any uncertainty.
 
 ## Changed process map
 
-Map each changed end-to-end process with the walkthrough method. Cite the units that implement each stage.
+Map each changed end-to-end process with the walkthrough method. Cite `path:line` for each stage (actor/trigger, auth/input, reads/writes, branches, side effects, result).
 
 ## Scenario walkthroughs
 
-Explain representative success, branch, validation, authorization, and asynchronous/integration scenarios affected by the PR.
+Explain representative success, branch, validation, authorization, and asynchronous/integration scenarios affected by the PR. End each scenario with evidence citations.
 
 ## Rules and invariants
 
-List business rules, data constraints, permissions, validation conditions, idempotency or state-transition expectations, and observable side effects. Mark inferred rules as inference.
+List business rules, data constraints, permissions, validation conditions, idempotency or state-transition expectations, and observable side effects. Each item needs a `path:line` citation, or must be marked **inference**.
 
 ## Requirement traceability (implemented/partial/absent/unverifiable)
 
@@ -69,11 +79,21 @@ When Linear was found and read, begin with `Linear issue: <key> — <title>`. Ma
 - **absent** — changed path does not implement it
 - **unverifiable** — evidence is insufficient
 
-If no issue is linked, or lookup is unavailable, say `Traceability unavailable: no readable Linear issue was provided.` Do not infer requirements from the PR title alone.
+Evidence cells must use `path:line` citations (or state why none exist). If no issue is linked, or lookup is unavailable, say `Traceability unavailable: no readable Linear issue was provided.` Do not infer requirements from the PR title alone.
 
 ## Reviewer decisions
 
 State the business decisions a reviewer should confirm, including deliberately retained branches, ownership/permission assumptions, data effects, and integration outcomes. These are questions for product or domain review, not quality verdicts.
+
+Every decision must include:
+
+1. The decision question (what to confirm)
+2. Why the PR raises it (one short clause)
+3. Evidence: `path:line` citations for the code that creates the ambiguity or choice
+
+Do not list a decision without citations. Example shape:
+
+`Confirm operators should be able to print with attachments — button roles include operator (`components/.../toolbar-buttons.tsx:9`).`
 
 ## Out of scope pointing to VSD
 
@@ -85,12 +105,14 @@ State that code style, security, maintainability, architecture, dead code, dupli
 - Do not run or modify VSD, add scripts, install dependencies, write comments, update Linear, or alter the PR.
 - Do not turn missing tests into a quality finding; use focused tests only as behavioral evidence.
 - Do not claim a requirement is implemented without source evidence.
+- Do not omit `path:line` citations on material claims or reviewer decisions.
 
 ## Self-check
 
 Before returning the report, verify:
 
-- Every material business claim has code evidence or is explicitly labeled inference.
+- Every material business claim has a `path:line` citation or is explicitly labeled **inference**.
+- Every Reviewer decision includes `path:line` evidence for the code that raises the question.
 - The direct path covers applicable entry point, authorization/input, data effects, rules, side effects, and result.
 - Linear was read only through `get_issue` with an ID/key, or traceability is clearly unavailable.
 - Documentation context did not override source code, and contradictions are flagged.
