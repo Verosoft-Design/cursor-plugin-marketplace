@@ -50,19 +50,18 @@ else:
         "Run /al-setup for guided installation."
     )
 
-# Model recommendation backed by microsoft/BC-Bench measurements
-# (101 tasks, 5 runs each):
-#   bug-fix winners:        claude-opus-4-7 67.9%, claude-sonnet-4-6 67.3%,
-#                           claude-opus-4-6 + AL MCP 71.3%
-#   test-generation winner: claude-opus-4-7 54.3%, with ALTest agent:
-#                           claude-opus-4-6 62.4% (+10.7 pt)
-#   speed pick:             gpt-5-3-codex 55.8% bug-fix at ~107s/task (~3x faster)
-#   AVOID for AL:           gpt-4-1 16.6% — effectively unusable on AL
+# Model recommendation backed by microsoft/BC-Bench (101 tasks x 5 runs; leaderboard at 7c98b750, Oct 2026):
+#   bug-fix:   gpt-5-6-sol 71.7% (Sep), claude-opus-4-6 + AL MCP 71.3% (Apr), claude-opus-4-8 68.3% (Jun);
+#              the AL MCP is the only tooling lever with a measured bug-fix gain.
+#   test-gen:  claude-opus-4-6 + ALTest 62.4% (Apr), claude-opus-4-8 without ALTest 60.8% (Jun).
+#   code review: BCApps review instructions add ~+20 F1 for every model measured.
+#   failure analysis: ~48% of failed bug fixes edited the wrong file/region; only ~6% failed to build.
 model_line = (
-    "Per microsoft/BC-Bench measurements, the recommended models for AL are "
-    "Claude Opus 4.7 (highest accuracy) or Claude Sonnet 4.6 (best cost/quality "
-    "tradeoff). gpt-5.3-codex is the fast option (~3x faster, ~56% bug-fix). "
-    "Avoid gpt-4.1 for AL — measured at 16.6% on AL tasks."
+    "Per microsoft/BC-Bench (Oct 2026), top AL models are within a few points of each other "
+    "(gpt-5.6 and Claude Opus 4.x around 68-72% on bug-fix); the measured levers are the AL MCP "
+    "(bug-fix), the ALTest prompt via /al-write-test (test generation) and the BCApps review "
+    "instructions via /bcq-review (~+20 F1 on code review). About half of failed fixes edit the "
+    "wrong place: trace the call path (al_symbolsearch, /al-call-graph) and write a failing test first."
 )
 
 context = "\n".join([
@@ -75,8 +74,10 @@ context = "\n".join([
     "- Use BCApps test conventions (Library Assert codeunit 130002, "
     "EventSubscriberInstance = Manual, [TransactionModel] matching Commit behavior, "
     "Given/When/Then comments).",
-    "- For full review, invoke /bcq-review (composes 6 BCQuality leaf reviews + "
+    "- For full review, invoke /bcq-review (composes 19 BCQuality domain reviews + "
     "agent self-review).",
+    "- New object IDs: al_getnextobjectid. Tests on a real server: /al-run-tests (al runtests). "
+    "Live failures: /al-snapshot-debug. Slowness: /al-profile.",
     "- For test generation, invoke /al-write-test (wraps the BC-Bench ALTest "
     "domain-agent prompt, measured +10.7 pt on test-gen).",
     "- Be explicit when tests cannot be executed in the current session.",

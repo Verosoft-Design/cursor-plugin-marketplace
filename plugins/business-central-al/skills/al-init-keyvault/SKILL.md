@@ -26,7 +26,7 @@ Best for production. No client secret to rotate.
    - Or RBAC: assign `Key Vault Secrets User` to the MI on the KV's resource group.
 3. Create a federated credential on the MI pointing at the GitHub repo:
    - Issuer: `https://token.actions.githubusercontent.com`
-   - Subject: `repo:<owner>/<repo>:ref:refs/heads/main` (adjust ref pattern per env)
+   - Subject: `repo:<owner>/<repo>:ref:refs/heads/main` for branch-triggered jobs; jobs that run in a GitHub environment (AL-Go Deploy jobs) present `repo:<owner>/<repo>:environment:<EnvName>`, so add one credential per environment as well
    - Audience: `api://AzureADTokenExchange`
 4. Mint the `Azure_Credentials` JSON:
 
@@ -77,7 +77,12 @@ az keyvault secret set --vault-name <kv name> --name <SecretName> --value "<valu
 
 3. Delete from GitHub: `gh secret delete <SecretName>`.
 
-If the secret name in KV differs from the AL-Go default name (e.g. KV won't allow names with capital letters in some configs), set the `<secret>SecretName` indirection in `.AL-Go/settings.json`. The full list:
+Key Vault secret names allow only letters, digits and `-`. AL-Go skips any lookup name that contains `_` (with a warning in the log), so:
+
+- Store per-environment deploy credentials as `<EnvName>-AuthContext`, not `<EnvName>_AuthContext`. AL-Go v10.0 checks `<EnvName>-AuthContext` first, then `<EnvName>_AuthContext`, then `AuthContext`; if the per-environment name is not found it **silently falls back** to the generic `AuthContext`, which in a multi-tenant repo means deploying with the wrong credentials.
+- If the environment name itself contains `_`, the dash form still contains `_` and is skipped too; rename the environment or use a secret-name mapping.
+
+If the secret name in KV differs from the AL-Go default name, set the `<secret>SecretName` indirection in `.AL-Go/settings.json`. The full list:
 
 - `licenseFileUrlSecretName` (default `LicenseFileUrl`)
 - `ghTokenWorkflowSecretName` (default `GhTokenWorkflow`)
@@ -85,6 +90,7 @@ If the secret name in KV differs from the AL-Go default name (e.g. KV won't allo
 - `codeSignCertificateUrlSecretName` (default `CodeSignCertificateUrl`)
 - `codeSignCertificatePasswordSecretName` (default `CodeSignCertificatePassword`)
 - `storageContextSecretName` (default `StorageContext`)
+- `appSourceContextSecretName` (default `AppSourceContext`)
 - `applicationInsightsConnectionStringSecretName` (default `applicationInsightsConnectionString`)
 
 ## KV-based codesigning (new path)
@@ -127,5 +133,6 @@ After wiring, run `/al-troubleshoot` to confirm `Azure_Credentials` is visible t
 ## Failure modes
 
 - "Cannot find secret in vault" — name mismatch between AL-Go expectation and KV. Either rename in KV or set the corresponding `*SecretName` setting.
+- Warning that a secret name containing `_` was skipped — expected for `<EnvName>_AuthContext`; store `<EnvName>-AuthContext` in the vault instead.
 - "Forbidden" on KV access — RBAC role not granted; OR access policy missing the MI/app reg.
 - "AADSTS70021: No matching federated identity record found" — federated credential subject pattern doesn't match the workflow's GitHub OIDC token. Verify the `repo:<owner>/<repo>:ref:refs/heads/<branch>` shape exactly.

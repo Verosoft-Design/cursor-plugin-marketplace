@@ -1,51 +1,34 @@
 ---
 name: al-upgrade-review
-description: Review AL schema, upgrade codeunit, and migration changes using BCQuality's curated upgrade knowledge plus BCApps' MIT-licensed upgrade review prompt. Detects enum-ordinal shifts (blocker), missing obsoletion staging, hand-rolled DataVersion checks instead of Upgrade Tags, InitValue on existing tables without backfill, external HTTP in upgrade codeunits, and other BC-specific upgrade footguns. Returns not-applicable when the diff touches no upgrade/schema/enum surface.
+description: Review AL upgrade and install code using BCQuality's upgrade knowledge, covering upgrade codeunits, upgrade tags, data migration and transfer patterns, and what upgrade code must not do (for example ChangeCompany).
 ---
 
-# AL Upgrade Review (leaf)
+# AL Upgrade review (leaf)
 
-This skill is the Cursor adapter for BCQuality's `al-upgrade-review` leaf skill.
+Cursor adapter for BCQuality's `al-upgrade-review` leaf action skill (`microsoft/skills/review/al-upgrade-review.md`). It is one of the 19 leaves composed by `al-code-review`; Entry dispatches it on its own when the goal names this concern. This adapter holds no review policy; the vendored upstream skill is authoritative.
 
-## Authoritative spec
+## BCQuality root
 
-Read `<plugin>/content/bcquality/microsoft/skills/review/al-upgrade-review.md` in full. It declares the canonical Source → Relevance → Worklist → Action pattern for the upgrade domain.
+`BCQ` = `<plugin>/content/bcquality`, a mirror of the microsoft/BCQuality repo at the SHA pinned in `content/PINNED.json`. Resolve every repo-relative path the upstream files name (`skills/read.md`, `tools/...`, `knowledge-index.json`, `microsoft/knowledge/...`) against `BCQ`, never against the user's project.
 
-Also read `<plugin>/content/bcapps-review-prompts/upgrade.md` — the MIT-licensed BCApps AI review prompt for upgrade scenarios (~22 KB). Both feed the worklist.
+## Execute
 
-## Apply contract rules
+1. Read `BCQ/microsoft/skills/review/al-upgrade-review.md` in full and follow its Source, Relevance, Worklist, Action and Output steps exactly.
+2. Read `BCQ/skills/read.md` and `BCQ/skills/do.md` on demand (summaries: the `bcquality-read-contract` rule, the `bcquality-do-contract` rule).
+3. Inputs: `pr-diff`, `file-path`, or `folder-path`, carrying the actual diff or path. For `folder-path`, enumerate every relevant file under the folder; a folder has no baseline, so comparison-only rules do not apply.
+4. Knowledge: the `upgrade` domain across all enabled layers: `BCQ/microsoft/knowledge/upgrade/`, `BCQ/community/knowledge/upgrade/`, `BCQ/custom/knowledge/upgrade/` (custom wins conflicts). Use READ's bounded retrieval (`pwsh BCQ/tools/Search-Knowledge.ps1` / `Get-KnowledgeArticles.ps1` over `BCQ/knowledge-index.json`) when `pwsh` and the index exist. Otherwise use READ's fallback: list the domain folders and read every selected article in full. A retrieval failure is never an empty result.
+5. Where the AL MCP tools are available, use them per the `al-mcp-usage` rule to confirm symbols before reporting.
 
-Load `bcquality-do-contract`, `bcquality-read-contract`, and `al-mcp-usage`.
-
-## Source
-
-Read every knowledge file under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/upgrade/*.md`. Today:
-
-- 18+ files under `microsoft/knowledge/upgrade/`. Canonical examples: `enum-values-additive-at-end.md`, `use-upgrade-tags-not-version-checks.md`, `obsoletion-requires-reason-and-tag.md`, `initvalue-does-not-update-existing-rows.md`, `datatransfer-skips-triggers-and-subscribers.md`, `breaking-changes-only-on-tables-without-data.md`.
-- Custom-layer: `tag-clean-version-preprocessor.md` (TAG-specific CLEAN preprocessor pattern).
-
-## Relevance
-
-Filter by frontmatter per the READ contract.
-
-**Important narrowing**: the upgrade skill returns `outcome: "not-applicable"` when the diff touches NO upgrade, install, schema, or enum surface. Decide this in the Worklist step before evaluating any files.
-
-## Worklist signal tokens (from upstream skill, verbatim)
-
-`Subtype = Upgrade`, `Upgrade Tag`, `HasUpgradeTag`, `SetUpgradeTag`, `OnValidateUpgrade`, `DataTransfer`, `CopyFields`, `InitValue`, `ObsoleteState`, `ObsoleteReason`, `ObsoleteTag`, `DataVersion`, `ExecutionContext`, `PrimaryKey`, `key(`, `field(`, `value(`, `enum`, `enumextension`, `HybridSL`, `HybridGP`, `HybridBC`, `HybridBaseDeployment`.
-
-Weight toward codeunits with `Subtype = Upgrade` or `Install`, tables and tableextensions adding/changing fields, enums and enumextensions, `Hybrid*`/`Migration`/`Upgrade` namespaces, and the upgrade trigger family (`OnUpgradePerCompany`, `OnUpgradePerDatabase`, `OnValidateUpgradePerCompany`, `OnValidateUpgradePerDatabase`, `OnInstallAppPerCompany`, `OnGetPerCompanyUpgradeTags`, `OnGetPerDatabaseUpgradeTags`).
-
-Resolve layer precedence; suppressed files go into `suppressed[]`.
-
-## Action
-
-`blocker` is broader here than in other leaves — it covers irreversible data corruption (enum-ordinal shift, unguarded reads that abort the upgrade) and changes that would ship to customers without a migration path (new `InitValue` on an existing table without upgrade code).
-
-`major` for changes that compile and ship but break customer data integrity at runtime.
-
-`minor` for style issues inside upgrade code that aren't dangerous (e.g. duplicated tag logic).
+Also read `<plugin>/content/bcapps-review-prompts/upgrade.md` — the MIT-licensed BCApps AI review prompt for upgrade scenarios (~22 KB). Both feed the worklist. The prompt is frozen at BCApps `7040033d` (upstream deleted it when its PR reviewer switched to BCQuality), so BCQuality wins on conflict.
 
 ## Output
 
-Single JSON document conforming to the DO output contract. When the diff has no upgrade-relevant changes, return `outcome: "not-applicable"` with `outcome-reason` naming what was checked.
+One strict-JSON findings report per DO, `skill.id: "al-upgrade-review"`:
+
+- Every finding sets `domain: "Upgrade"`.
+- A knowledge-backed finding has `id` equal to `references[0].path`, the exact path relative to `BCQ` (for example `microsoft/knowledge/upgrade/<slug>.md`), and cites only articles opened in full. `references[].sha` is the pinned `bcquality.ref`; omit it for `custom/` articles.
+- An agent finding has `references: []` and an id of the form `agent:<slug>`. It stays within this domain and is capped at `severity: minor` and `confidence: medium`.
+- Locations use 1-based line numbers in the final file. Mechanical fixes carry `suggested-code`, or else `suggested-code-omission-reason`.
+- `completed` with no findings means nothing was flagged. `not-applicable` and `no-knowledge` are different outcomes. `partial` and `failed` are not clean results.
+
+Render for chat with `bash <plugin>/scripts/render-findings.sh` and give each `location.file:line` as a clickable reference. User command: `/bcq-review-upgrade`.

@@ -1,40 +1,31 @@
 ---
 name: bcq-review-privacy
-description: Run only the AL privacy review (skip the other 5 leaves and the super-skill self-review). Use when the user specifically wants privacy feedback — typically when adding new PII-bearing fields, changing telemetry, or auditing DataClassification.
+description: Run only the BCQuality Privacy review (al-privacy-review) on AL code, covering DataClassification on tables and fields, personal data in telemetry and error text, and retention policies. The other 18 leaves and the `al-code-review` self-review pass are skipped. Use when the user specifically wants privacy feedback on a diff, a file, or an app folder.
 disable-model-invocation: true
 ---
 
-# Targeted: privacy review
+# Targeted: Privacy review
 
-Dispatches `al-entry` with a goal explicitly naming "privacy". Entry's `narrower-sub-skill-selected` precedence selects `al-privacy-review`.
+Runs the `al-entry` skill with a goal that names privacy explicitly, so Entry's super-skill precedence drops `al-code-review` (`narrower-sub-skill-selected`) and dispatches the `al-privacy-review` leaf alone. The other 18 leaves and the `al-code-review` self-review pass are skipped.
 
 ## Inputs
 
-PR diff, file path, or object list. Note: the privacy leaf explicitly EXCLUDES test code, test libraries, and `Subtype = Test` objects (test data is synthetic).
+Pass whatever the user supplies: a PR or working-tree diff (`pr-diff`), one file (`file-path`), or an app folder (`folder-path`). Every relevant file under the folder is reviewed.
+
+## What runs
+
+- The `al-privacy-review` adapter skill, which follows `<plugin>/content/bcquality/microsoft/skills/review/al-privacy-review.md` (authoritative).
+- Knowledge under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/privacy/`.
+- `<plugin>/content/bcapps-review-prompts/privacy.md` (frozen at BCApps `7040033d`: upstream deleted these prompts in favour of BCQuality, so treat them as supplementary and let BCQuality win on conflict).
 
 ## Output
 
-A single JSON document per the DO contract from `al-privacy-review` only.
+One findings-report JSON per the DO contract, with `skill.id: "al-privacy-review"`. Every finding carries `domain: "Privacy"`. `completed` with no findings means nothing was flagged; `partial` or `failed` is not a clean result. Render with `bash <plugin>/scripts/render-findings.sh` and give each `location.file:line` as a clickable reference.
 
-The leaf reads:
+## When to prefer this over `/bcq-review`
 
-- `<plugin>/content/bcquality/microsoft/skills/review/al-privacy-review.md` (authoritative spec).
-- Knowledge files under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/privacy/`.
-- `<plugin>/content/bcapps-review-prompts/privacy.md`.
+- Tables or table extensions with new fields were added.
+- Telemetry or error messages may carry customer data.
+- Retention policies or personal-data handling changed.
 
-## When to prefer this
-
-- Adding new fields to tables that might carry PII.
-- Changing telemetry — `Session.LogMessage` and `FeatureTelemetry` calls.
-- Reviewing error-handling code for `StrSubstNo`-wrapping that defeats PII stripping.
-- Auditing `DataClassification` choices on a recently-added table.
-
-## Important: anti-false-positive articles
-
-The privacy domain has several articles specifically to PREVENT over-flagging:
-
-- `data-classification-is-table-field-property.md` — page fields do NOT need DataClassification.
-- `in-memory-data-not-a-privacy-concern.md` — temp tables, dictionaries, lists do not need classification.
-- `page-display-is-not-a-privacy-concern.md` — displaying data on a page is NOT a privacy violation by itself.
-
-When the diff appears to trigger one of these, the leaf should emit an `info`-severity reminder citing the relevant article rather than a spurious finding.
+When the user does not name a specific concern, use `/bcq-review`. Its cross-domain self-review catches issues a single leaf cannot.

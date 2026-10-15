@@ -52,11 +52,19 @@ gh secret set GhTokenWorkflow --body "$(pbpaste)"
 
 **Alternative: PAT** (fine-grained preferred). Permissions: same as the GitHub App above. Set as `gh secret set GhTokenWorkflow --body "<token>"`.
 
-### `AuthContext` / `<EnvName>_AuthContext` — needed for Publish To Environment
+### `AuthContext` / `<EnvName>-AuthContext` / `<EnvName>_AuthContext` — needed for Publish To Environment and CI/CD deployment
 
-Two flavors:
+AL-Go (v10.0) looks these names up **in order** and uses the first that has a value: `<EnvName>-AuthContext`, `<EnvName>_AuthContext`, `AuthContext`. A GitHub environment secret named `AuthContext` on the environment also works. If a per-environment secret is missing, AL-Go silently falls back to the generic `AuthContext`, so in multi-tenant repos create one per environment.
 
-**S2S (recommended for production / automation)** — requires an Entra app registered against the BC tenant per `https://go.microsoft.com/fwlink/?linkid=2217415`. Then:
+Three flavors:
+
+**S2S with federated credential (recommended, no secret to rotate)** — register the Entra app in Business Central (permissions D365 AUTOMATION and EXTEN. MGT. - ADMIN), then add a federated credential for the GitHub repo (and branch/environment) under the app registration's Certificates & secrets. The secret holds no credential:
+
+```powershell
+@{ tenantId = '<tenant id>'; clientId = '<client id>'; scopes = 'https://api.businesscentral.dynamics.com/' } | ConvertTo-Json -Compress | Set-Clipboard
+```
+
+**S2S with client secret** — requires an Entra app registered against the BC tenant per `https://go.microsoft.com/fwlink/?linkid=2217415`. Then:
 
 ```powershell
 $ac = New-BcAuthContext -tenantID '<tenant id>' -clientID '<client id>' -clientSecret '<secret>' -scopes 'https://api.businesscentral.dynamics.com/.default'
@@ -72,12 +80,16 @@ New-ALGoAuthContext -bcAuthContext $ac | Set-Clipboard
 
 Then for the secret target:
 
-- Repo-wide: `gh secret set AuthContext --body "$(pbpaste)"`
-- Env-scoped: `gh secret set <EnvName>_AuthContext --body "$(pbpaste)" --env <EnvName>`
+- Repo-wide fallback: `gh secret set AuthContext --body "$(pbpaste)"`
+- Per environment as a repo secret: `gh secret set "<EnvName>-AuthContext" --body "$(pbpaste)"` (the dash form; `<EnvName>_AuthContext` also works in GitHub secrets)
+- As a GitHub environment secret: `gh secret set AuthContext --body "$(pbpaste)" --env <EnvName>`
+- In Azure Key Vault: use `<EnvName>-AuthContext`. Key Vault skips any name containing `_` (with a warning), so the underscore form is never found there; if the environment name itself contains `_`, map the secret name instead.
 
 ### `AppSourceContext` — needed for Publish To AppSource
 
-S2S against Partner Center API. Requires registering an Entra app and adding it as a Partner Center API user (Microsoft Learn: "Manage your accounts, users, and subscriptions in Partner Center").
+S2S against Partner Center API (managed identities are not supported). Requires registering an Entra app and adding it as a Partner Center API user (Microsoft Learn: "Manage your accounts, users, and subscriptions in Partner Center").
+
+With a federated credential for the repo on the app registration (recommended), the secret is just `{"clientId":"<client id>","tenantId":"<tenant id>","scopes":"https://api.partner.microsoft.com/.default"}`. With a client secret:
 
 ```powershell
 $ac = New-BcAuthContext -tenantID '<tenant id>' -clientID '<client id>' -clientSecret '<secret>' -scopes 'https://api.partner.microsoft.com/.default'
@@ -175,5 +187,9 @@ Once the user has more than 2–3 secrets, consider migrating them to Azure Key 
 ## When to re-run
 
 - A workflow fails with an auth error → the secret is missing or expired. For refresh-token-based secrets (impersonation `AuthContext`, `AdminCenterApiCredentials`), re-mint roughly every 90 days.
-- A new env is added → mint a new `<EnvName>_AuthContext`.
+- A new env is added → mint a new `<EnvName>-AuthContext` (or `<EnvName>_AuthContext` when not using Key Vault).
+
+## Protect what can read delivery secrets
+
+`AppSourceContext`, `NuGetContext`, `StorageContext`, `GitHubPackagesContext` and custom `<Target>Context` secrets are read by AL-Go Deliver jobs, which run without a GitHub environment gate. Recommend that the user protects every branch listed in `deliverToAppSource.branches` / `DeliverTo<Target>.Branches` (require PRs, reviews and a passing AL-Go build; no bypass), prefers repo secrets over org secrets when only one repo publishes, and uses federated credentials where possible.
 - The first time a new delivery target is wired → mint the corresponding `<Target>Context`.

@@ -6,7 +6,7 @@ globs: **/*.al
 
 # AL Naming and File Conventions
 
-These are the conventions Microsoft uses for the System Application and Business Foundation modules in `microsoft/BCApps`. Apply them by default. Repo-specific deviations (e.g. TAG's `[ObjectType] [ObjectID] - TAG [Name].al` filename pattern) live in the consuming repo's own `.cursor/rules/` and override these via Cursor's normal rule precedence.
+These are the conventions Microsoft uses for the System Application and Business Foundation modules in `microsoft/BCApps`. Apply them by default. Repo-specific deviations (e.g. TAG's `[ObjectType] [ObjectID] - TAG [Name].al` filename pattern) live in the consuming repo's own own `.cursor/rules/` and override these via Cursor's normal rule precedence.
 
 ## Identifiers
 
@@ -50,13 +50,13 @@ The namespace tree groups related modules. Use a stable root (e.g. `<Publisher>.
 
 ## Record variable naming
 
-Prefix record variables with a short identifier that signals the table:
+Name record variables and parameters after the table, PascalCase with spaces and punctuation removed, no abbreviation (BCApps `.github/skills/bc-extrequest-implement/guidelines.md`):
 
-- `CustRec` for `Record Customer`
-- `ItemRec` for `Record Item`
-- `EmailMessage` for `Record "Email Message"` (drop the `Rec` suffix when the table name already reads as an entity)
+- `Customer` for `Record Customer`, `SalesHeader` for `Record "Sales Header"`, `ItemLedgerEntry` for `Record "Item Ledger Entry"`, `GLEntry` for `Record "G/L Entry"` — not `CustRec`, `SalesHdr`, `ILE`.
+- **Temporary records take the `Temp` prefix**: `TempSalesLine: Record "Sales Line" temporary`, `TempItem: Record Item temporary`.
+- Simple-type variables and parameters are descriptive too: `DocumentNo`, `Quantity`, `TotalAmount`, `PostingDate` — not `DocNo`, `Qty`, `Amt`, `Date`.
 
-Be consistent across the repo. When the repo already uses a different convention (e.g. TAG uses `EquipmentRec`, `WOHeader`, `WOLine`, `TechRec`, `TAGSetup`), follow the established vocabulary rather than inventing new short names.
+When the repo already uses a different convention (e.g. TAG uses `EquipmentRec`, `WOHeader`, `WOLine`, `TechRec`, `TAGSetup`), follow the established vocabulary rather than mixing styles in one object.
 
 ## Procedure parameter naming
 
@@ -66,15 +66,30 @@ BCApps does not prefix procedure parameters. The disambiguation between paramete
 
 ## Variable declaration order
 
-Inside `var` blocks, declare variables in this order:
+Inside `var` blocks (local and global), BCApps orders declarations by type group:
 
-1. Records (longest to shortest, or alphabetical)
-2. Codeunits
-3. Pages / Reports
-4. Simple types (Integer, Decimal, Boolean, Option/Enum)
-5. Text / Code / SecretText
+1. `Record`
+2. `RecordRef` and `FieldRef`
+3. `Codeunit`
+4. `Enum`
+5. Other complex types (`Page`, `Report`, `Query`, `XmlPort`, `JsonObject`, `HttpClient`, `Notification`, …)
+6. `Code`
+7. `Text` (and `SecretText`)
+8. Numeric types (`Integer`, `Decimal`, `BigInteger`, …)
+9. `Boolean`
 
-Group same-type variables together. Single blank line between groups is optional.
+CodeCop `AA0021` (an `Error` in the BCApps ruleset) also checks the order of object-type variables; if it flags a declaration, follow the analyzer. When adding a variable, insert it in its type group; **do not reorder existing declarations** just to make an untouched section comply, and if the section is not ordered, place the new variable next to the nearest matching group.
+
+## Integration event naming
+
+From BCApps' extensibility guidelines (`.github/skills/bc-extrequest-implement/guidelines.md`):
+
+- At the start or end of a procedure / trigger: `OnBefore<Name>` / `OnAfter<Name>` — `OnBeforePostSalesLine`, `OnAfterOnModify`, `OnBeforeValidateSellToCustomerNo`.
+- Mid-flow: `On<Name>OnBefore<Action>` / `On<Name>OnAfter<Action>` — `OnPostSalesLineOnAfterCalculateAmounts`, `OnCodeOnBeforeCheck`.
+- One conceptual hook at several action points (e.g. after `Modify` and after `Insert`) → one event per point, named for that point.
+- Publishers are `local` with `[IntegrationEvent(false, false)]`; set `IncludeSender` / `GlobalVarAccess` to `true` only on concrete need.
+- Parameters follow the record / simple-type / `Temp` rules above.
+- `var IsHandled: Boolean` goes last on a new event; on an existing event, append new parameters at the end and never move existing ones (including an existing `IsHandled`). Initialize `IsHandled := false;` before raising the event, then `if IsHandled then exit;`.
 
 ## What this rule does NOT cover
 

@@ -12,6 +12,27 @@ The original 5-phase rebuild is complete. Future work:
 
 - **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
 
+## [0.7.0] — 2026-10-15
+
+Refreshed every upstream source (same refresh as the Claude Code plugin in Verosoft-Design/claude-plugins 1.1.0).
+
+### Microsoft ALTool / AL MCP (Learn docs, Oct 2026)
+- `rules/al-mcp-usage.mdc`: `al_getnextobjectid`, `al_addproject`, `al_symbolsearch` `source: "environment"` and the now-optional `parameters` wrapper, `BC_SERVER_*` connection variables.
+- New skills: `al-run-tests` (`al runtests`, JSON per test method; BcContainerHelper and AL-Go CI fallbacks), `al-call-graph` (`al graph`), `al-snapshot-debug` and `al-profile` (ALTool MCP proxies, BC 29 preview, registered in `.cursor/mcp.json`).
+- `/al-setup`: NuGet tool is Microsoft's recommended install for agents; keep it current.
+
+### microsoft/BCQuality 4d59fb73 → 86d809b5
+- 19 review domains (was 6), 388 Microsoft knowledge articles; 28 new review skills; updated contracts (`domain`, `suggested-code`, leaf agent findings, acceptance gate), validator R01–R29, findings renderer for the new schema. Content mirrors upstream layout (`content/bcquality/skills/`, `schemas/`, `tools/`, `docs/`). TAG API article moved to `web-services`.
+
+### microsoft/BCApps dc1242e3 → 395d98e1
+- Rulesets refreshed (AA0139, AL1085, AW0017, AL1430 → Warning; AL0920 back to Error; AL0925 None). Review prompts were removed upstream; kept frozen at `7040033d` (BC-Bench measures these exact prompts at ~+20 F1 for code review). `al-naming-and-files` aligned with BCApps extensibility guidelines.
+
+### microsoft/BC-Bench ef4f4668 → 7c98b750
+- ALTest unchanged; test skills cite the measured runs and dates; handlers enqueue and test bodies assert. Session-start model recommendation updated to the October leaderboard and failure analysis.
+
+### AL-Go v9.0 → v10.0
+- Workflows dispatched by file name (display names start with a space); `gh` syntax fixed; invalid `useGhTokenWorkflow` input removed from system-file updates; `Create release` inputs corrected; v10 authentication and secrets guidance.
+
 ## [0.6.4] — 2026-05-25
 
 ### Fixed — first-call MCP server identifier mistake

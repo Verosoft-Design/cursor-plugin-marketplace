@@ -16,7 +16,7 @@ Confirm with the user:
 - Visibility (`--public` or `--private`)
 - App name and publisher
 - ID range (the user MUST own this; AppSource apps need ranges in the partner-assigned space)
-- **Mandatory affix** — the prefix every object name in the AppSource app must carry (e.g. `"TAG "`). This will be wired into `.AL-Go/settings.json` → `appSourceCopMandatoryAffixes`. The template seeds an empty list; the user MUST replace it with their own affix before the first build will pass AppSourceCop.
+- **Mandatory affix** — the prefix every object name in the AppSource app must carry (e.g. `"TAG "`). This will be wired into `.AL-Go/settings.json` → `appSourceCopMandatoryAffixes`. The template seeds the placeholder `["<affix>"]`; the user MUST replace it with their own affix before the first build will pass AppSourceCop.
 - Whether they have a Partner Center account ready (required eventually for `/al-publish-appsource`)
 - Sample code (`sampleCode=true` default)
 
@@ -32,7 +32,7 @@ gh repo create <owner>/<repo-name> \
 ## Step 3 — Dispatch Create a new app
 
 ```bash
-gh workflow run "Create a new app" \
+gh workflow run CreateApp.yaml \
   --repo <owner>/<repo-name> \
   --ref main \
   -f project=. \
@@ -44,11 +44,11 @@ gh workflow run "Create a new app" \
   -f useGhTokenWorkflow=false
 ```
 
-The workflow runs `CreateApp` with `type=AppSource App` because the repo type is preset.
+Same `CreateApp.yaml` and inputs as in the PTE template (v10.0). The `CreateApp` action creates an AppSource app because the repo-level `type` setting is `AppSource App`.
 
 ## Step 4 — Wire the mandatory affix
 
-The newly-scaffolded `.AL-Go/settings.json` will contain:
+The template's `.AL-Go/settings.json` (v10.0) contains the placeholder:
 
 ```json
 "appSourceCopMandatoryAffixes": ["<affix>"]
@@ -59,7 +59,7 @@ Walk the user through editing it to their actual affix (typically `"TAG "` for V
 ## Step 5 — Watch the run
 
 ```bash
-RUN_ID=$(gh run list --repo <owner>/<repo-name> --workflow "Create a new app" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --repo <owner>/<repo-name> --workflow CreateApp.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --repo <owner>/<repo-name> --exit-status
 ```
 
@@ -70,4 +70,5 @@ After the workflow merges:
 1. Clone locally, develop.
 2. When ready to deliver to AppSource for the first time, the user MUST manually upload marketing materials in Partner Center. This is not automatable. After the first manual submission, future versions can ship via `/al-publish-appsource`.
 3. Wire the `AppSourceContext` secret (`/al-secrets-setup`).
-4. Wire signing — either the legacy `CodeSignCertificateUrl`+`CodeSignCertificatePassword` secrets OR the new KV-based path via `keyVaultCodesignCertificateName` (`/al-init-keyvault`).
+4. Wire signing — the legacy `CodeSignCertificateUrl`+`CodeSignCertificatePassword` secrets, the KV-based path via `keyVaultCodesignCertificateName`, or Azure Trusted Signing via the `trustedSigning` setting (`/al-init-keyvault`).
+5. Protect `main` (and any branch listed in `deliverToAppSource.branches`) with a branch protection rule or ruleset. AL-Go's Deliver jobs read `AppSourceContext` without a GitHub environment gate, so branch protection is what keeps arbitrary code away from that secret.

@@ -6,31 +6,31 @@ disable-model-invocation: true
 
 # Increment version number
 
-Dispatches the `Increment Version Number` workflow.
+Dispatches the `Increment Version Number` workflow (`IncrementVersionNumber.yaml`; display name ` Increment Version Number` has a leading space, so dispatch by file name).
 
 ## Versioning formats
 
-The `versionNumber` input accepts three formats:
+The `versionNumber` input (string, default empty) accepts these formats. The workflow validates it against the project's `versioningStrategy` before changing anything:
 
-| Format   | Meaning                                                    |
-| -------- | ---------------------------------------------------------- |
-| `+1`     | Bump major by 1, reset minor and build to 0.               |
-| `+0.1`   | Bump minor by 1, reset build to 0.                         |
-| `+0.0.1` | Bump build by 1.                                           |
-| `1.2.3`  | Set the version to exactly `1.2.3`.                        |
-| `1.2`    | Set major.minor; build determined by `versioningStrategy`. |
+| Format   | Meaning                                                    | Allowed with                    |
+| -------- | ---------------------------------------------------------- | ------------------------------- |
+| `+1`     | Bump major by 1, reset minor to 0.                         | any strategy                    |
+| `+0.1`   | Bump minor by 1.                                           | any strategy                    |
+| `+0.0.1` | Bump build by 1.                                           | versioningStrategy 3 only       |
+| `1.2`    | Set Major.Minor absolutely.                                | any strategy                    |
+| `1.2.3`  | Set Major.Minor.Build absolutely.                          | versioningStrategy 3 only       |
 
 ## Preflight
 
 1. Confirm cwd is an AL-Go repo.
-2. **Required secret: `GhTokenWorkflow`** (this workflow opens a PR or commits directly to bump versions).
-3. Decide which projects: `*` (all) or a comma-separated list of project paths.
+2. **`GhTokenWorkflow` secret** — needed when `useGhTokenWorkflow=true` (the workflow default is `false`; this skill passes `true` so the bump PR triggers CI and can push to protected branches).
+3. Decide which projects: `*` (all, the default) or a comma-separated list of project name patterns.
 4. Decide whether to update dependency versions in dependent apps. Default `skipUpdatingDependencies=false` (dependent apps' `app.json` dependency entries get the new version).
 
 ## Dispatch
 
 ```bash
-gh workflow run "Increment Version Number" \
+gh workflow run IncrementVersionNumber.yaml \
   --ref main \
   -f projects=* \
   -f versionNumber=+0.1 \
@@ -42,7 +42,7 @@ gh workflow run "Increment Version Number" \
 For a specific project, a major bump, and direct commit:
 
 ```bash
-gh workflow run "Increment Version Number" \
+gh workflow run IncrementVersionNumber.yaml \
   --ref main \
   -f projects=BingMaps \
   -f versionNumber=+1 \
@@ -54,7 +54,7 @@ gh workflow run "Increment Version Number" \
 ## Watch the run
 
 ```bash
-RUN_ID=$(gh run list --workflow "Increment Version Number" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow IncrementVersionNumber.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 
@@ -78,12 +78,14 @@ The PR (or commit) modifies:
 
 The `versioningStrategy` setting in `.AL-Go/settings.json` controls how the version is composed at build time:
 
-| Value         | Behavior                                                                 |
-| ------------- | ------------------------------------------------------------------------ |
-| `0` (default) | `Major.Minor.Build.<github.run_number>`                                  |
-| `2`           | Date/time-based                                                          |
-| `3`           | `app.json` version + `<github.run_number>`                               |
-| `15`          | Max version across repo + `<github.run_number>`                          |
-| `+16` (added) | Use `repoVersion` for Major.Minor (e.g. `15+16=31` for date+repoVersion) |
+| Value         | Behavior                                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `0` (default) | Major.Minor from `app.json`; Build = run number of the current workflow (+ `runNumberOffset`); Revision = run attempt − 1      |
+| `2`           | Build = UTC date `yyyyMMdd`, Revision = UTC time `hhmmss`                                                                       |
+| `3`           | Major.Minor.Build from `app.json`; Revision = run number                                                                        |
+| `15`          | Build = max value, Revision = run number (non-official builds only; the Test Current/Next workflows use it)                    |
+| `+16` (added) | Use the `repoVersion` setting instead of Major.Minor from `app.json` (and Build too with 3+16 = 19)                            |
+
+`runNumberOffset` applies to strategies 0, 3 and 15. The run number is that of the workflow doing the build, so builds from Test Next Major etc. do not share CI/CD's numbering.
 
 `/al-increment-version` updates the source-of-truth Major.Minor (via `repoVersion`); the strategy determines how Build is composed downstream.

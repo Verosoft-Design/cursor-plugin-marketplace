@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Publish to a BC environment (via AL-Go)
 
-Dispatches the `Publish To Environment` workflow, which downloads the matching artifact (current / latest / specific version / PR build) and deploys it to the matching GitHub Environments.
+Dispatches the `Publish To Environment` workflow (`PublishToEnvironment.yaml`; display name ` Publish To Environment` has a leading space, so dispatch by file name), which downloads the matching artifact (current / latest / specific version / PR build) and deploys it to the matching GitHub Environments.
 
 ## When to use this vs `/al-publish-sandbox`
 
@@ -20,9 +20,12 @@ Dispatches the `Publish To Environment` workflow, which downloads the matching a
 ## Preflight
 
 1. Confirm cwd is an AL-Go repo.
-2. Confirm the target GitHub Environment exists: `gh api /repos/{owner}/{repo}/environments` should list it.
-3. Confirm the env's `AuthContext` secret is configured (either repo-level `AuthContext` or env-scoped `<EnvName>_AuthContext`). Use `gh secret list --env <EnvName>` and `gh secret list` to check.
-4. **If the target is a Production environment**, require explicit user confirmation containing the word "production" in this turn before proceeding.
+2. Confirm the target GitHub Environment exists: `gh api /repos/{owner}/{repo}/environments` should list it. Ignore `github-pages` and `copilot` (the environment GitHub creates for the Copilot coding agent): AL-Go always excludes both from deployment, as well as anything in the `excludeEnvironments` setting.
+3. Confirm an AuthContext secret will resolve for every matched environment. AL-Go v10.0 checks, in order: `<EnvName>-AuthContext`, `<EnvName>_AuthContext`, then the generic `AuthContext` (repo/org secret, or `AuthContext` as a secret on the GitHub environment). Use `gh secret list --env <EnvName>` and `gh secret list` to check.
+   - In multi-environment or multi-tenant repos, a missing per-environment secret **silently falls back** to the generic `AuthContext`. If the user expects per-environment credentials, verify the per-environment secret exists rather than accepting the fallback.
+   - If secrets live in Azure Key Vault, names containing `_` are skipped there; the dash form `<EnvName>-AuthContext` is the one that works.
+   - If no secret resolves, the `Authenticate` action starts device login and lists the candidate names and sign-in instructions in the workflow summary.
+4. **If the target is a Production environment**, require explicit user confirmation containing the word "production" in this turn before proceeding. Resolve the mask first: a mask such as `*` or `PROD*` that matches any production environment counts as a production deployment.
 
 ## Gather inputs
 
@@ -34,12 +37,14 @@ Dispatches the `Publish To Environment` workflow, which downloads the matching a
   - `PR_<id>` → a specific pull request's build artifact
   - explicit semver like `1.2.3`
 - `environmentName` — mask supported. E.g. `PROD*` deploys to every env whose GitHub name starts with `PROD`. A single name targets one env.
-- `createEnvIfNotExists` (boolean, default `false`) — only set `true` for first-time provisioning.
+- `createEnvIfNotExists` (boolean, default `false`) — only set `true` for first-time provisioning, and only after the user confirms. `<EnvName>_AuthContext`, `<EnvName>_EnvironmentName` and `<EnvName>_Scope` must then exist as environment or repo secrets/variables.
+
+These are the only three inputs in v10.0 (`environmentName` is required; `appVersion` defaults to `current`).
 
 ## Dispatch
 
 ```bash
-gh workflow run "Publish To Environment" \
+gh workflow run PublishToEnvironment.yaml \
   --ref main \
   -f appVersion=<value> \
   -f environmentName=<mask or name> \
@@ -49,7 +54,7 @@ gh workflow run "Publish To Environment" \
 ## Watch the run
 
 ```bash
-RUN_ID=$(gh run list --workflow "Publish To Environment" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow PublishToEnvironment.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 
@@ -63,11 +68,12 @@ AL-Go's convention: environments named with a trailing `(PROD)` or `(FAT)` suffi
 
 Each environment can also have `DeployTo<EnvName>` settings in `.github/AL-Go-Settings.json` controlling:
 
-- `SyncMode` — `Add`, `ForceSync` (data loss possible), `Development` (extension installed in dev scope), `Clean` (uninstall before publish)
+- `SyncMode` — `Add` (default), `ForceSync` (data loss possible), and on the dev endpoint `Development` or `Clean` (also destructive to schema/data). Never suggest `ForceSync` or `Clean` without restating the data-loss consequence and getting explicit confirmation.
 - `Scope` — `Dev` or `PTE`
 - `DependencyInstallMode` — `install` / `ignore` / `upgrade` / `forceUpgrade`
 - `Branches` — restrict deployment to specific branches
 - `Projects` — restrict to specific projects
-- `BuildMode`, `companyId`, `ppEnvironmentUrl`, etc.
+- `unpublishOldVersions` (v10.0, default `false`) — after a successful PTE-scope deployment, unpublish old, uninstalled versions of the deployed apps; failures are only warnings
+- `ContinuousDeployment`, `BuildMode`, `includeTestAppsInSandboxEnvironment`, `excludeAppIds`, `companyId`, `ppEnvironmentUrl`, etc.
 
 When suggesting changes to these, ground them in the env's actual current config and the user's stated intent.

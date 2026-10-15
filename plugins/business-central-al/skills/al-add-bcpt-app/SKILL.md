@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Add a performance test (BCPT) app
 
-Dispatches the `Create a new performance test app` workflow in the current AL-Go repository.
+Dispatches the `Create a new performance test app` workflow (`CreatePerformanceTestApp.yaml`) in the current AL-Go repository.
 
 ## What is a BCPT app
 
@@ -17,16 +17,17 @@ A BCPT app is a special test app that depends on the `Performance Toolkit` (code
 1. Confirm cwd is an AL-Go repo.
 2. Gather inputs:
    - `project` (relative path; default `.`)
-   - `name` (default `<MainApp>.BCPT`)
+   - `name` (required; the workflow's placeholder default is `<YourAppName>.PerformanceTest`, so pass a real name such as `<MainApp>.PerformanceTest`)
    - `publisher`
-   - `idrange` (the user's allocated range, e.g. `70015000..70016999`)
+   - `idrange` (required; workflow default `50000..99999`; use the user's allocated range, e.g. `70015000..70016999`)
+   - `sampleCode` (boolean, default `true`)
    - `sampleSuite` (boolean, default `true`) — adds a sample BCPT scenario
-3. Decide direct commit vs PR (default PR).
+3. Decide direct commit vs PR (default PR) and whether to use `GhTokenWorkflow` (`useGhTokenWorkflow`, default `false` in the workflow; this skill passes `true` so the PR triggers CI).
 
 ## Step 2 — Dispatch
 
 ```bash
-gh workflow run "Create a new performance test app" \
+gh workflow run CreatePerformanceTestApp.yaml \
   --ref main \
   -f project=<project> \
   -f name=<name> \
@@ -38,10 +39,12 @@ gh workflow run "Create a new performance test app" \
   -f useGhTokenWorkflow=true
 ```
 
+These are exactly the v10.0 inputs of `CreatePerformanceTestApp.yaml`. Creating a BCPT app on Linux runners works since v9.1 (earlier versions failed on a case-sensitive path).
+
 ## Step 3 — Watch + merge
 
 ```bash
-RUN_ID=$(gh run list --workflow "Create a new performance test app" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow CreatePerformanceTestApp.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 

@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Deploy reference documentation
 
-Dispatches the `Deploy Reference Documentation` workflow.
+Dispatches the `Deploy Reference Documentation` workflow (`DeployReferenceDocumentation.yaml`; display name ` Deploy Reference Documentation` has a leading space, so dispatch by file name).
 
 ## What it does
 
@@ -43,15 +43,15 @@ The site documents:
 ## Dispatch
 
 ```bash
-gh workflow run "Deploy Reference Documentation" --ref main
+gh workflow run DeployReferenceDocumentation.yaml --ref main
 ```
 
-No inputs.
+No inputs (v10.0).
 
 ## Watch the run
 
 ```bash
-RUN_ID=$(gh run list --workflow "Deploy Reference Documentation" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow DeployReferenceDocumentation.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 
@@ -76,3 +76,5 @@ aldoc only documents procedures that have XML doc comments. Phase 3's `al-xmldoc
 - "GitHub Pages is not enabled" — enable it in repo settings (Source: GitHub Actions).
 - "No releases found" — the workflow needs at least one published release to generate the `maxReleases` archive. Run `/al-release` first.
 - aldoc tool errors — usually malformed XML doc comments in the source. The log points at the offending file.
+- `InvalidTocInclude: Referenced TOC file ... does not exist` for apps with `_` in the name, or aldoc not using the package cache — fixed in v9.2; run `/al-update-system-files` if the repo is older.
+- "Could not find AL tool" with a custom `vsixFile` — v9.2 also resolves aldoc/altool from the flat `compiler/extension/bin` layout; update AL-Go if the repo is older.

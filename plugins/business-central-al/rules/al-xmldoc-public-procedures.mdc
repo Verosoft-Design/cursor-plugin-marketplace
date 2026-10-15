@@ -98,4 +98,4 @@ When the repo deploys reference documentation (via `/al-deploy-docs`), only proc
 
 - BCApps facade codeunits document every public procedure: `microsoft/BCApps/src/System Application/App/Email/src/Email/Email.Codeunit.al`.
 - BCApps interface examples: `microsoft/BCApps/src/System Application/App/Cryptography Management/src/SymmetricAlgorithm.Interface.al`.
-- BCApps review prompt `content/bcapps-review-prompts/style.md` discusses XML doc requirements in depth.
+- BCApps review prompt `content/bcapps-review-prompts/style.md` discusses XML doc requirements in depth (frozen at BCApps `7040033d`; upstream replaced it with BCQuality's style knowledge).

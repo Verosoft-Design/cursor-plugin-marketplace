@@ -90,4 +90,4 @@ When reviewing AL code, flag:
 
 - CodeCop `AA0074` (approved label suffixes) — in `content/bcapps-rulesets/CodeCop.ruleset.json`.
 - BCApps examples: every `.Codeunit.al` in `microsoft/BCApps/src/System Application/App/` follows this convention.
-- BCApps review prompt `content/bcapps-review-prompts/style.md` covers the full reasoning.
+- BCApps review prompt `content/bcapps-review-prompts/style.md` covers the full reasoning (frozen at BCApps `7040033d`; upstream replaced it with BCQuality's style knowledge).

@@ -2,32 +2,82 @@
 description: BCQuality DO meta-skill contract. Agent-requestable. Loads when the agent needs to produce a findings-report JSON — the canonical action-skill template (Source / Relevance / Worklist / Action / Output), the strict JSON output schema, severity taxonomy, agent-findings encoding, and super-skill composition rules.
 alwaysApply: false
 ---
-
 # BCQuality DO contract
 
-The authoritative DO meta-skill is vendored at `<plugin>/content/bcquality/do.md` (sourced from `microsoft/BCQuality/skills/do.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you need to produce findings-report output.** This rule is just a pointer.
+The authoritative DO meta-skill is vendored at `<plugin>/content/bcquality/skills/do.md`, sourced from `microsoft/BCQuality/skills/do.md` at the SHA pinned in `content/PINNED.json`. Its machine-readable structural schema is `<plugin>/content/bcquality/schemas/findings-report.schema.json`. **Read do.md in full when you produce findings-report output.** This file is a pointer and a summary.
 
 ## What DO defines
 
-- **Action-skill template**: every action skill has 5 required sections in order: `## Source` → `## Relevance` → `## Worklist` → `## Action` → `## Output`.
-- **JSON output contract**: every action skill emits a single JSON document with `skill`, `outcome`, `outcome-reason`, `summary`, `findings[]`, `suppressed[]`, and (for super-skills) `sub-results[]` + `skipped-sub-skills[]`.
-- **Outcome values**: `completed`, `not-applicable`, `no-knowledge`, `partial`, `failed`. Each has precise semantics — orchestrators MUST NOT conflate them.
-- **Severity taxonomy**: `blocker` / `major` / `minor` / `info`. `blocker` is reserved for platform-level guarantees.
-- **Finding `id` rules**: for citation-based findings, `id` MUST equal `references[0].path`. For non-citation findings (agent self-review), prefix with `agent:`. For sub-skill rollup of non-citation findings, prefix with `<sub-skill-id>:`.
-- **Agent findings** (super-skills only): `from-sub-skill: "agent"`, `references: []`, `confidence ≤ medium`, self-contained `message`. Before emitting, validate against the loaded knowledge — matching file upgrades to knowledge-backed, contradicting file suppresses.
-- **Composition**: super-skills compose leaves only (no nesting). Outcome rolls up by precise rules in DO.
+- **Action-skill template**: frontmatter `kind`, `id`, `version`, `title`, `description`, `inputs`, `outputs` (plus optional filters and `sub-skills`), followed by 5 required sections in this order: `## Source`, `## Relevance`, `## Worklist`, `## Action`, `## Output`. Skills hold mechanics only. Every BC fact, including false-positive guards, lives in a knowledge file that the skill cites.
+- **Inputs**: `pr-diff`, `object-list`, `file-path`, `folder-path`, `repository`, `telemetry-query`, with any-of semantics. A `folder-path` is the complete current state: enumerate every relevant file, and infer no baseline.
+- **Findings report** (one strict RFC 8259 JSON document; embedded quotes and newlines are escaped):
+
+```json
+{
+  "skill": { "id": "al-performance-review", "version": 1 },
+  "outcome": "completed | not-applicable | no-knowledge | partial | failed",
+  "outcome-reason": "required for partial / failed",
+  "summary": {
+    "counts": { "blocker": 0, "major": 0, "minor": 0, "info": 0 },
+    "coverage": { "worklist-size": 0, "items-evaluated": 0 }
+  },
+  "findings": [{
+    "id": "microsoft/knowledge/performance/<slug>.md | agent:<slug> | <leaf-id>:<slug>",
+    "severity": "blocker | major | minor | info",
+    "message": "single self-contained paragraph",
+    "location": { "file": "src/X.Codeunit.al", "line": 12, "range": { "start-line": 12, "end-line": 15 } },
+    "references": [{ "path": "microsoft/knowledge/performance/<slug>.md", "sha": "<bcquality commit>" }],
+    "confidence": "high | medium | low",
+    "from-sub-skill": "super-skills only: leaf id or \"agent\"",
+    "domain": "display label, e.g. Performance / Web Services / Agent",
+    "suggested-code": "literal replacement for the located lines",
+    "suggested-code-omission-reason": "why a mechanical-looking fix has no suggested-code"
+  }],
+  "suppressed": [{ "reference": { "path": "...", "sha": "..." }, "reason": "layer-precedence | configuration" }],
+  "sub-results": [ "super-skills only: complete nested reports, in slot order" ],
+  "skipped-sub-skills": [{ "skill": { "id": "...", "version": 1 }, "reason": "configuration | not-applicable" }]
+}
+```
+
+- **Outcomes**: `completed` (an empty `findings` array means nothing was flagged), `not-applicable`, `no-knowledge` (findings must be empty), `partial`, `failed` (consumers ignore its findings). Never conflate them.
+- **Severity**: `blocker` (violates a platform guarantee), `major` (fix before merge), `minor` (quality concern, not a gate), `info` (a concrete observation the article defines). Applicability alone is never a finding, and `info` is not for listing guidance that merely seemed relevant.
+- **IDs and references**:
+  - A citation-based `id` equals `references[0].path` verbatim, with no `#fragment`.
+  - A leaf slug id rolled up by a super-skill is prefixed with `<leaf-id>:`.
+  - **Reference-integrity gate**: cite only paths copied from the knowledge index or discovered files and opened in full during this run. Never construct a slug. If integrity cannot be checked, the outcome is `failed`.
+  - `references[].sha` is the BCQuality commit (the pinned `bcquality.ref`), not a content hash. Omit it for uncommitted content such as `custom/`.
+- **Agent findings** (any leaf, within its own domain; or the super-skill, for cross-cutting concerns): `references: []`, an `agent:<slug>` id, `confidence` of at most `medium`, `severity` of at most `minor`, and a self-contained message with a concrete recommendation. They are held to a high precision bar: steelman the code first, never emit style preferences or speculative "could/might" findings, and omit when in doubt. Validate each one against the loaded knowledge first: a match upgrades it to a knowledge-backed finding, and a contradiction suppresses it.
+- **`domain`**: required on every finding a review leaf emits. A super-skill preserves it verbatim and uses `"Agent"` for its own findings. Consumers treat it as display text: no splitting and no lossy slugging.
+- **`location`**: a repo-relative `file`, and a 1-based `line` in the final file (never diff-relative). The optional inclusive `range` has `start-line == line`.
+- **`suggested-code`**: expected for small, local, mechanical fixes. It is the literal replacement for the located lines, with no fences and no diff markers. When omitted on a mechanical-looking finding, set `suggested-code-omission-reason`.
+
+## Composition (super-skills)
+
+- Composition is flat: a super-skill lists only leaves, and nesting is not allowed. Each `sub-skills` path is an ordered slot, resolved to the highest-precedence enabled implementation of that `id` without reordering (`tools/Build-SkillIndex.ps1`, `tools/Resolve-SkillWorklist.ps1`).
+- Relevance looks only at inputs and configuration, never at task content.
+- Every selected leaf runs as a discrete evaluation; leaves may run concurrently. `sub-results` keep slot order. The self-review starts only after every leaf has returned.
+- **Consumer acceptance gate**: keep the raw return unchanged and validate the whole report. The only permitted repair is dropping an inconsistent `location.range` from a finding without `suggested-code`. An invalid leaf becomes a `failed` sub-result with no findings, and individual findings are never salvaged. `tools/Validate-FindingsReport.ps1` runs this gate (`-SkillKind super -ExpectedCompositionPath …` for rollups).
+- **Outcome rollup**: let S be the outcomes of the returned leaves.
+  - Every S is `failed`: `failed`.
+  - Any `partial`, or `failed` mixed with any other outcome: `partial`.
+  - Every S is `not-applicable`: `not-applicable`.
+  - Every S is `no-knowledge` or `not-applicable`, with at least one `no-knowledge`: `no-knowledge`.
+  - Otherwise: `completed`.
+  - An empty worklist gives `not-applicable`.
+  - When selected leaves never returned, the outcome is `partial` (or `failed` when no non-failed report exists), and `outcome-reason` names the missing leaves.
+- **Rolled-up summary**: `counts` counts the final top-level `findings[]`, after excluding failed leaves and merging duplicates. It is NOT the sum of leaf counts. `coverage` is the sum over non-failed leaves.
+- Findings from a failed leaf never reach the top-level `findings[]` or the counts. Top-level `suppressed[]` stays empty.
 
 ## Output rendering in Cursor
 
-After an action skill produces its JSON, the plugin's `scripts/render-findings.sh` pretty-prints it for terminal display. The agent should:
+`<plugin>/scripts/render-findings.sh` pretty-prints one findings report, a JSON array of reports, or an Entry dispatch record for terminal or chat display. It shows outcome, counts, coverage, domain labels, ranges, `suggested-code`, and per-leaf outcomes. Agents should:
 
 1. Emit the canonical JSON exactly per DO.
-2. Optionally pipe through `bash <plugin>/scripts/render-findings.sh` for a human-friendly summary table in chat.
-3. Surface each finding's `location.file:line` as a clickable link in the chat output.
+2. Optionally pipe it through `bash <plugin>/scripts/render-findings.sh`.
+3. Give each finding's `location.file:line` as a clickable link in chat.
 
-## When to load this rule
+## When to load this file
 
-- Before composing a super-skill's findings-report.
-- Before emitting any action-skill output.
-- When deciding whether an emit-able finding qualifies as a knowledge-backed finding (cite the file) or an agent finding (`from-sub-skill: "agent"`, capped at `medium` confidence).
-- When deciding which `outcome` value to set on partial / no-knowledge / not-applicable runs.
+- Before emitting any action-skill output or composing a super-skill report.
+- When deciding between a knowledge-backed finding and an agent finding.
+- When choosing `outcome` on partial, no-knowledge or not-applicable runs.

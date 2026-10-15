@@ -9,7 +9,7 @@ disable-model-invocation: true
 Wraps two operations:
 
 1. `gh repo create` from the `microsoft/AL-Go-PTE` template.
-2. Dispatch the `Create a new app` workflow against the new repo.
+2. Dispatch the `Create a new app` workflow (`CreateApp.yaml`) against the new repo.
 
 ## Step 1 — Confirm intent and gather inputs
 
@@ -33,12 +33,14 @@ gh repo create <owner>/<repo-name> \
 
 Verify with `gh repo view <owner>/<repo-name>`.
 
-Note: the user can pin AL-Go to a specific release branch later by editing `.github/AL-Go-Settings.json` → `templateUrl` to `https://github.com/microsoft/AL-Go-PTE@main` (or a specific tag). Default is the template's current main.
+Note: the template's `.github/AL-Go-Settings.json` sets `templateUrl` to `https://github.com/microsoft/AL-Go-PTE@main`, which tracks the latest AL-Go release (v10.0 at the time of writing). The user can pin to a release branch later (e.g. `https://github.com/microsoft/AL-Go-PTE@v10.0`) or opt into `@preview`.
 
 ## Step 3 — Dispatch Create a new app
 
+All inputs below exist in v10.0 `CreateApp.yaml` (`name`, `publisher`, `idrange` are required; `project` defaults to `.`, `sampleCode` to `true`, `directCommit` and `useGhTokenWorkflow` to `false`). The display name has no leading space, but dispatching by file name is the safe habit.
+
 ```bash
-gh workflow run "Create a new app" \
+gh workflow run CreateApp.yaml \
   --repo <owner>/<repo-name> \
   --ref main \
   -f project=. \
@@ -55,7 +57,7 @@ If the repo's default branch is protected against direct commits, set `directCom
 ## Step 4 — Watch the run
 
 ```bash
-RUN_ID=$(gh run list --repo <owner>/<repo-name> --workflow "Create a new app" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --repo <owner>/<repo-name> --workflow CreateApp.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --repo <owner>/<repo-name> --exit-status
 ```
 
@@ -75,4 +77,5 @@ Then walk the user through running `.AL-Go/localDevEnv.ps1` (Docker container) o
 
 - `template parameter must be a public template` — the user is on a GitHub plan that does not support template repos. Suggest forking `microsoft/AL-Go-PTE` instead.
 - `Resource not accessible by integration` on the workflow dispatch — token is missing workflow permissions. Re-authenticate `gh` with `gh auth refresh -s workflow`.
+- `could not find any workflows named ...` / HTTP 404 right after `gh repo create` — GitHub has not indexed the template's workflows yet, or Actions is disabled on the new repo. Wait a few seconds, check `gh workflow list --repo <owner>/<repo-name>`, and enable Actions if needed.
 - `idrange` parse error — the format is two integers separated by `..` (no spaces).

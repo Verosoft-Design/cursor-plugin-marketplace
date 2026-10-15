@@ -14,15 +14,22 @@ The pinned source SHA is in `<plugin>/content/PINNED.json` → `bcapps.ref`. Re-
 
 | File                           | Lines  | Purpose                                                                              |
 | ------------------------------ | ------ | ------------------------------------------------------------------------------------ |
-| `ruleset.json`                 | 83     | Master ruleset for shipped apps. Composes the other 6. Has 10 documented exceptions. |
-| `Analyzer.ruleset.json`        | 4 000  | Every analyzer rule set to `Error` (zero exceptions).                                |
+| `ruleset.json`                 | 98     | Master ruleset for shipped apps. Composes the other 6. Has 13 documented exceptions. |
+| `Analyzer.ruleset.json`        | 4 001  | Every analyzer rule set to `Error` (zero exceptions).                                |
 | `AppSourceCop.ruleset.json`    | 4 015  | All AppSourceCop rules to `Error`, with 14 documented exceptions.                    |
 | `CodeCop.ruleset.json`         | 4 004  | All CodeCop rules to `Error`, with 3 documented exceptions.                          |
 | `PTECop.ruleset.json`          | 4 010  | All PTECop rules to `Error`, with 9 documented exceptions.                           |
-| `UICop.ruleset.json`           | 4 003  | All UICop rules to `Error`, with 2 documented exceptions.                            |
-| `Compiler.ruleset.json`        | 40 002 | Every compiler diagnostic to `Error`, with 2 documented exceptions.                  |
-| `internal.module.ruleset.json` | 33     | Variant for unshipped, internal modules (silences AppSource manifest rules).         |
-| `minorrelease.ruleset.json`    | 25     | Variant for minor releases (re-promotes 3 runtime-breaking-change rules).            |
+| `UICop.ruleset.json`           | 4 004  | All UICop rules to `Error`, with 3 documented exceptions.                            |
+| `Compiler.ruleset.json`        | 40 004 | Every compiler diagnostic to `Error`, with 3 documented exceptions.                  |
+| `internal.module.ruleset.json` | 38     | Variant for unshipped, internal modules (silences AppSource manifest rules, AA0139 → Warning). |
+| `minorrelease.ruleset.json`    | 26     | Variant for minor releases (re-promotes 3 runtime-breaking-change rules).            |
+
+**Recent upstream changes worth knowing** (BCApps `dc1242e3` → `395d98e1`, Oct 2026):
+
+- `ruleset.json` now downgrades `AA0139` (TODO #637029, stricter CodeCop rule), `AL1085` (file-locking issues during compilation), `AW0017` (MaskType not implemented on repeaters) and `AL1430` (TODO #642602) to `Warning`, and no longer silences `AL0920` — it is back to `Error`.
+- `Compiler.ruleset.json` sets `AL0925` (informational: optional interface method not implemented) to `None`.
+- `UICop.ruleset.json` sets `AW0017` to `Warning`; `internal.module.ruleset.json` also sets `AA0139` to `Warning`.
+- `ruleset.json` upstream has a **trailing comma** after its last rule. The AL compiler and VS Code read rulesets as JSONC and accept it, but strict parsers (`jq`, `python -m json.tool`, Windows PowerShell 5.1 `ConvertFrom-Json`) reject it. Copy the file verbatim; do not "fix" it, or the next refresh will diff. Use a JSONC-tolerant reader if you need to inspect it programmatically.
 
 ## Preflight
 
@@ -114,8 +121,10 @@ Reproduced verbatim from `content/bcapps-rulesets/ruleset.json`:
 ```json
 "rules": [
   { "id": "AS0023", "action": "Warning", "justification": "Needed to allow for BigInteger entry nos." },
+  { "id": "AL1085", "action": "Warning", "justification": "Allows compilation to pass with file locking issues." },
   { "id": "AS0077", "action": "None",    "justification": "Adding a var modifier in events should be allowed in main, as it only will break the runtime behavior of extensions subscribing to it when used in hotfix scenarios." },
-  { "id": "AS0138", "action": "None",    "justification": "TODO(#572306) - This will require a multi-release effort." },
+  { "id": "AS0138", "action": "None",    "justification": "TODO(#572306) - (see PTE0026) This will require a multi-release effort." },
+  { "id": "AA0139", "action": "Warning", "justification": "TODO(#637029) - Temporarily downgraded, due to stricter CodeCop rule addition." },
   { "id": "AS0146", "action": "Warning", "justification": "Needed to allow for BigInteger entry nos." },
   ...
 ]

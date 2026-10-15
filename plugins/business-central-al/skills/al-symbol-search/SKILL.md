@@ -1,6 +1,6 @@
 ---
 name: al-symbol-search
-description: Search AL symbols (objects, fields, methods, keys, actions, triggers) across the project and its dependencies via the AL MCP. Use when the agent needs to locate a codeunit, table, page, enum, interface, or member by name, namespace, or documentation text.
+description: Search AL symbols (objects, fields, methods, keys, actions, triggers) across the project and its dependencies via the AL MCP, or across everything installed on the connected environment. Use when the agent needs to locate a codeunit, table, page, enum, interface, or member by name, namespace, or documentation text.
 disable-model-invocation: true
 ---
 
@@ -8,9 +8,9 @@ disable-model-invocation: true
 
 Call the AL MCP tool `al_symbolsearch`.
 
-## Critical: parameter wrapping
+## Argument shape
 
-`al_symbolsearch` is the ONLY AL MCP tool that requires its arguments inside a `parameters` key. Every other tool takes arguments at the top level. Use this exact shape:
+The server accepts `query`/`filters` at the top level or inside a `parameters` key (older servers required the wrapper, so use it):
 
 ```json
 {
@@ -36,7 +36,8 @@ Call the AL MCP tool `al_symbolsearch`.
 | `obsoleteState` | `"No"`, `"Pending"`, `"Removed"`. Obsolete symbols included by default.                                                                                        |
 | `match`         | `"name"` (default), `"doc"` (XML doc summaries), `"all"`.                                                                                                      |
 | `scope`         | `"project"`, `"dependencies"`, `"all"` (default).                                                                                                              |
-| `limit`         | Integer ≤ 200.                                                                                                                                                 |
+| `source`        | `"workspace"` (default) or `"environment"`: search what is installed on the connected BC (base app, system app, every installed extension/PTE), with the owning app's id/name/publisher/version. AL tools 18.0+; needs `launch.json` or `BC_SERVER_URL`/`BC_SERVER_INSTANCE`, and `al_auth_login` first for cloud. |
+| `limit`         | Integer ≤ 200. Check `truncated` in the result.                                                                                                                                                 |
 
 ## Common query shapes
 

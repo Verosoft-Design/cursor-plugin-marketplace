@@ -1,51 +1,34 @@
 ---
 name: al-privacy-review
-description: Review AL code for privacy/GDPR issues using BCQuality's curated privacy knowledge plus BCApps' MIT-licensed privacy review prompt. Detects missing or wrong DataClassification on PII fields, PII leakage into Session.LogMessage text or FeatureTelemetry.CustomDimensions, StrSubstNo wrapping that defeats error-text PII stripping, and other BC-specific privacy footguns. Explicitly excludes test code (test data is synthetic).
+description: Review AL code for privacy issues using BCQuality's privacy knowledge, covering DataClassification on tables and fields, personal data in telemetry and error text, and retention policies.
 ---
 
-# AL Privacy Review (leaf)
+# AL Privacy review (leaf)
 
-This skill is the Cursor adapter for BCQuality's `al-privacy-review` leaf skill.
+Cursor adapter for BCQuality's `al-privacy-review` leaf action skill (`microsoft/skills/review/al-privacy-review.md`). It is one of the 19 leaves composed by `al-code-review`; Entry dispatches it on its own when the goal names this concern. This adapter holds no review policy; the vendored upstream skill is authoritative.
 
-## Authoritative spec
+## BCQuality root
 
-Read `<plugin>/content/bcquality/microsoft/skills/review/al-privacy-review.md` in full. It declares the canonical Source → Relevance → Worklist → Action pattern for the privacy domain.
+`BCQ` = `<plugin>/content/bcquality`, a mirror of the microsoft/BCQuality repo at the SHA pinned in `content/PINNED.json`. Resolve every repo-relative path the upstream files name (`skills/read.md`, `tools/...`, `knowledge-index.json`, `microsoft/knowledge/...`) against `BCQ`, never against the user's project.
 
-Also read `<plugin>/content/bcapps-review-prompts/privacy.md` — the MIT-licensed BCApps AI review prompt for privacy (~21 KB). Both feed the worklist.
+## Execute
 
-## Apply contract rules
+1. Read `BCQ/microsoft/skills/review/al-privacy-review.md` in full and follow its Source, Relevance, Worklist, Action and Output steps exactly.
+2. Read `BCQ/skills/read.md` and `BCQ/skills/do.md` on demand (summaries: the `bcquality-read-contract` rule, the `bcquality-do-contract` rule).
+3. Inputs: `pr-diff`, `file-path`, or `folder-path`, carrying the actual diff or path. For `folder-path`, enumerate every relevant file under the folder; a folder has no baseline, so comparison-only rules do not apply.
+4. Knowledge: the `privacy` domain across all enabled layers: `BCQ/microsoft/knowledge/privacy/`, `BCQ/community/knowledge/privacy/`, `BCQ/custom/knowledge/privacy/` (custom wins conflicts). Use READ's bounded retrieval (`pwsh BCQ/tools/Search-Knowledge.ps1` / `Get-KnowledgeArticles.ps1` over `BCQ/knowledge-index.json`) when `pwsh` and the index exist. Otherwise use READ's fallback: list the domain folders and read every selected article in full. A retrieval failure is never an empty result.
+5. Where the AL MCP tools are available, use them per the `al-mcp-usage` rule to confirm symbols before reporting.
 
-Load `bcquality-do-contract`, `bcquality-read-contract`, and `al-mcp-usage`.
-
-## Source
-
-Read every knowledge file under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/privacy/*.md`. Today:
-
-- 17+ files under `microsoft/knowledge/privacy/`. Includes important _anti-false-positive_ articles: `data-classification-is-table-field-property.md`, `in-memory-data-not-a-privacy-concern.md`, `page-display-is-not-a-privacy-concern.md` — these prevent the agent from over-flagging non-issues.
-- Any community/custom files under the same domain.
-
-## Relevance
-
-Filter by frontmatter per the READ contract.
-
-## Worklist signal tokens (from upstream skill, verbatim)
-
-`DataClassification`, `CustomerContent`, `EndUserIdentifiableInformation`, `EndUserPseudonymousIdentifiers`, `SystemMetadata`, `ToBeClassified`, `PrivacyNotice`, `GetLastErrorText`, `TelemetryScope`, `FeatureTelemetry`, `CustomDimensions`, `LogUsage`, `LogUptake`, `LogError`, `HybridSL`, `HybridGP`, `HybridBC`.
-
-Weight toward tables and tableextensions, codeunits calling `Error`, `Session.LogMessage`, `FeatureTelemetry`, outgoing HTTP requests, migration codeunits, IsolatedStorage I/O.
-
-**EXCLUDE test code, test libraries, test helper code, files under `test/Test/Tests` paths, and objects with `Subtype = Test`** — test data is synthetic and does not ship to customers. This exclusion is mandated by the upstream skill.
-
-Resolve layer precedence; suppressed files go into `suppressed[]`.
-
-## Action
-
-Same severity / confidence rules as al-performance-review.
-
-`blocker` ONLY for documented telemetry-classification rules or GDPR-adjacent data-handling requirements.
-
-Pay special attention to the anti-false-positive articles — flag `info`-severity reminders to the reviewer when the diff looks like it might trigger an over-flag (temp tables, in-memory data, page DataClassification).
+Also read `<plugin>/content/bcapps-review-prompts/privacy.md` — the MIT-licensed BCApps AI review prompt for privacy (~21 KB). Both feed the worklist. The prompt is frozen at BCApps `7040033d` (upstream deleted it when its PR reviewer switched to BCQuality), so BCQuality wins on conflict.
 
 ## Output
 
-Single JSON document conforming to the DO output contract.
+One strict-JSON findings report per DO, `skill.id: "al-privacy-review"`:
+
+- Every finding sets `domain: "Privacy"`.
+- A knowledge-backed finding has `id` equal to `references[0].path`, the exact path relative to `BCQ` (for example `microsoft/knowledge/privacy/<slug>.md`), and cites only articles opened in full. `references[].sha` is the pinned `bcquality.ref`; omit it for `custom/` articles.
+- An agent finding has `references: []` and an id of the form `agent:<slug>`. It stays within this domain and is capped at `severity: minor` and `confidence: medium`.
+- Locations use 1-based line numbers in the final file. Mechanical fixes carry `suggested-code`, or else `suggested-code-omission-reason`.
+- `completed` with no findings means nothing was flagged. `not-applicable` and `no-knowledge` are different outcomes. `partial` and `failed` are not clean results.
+
+Render for chat with `bash <plugin>/scripts/render-findings.sh` and give each `location.file:line` as a clickable reference. User command: `/bcq-review-privacy`.

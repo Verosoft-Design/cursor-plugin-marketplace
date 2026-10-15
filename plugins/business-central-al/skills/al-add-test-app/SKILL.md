@@ -6,23 +6,23 @@ disable-model-invocation: true
 
 # Add a test app
 
-Dispatches the `Create a new test app` workflow in the current AL-Go repository.
+Dispatches the `Create a new test app` workflow (`CreateTestApp.yaml`) in the current AL-Go repository.
 
 ## Step 1 — Preflight
 
 1. Confirm the cwd is inside an AL-Go repo (`.github/AL-Go-Settings.json` exists).
 2. Gather inputs from the user:
    - `project` — relative path to the project folder (default `.` for single-project repos)
-   - `name` — test app name (default `<MainApp>.Test`)
+   - `name` — test app name (required; the workflow's placeholder default is `<YourAppName>.Test`, so always pass a real name such as `<MainApp>.Test`)
    - `publisher` — same publisher as the main app
-   - `idrange` — defaults to `50000..99999`; in TAG-style projects use the user's allocated range
+   - `idrange` — required; workflow default `50000..99999`; in TAG-style projects use the user's allocated range
    - Whether to commit directly or open a PR (default PR)
 3. If `directCommit=false` (PR mode), check that the org allows GitHub Actions to create/approve PRs (Settings → Actions → General → Allow GitHub Actions to create and approve pull requests). If unsure, mention it as a gotcha.
 
 ## Step 2 — Dispatch
 
 ```bash
-gh workflow run "Create a new test app" \
+gh workflow run CreateTestApp.yaml \
   --ref main \
   -f project=<project> \
   -f name=<name> \
@@ -33,12 +33,12 @@ gh workflow run "Create a new test app" \
   -f useGhTokenWorkflow=true
 ```
 
-`useGhTokenWorkflow=true` requires the `GhTokenWorkflow` secret. Run `/al-secrets-setup` if it is missing.
+These are exactly the v10.0 inputs of `CreateTestApp.yaml`. `useGhTokenWorkflow=true` requires the `GhTokenWorkflow` secret (it makes the PR trigger the Pull Request Build). Run `/al-secrets-setup` if it is missing, or pass `useGhTokenWorkflow=false` to open the PR with `GITHUB_TOKEN`.
 
 ## Step 3 — Watch the run
 
 ```bash
-RUN_ID=$(gh run list --workflow "Create a new test app" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow CreateTestApp.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 
