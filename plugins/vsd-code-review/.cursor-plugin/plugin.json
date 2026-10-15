@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Verosoft pre-merge review: thermo-nuclear structure, KISS/YAGNI, Fallow hygiene, deslop, and TDD bar.",
   "author": {
-    "name": "Alexis Sturgeon"
+    "name": "Alexis Turgeon"
   },
   "license": "MIT",
   "rules": "rules",

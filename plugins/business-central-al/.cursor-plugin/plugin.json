@@ -4,7 +4,7 @@
   "version": "0.7.0",
   "description": "Full-lifecycle Cursor plugin for Business Central AL development. The official Microsoft AL MCP server for the inner dev loop (including al_getnextobjectid and environment symbol search), ALTool's real-environment loops (al runtests, al graph call graphs, snapshot-debugging and profiling MCP proxies), AL-Go for GitHub v10 workflow dispatch, microsoft/BCApps analyzer rulesets, microsoft/BCQuality structured review (super-skill + 19 domain reviews, 388 knowledge articles, strict JSON contract, TAG custom layer), microsoft/BC-Bench's ALTest test-generation prompt, the BCApps al-docs skill, and hooks that surface BC project metadata and the BC-Bench-measured levers at session start.",
   "author": {
-    "name": "Alexis Sturgeon"
+    "name": "Alexis Turgeon"
   },
   "logo": "assets/logo.svg",
   "license": "MIT",
