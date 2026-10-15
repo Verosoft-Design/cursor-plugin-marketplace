@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1] — 2026-10-15
+
+### Fixed
+
+- Author name corrected to Alexis Turgeon (`plugin.json`, `LICENSE`).
+- `plugin.json` version now matches this changelog. It still said 1.0.0 after the 1.1.0 release.
+
 ## [1.1.0] — 2026-07-13
 
 ### Added

@@ -12,6 +12,12 @@ The original 5-phase rebuild is complete. Future work:
 
 - **Phase 6 (deferred):** hosted Business Central runtime MCP for chat over BC data — `/bc-query`, `/bc-post`. Requires Entra app registration + per-tenant _MCP Server Configuration_.
 
+## [0.7.1] — 2026-10-15
+
+### Fixed
+
+- Author name corrected to Alexis Turgeon (`plugin.json`, `LICENSE`).
+
 ## [0.7.0] — 2026-10-15
 
 Refreshed every upstream source (same refresh as the Claude Code plugin in Verosoft-Design/claude-plugins 1.1.0).

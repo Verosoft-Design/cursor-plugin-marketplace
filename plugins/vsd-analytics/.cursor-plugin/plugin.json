@@ -1,7 +1,7 @@
 {
   "name": "vsd-analytics",
   "displayName": "VSD Analytics",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Verosoft analytics plugin — LogRocket MCP for session replay and product analytics investigation.",
   "author": {
     "name": "Alexis Turgeon"
