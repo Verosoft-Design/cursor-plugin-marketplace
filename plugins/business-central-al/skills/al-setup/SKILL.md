@@ -60,7 +60,10 @@ With explicit confirmation, offer to append the export line to their shell rc fi
 
 If `code` is not on PATH, tell the user to either install VS Code first or pick Option B.
 
-### Option B — AL Development Tools NuGet package
+### Option B — AL Development Tools NuGet package (Microsoft's recommended install for headless/agent use)
+
+Use a current version: `al runtests`, `al graph`, environment symbol search, `al_getnextobjectid` and the snapshot-debugging/profiling proxies all arrived in 2026 releases (AL tools 18.0 / BC 2026 release wave 2). `dotnet tool update --global Microsoft.Dynamics.BusinessCentral.Development.Tools` upgrades an existing install; `al version` shows what's there.
+
 
 Provides `al` (not `altool`) — requires the Step 3 mismatch fix. Best for headless agents or users who don't want VS Code.
 

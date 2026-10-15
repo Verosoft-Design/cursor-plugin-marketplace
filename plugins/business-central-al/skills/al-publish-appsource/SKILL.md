@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Publish to AppSource
 
-Dispatches the `Publish To AppSource` workflow (AppSource-template repos only).
+Dispatches the `Publish To AppSource` workflow (`PublishToAppSource.yaml`, AppSource-template repos only; display name ` Publish To AppSource` has a leading space, so dispatch by file name).
 
 ## CRITICAL: first AppSource upload is manual
 
@@ -23,21 +23,24 @@ Default to `GoLive=false`. The release sits in Preview state until someone click
 ## Preflight
 
 1. Confirm cwd is an AL-Go repo of type `AppSource App` (check `.github/AL-Go-Settings.json` → `type`).
-2. **Required secret: `AppSourceContext`** (JSON for Partner Center API, scope `https://api.partner.microsoft.com/.default`). Use `gh secret list` to verify. If missing, run `/al-secrets-setup`.
+2. **Required secret: `AppSourceContext`** (or the name in `appSourceContextSecretName`; JSON for the Partner Center API with a client secret or a federated credential, scope `https://api.partner.microsoft.com/.default`). Use `gh secret list` to verify (if Azure Key Vault is wired, it may live there instead; check with `/al-troubleshoot`). If missing, run `/al-secrets-setup`.
 3. **Required setting: `deliverToAppSource.productId`** in `.AL-Go/settings.json` (the AppSource product GUID from Partner Center).
 4. **Required setting: `appSourceCopMandatoryAffixes`** must be set and match what's used in the source. Otherwise AppSourceCop fails and the submission is rejected.
 5. Check there is a built artifact for the version being submitted. `appVersion=current` requires a Release tag to exist (use `/al-release` first).
+6. Check that the dispatching branch (normally `main`) and every branch in `deliverToAppSource.branches` (default `main`, used by CI/CD continuous delivery) are protected. AL-Go's Deliver jobs have no GitHub environment gate, so the `AppSourceContext` secret is only as safe as the branch protection on those branches. If they are unprotected, tell the user before submitting.
 
 ## Inputs
 
 - `appVersion` — `current` / `prerelease` / `draft` / `latest` / explicit version. **For AppSource, prefer `current`** so the submission corresponds to a tagged GitHub Release.
 - `projects` — `*` (all AppSource-targeting projects) or comma-separated.
-- `GoLive` — `false` (default) or `true` (only with explicit user confirmation).
+- `GoLive` — `false` (default) or `true` (only with explicit user confirmation). The input name is `GoLive` (capital G, capital L), exactly as in the YAML.
+
+These three are the only inputs in v10.0 (`appVersion` defaults to `current`, `projects` to `*`).
 
 ## Dispatch (preview only — safe default)
 
 ```bash
-gh workflow run "Publish To AppSource" \
+gh workflow run PublishToAppSource.yaml \
   --ref main \
   -f appVersion=current \
   -f projects=* \
@@ -47,7 +50,7 @@ gh workflow run "Publish To AppSource" \
 ## Dispatch (Go Live — ONLY after explicit user confirmation)
 
 ```bash
-gh workflow run "Publish To AppSource" \
+gh workflow run PublishToAppSource.yaml \
   --ref main \
   -f appVersion=current \
   -f projects=* \
@@ -57,7 +60,7 @@ gh workflow run "Publish To AppSource" \
 ## Watch the run
 
 ```bash
-RUN_ID=$(gh run list --workflow "Publish To AppSource" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow PublishToAppSource.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 
@@ -84,6 +87,8 @@ Microsoft validation typically takes 24–72 hours. The workflow's run completes
 },
 "generateDependencyArtifact": true
 ```
+
+- `branches` (inside `deliverToAppSource`, default `main`) — branches allowed to deliver to AppSource. Set it explicitly and protect every listed branch.
 
 - `continuousDelivery: true` — every successful CI/CD build is auto-submitted (always in Preview state until someone presses Go Live).
 - `mainAppFolder` — when the repo has multiple apps but only one ships to AppSource.

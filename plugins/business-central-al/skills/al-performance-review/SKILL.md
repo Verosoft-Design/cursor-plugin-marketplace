@@ -1,62 +1,34 @@
 ---
 name: al-performance-review
-description: Review AL code for performance issues using BCQuality's curated performance knowledge plus BCApps' MIT-licensed performance review prompt. Detects SetLoadFields ordering errors, missing or wrong SetCurrentKey, IsEmpty vs Count > 0, FindFirst-with-Next loops, Commit inside loops, missing filter-before-FindSet, redundant CalcFields, and other BC-specific performance footguns.
+description: Review AL code for performance issues using BCQuality's performance knowledge, covering filtering before iterating, SetLoadFields, IsEmpty vs Count, FindSet and locking, CalcFields/CalcSums, per-row work and Commit inside loops, keys and SIFT, and caching.
 ---
 
-# AL Performance Review (leaf)
+# AL Performance review (leaf)
 
-This skill is the Cursor adapter for BCQuality's `al-performance-review` leaf skill.
+Cursor adapter for BCQuality's `al-performance-review` leaf action skill (`microsoft/skills/review/al-performance-review.md`). It is one of the 19 leaves composed by `al-code-review`; Entry dispatches it on its own when the goal names this concern. This adapter holds no review policy; the vendored upstream skill is authoritative.
 
-## Authoritative spec
+## BCQuality root
 
-Read `<plugin>/content/bcquality/microsoft/skills/review/al-performance-review.md` in full. It declares the canonical Source → Relevance → Worklist → Action pattern for the performance domain.
+`BCQ` = `<plugin>/content/bcquality`, a mirror of the microsoft/BCQuality repo at the SHA pinned in `content/PINNED.json`. Resolve every repo-relative path the upstream files name (`skills/read.md`, `tools/...`, `knowledge-index.json`, `microsoft/knowledge/...`) against `BCQ`, never against the user's project.
 
-Also read `<plugin>/content/bcapps-review-prompts/performance.md` — the MIT-licensed BCApps AI review prompt for performance (~28 KB). It complements the BCQuality knowledge files with bad/good AL code examples and richer reasoning. Both feed the worklist.
+## Execute
 
-## Apply contract rules
+1. Read `BCQ/microsoft/skills/review/al-performance-review.md` in full and follow its Source, Relevance, Worklist, Action and Output steps exactly.
+2. Read `BCQ/skills/read.md` and `BCQ/skills/do.md` on demand (summaries: the `bcquality-read-contract` rule, the `bcquality-do-contract` rule).
+3. Inputs: `pr-diff`, `file-path`, or `folder-path`, carrying the actual diff or path. For `folder-path`, enumerate every relevant file under the folder; a folder has no baseline, so comparison-only rules do not apply.
+4. Knowledge: the `performance` domain across all enabled layers: `BCQ/microsoft/knowledge/performance/`, `BCQ/community/knowledge/performance/`, `BCQ/custom/knowledge/performance/` (custom wins conflicts). Use READ's bounded retrieval (`pwsh BCQ/tools/Search-Knowledge.ps1` / `Get-KnowledgeArticles.ps1` over `BCQ/knowledge-index.json`) when `pwsh` and the index exist. Otherwise use READ's fallback: list the domain folders and read every selected article in full. A retrieval failure is never an empty result.
+5. Where the AL MCP tools are available, use them per the `al-mcp-usage` rule to confirm symbols before reporting.
 
-Load `bcquality-do-contract` (output JSON shape), `bcquality-read-contract` (knowledge file parsing), and `al-mcp-usage` (for using `al_symbolsearch` and `al_getdiagnostics` to support findings when relevant).
-
-## Source
-
-Read every knowledge file under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/performance/*.md`. Today:
-
-- 33+ files under `microsoft/knowledge/performance/` (canonical examples: `use-setloadfields-for-partial-records.md`, `findset-true-applies-updlock-on-read.md`, `use-isempty-for-existence-check.md`, `pair-findset-with-next-loop.md`, `avoid-commit-inside-loops.md`, `calcsums-instead-of-calcfields-in-loop.md`).
-- 7+ files under `community/knowledge/performance/` (e.g. `use-deleteall-for-filtered-bulk-deletion.md`, `omit-filter-only-fields-from-setloadfields.md`).
-- Any custom-layer files under `custom/knowledge/performance/`.
-
-## Relevance
-
-Filter by frontmatter per the READ contract:
-
-- `bc-version`: match against the workspace's BC version (from `app.json` if present, else treat as unknown).
-- `technologies`: intersect with `[al]`.
-- `countries`: match per the `w1` sentinel rule.
-- `application-area`: match per the `[all]` sentinel rule.
-
-Files that are conditionally applicable (any dimension unknown) get findings with confidence capped at `medium` and the unknown dimensions named in the message.
-
-## Worklist signal tokens (from upstream skill, verbatim)
-
-`SetRange`, `SetFilter`, `SetLoadFields`, `SetCurrentKey`, `FindSet`, `ReadIsolation`, `LockTable`, `ModifyAll`, `DeleteAll`, `TextBuilder`, `Dictionary`, `temporary`, `repeat`, `until`, `CalcFields`, `CalcSums`.
-
-Weight toward changed objects performing record iteration: tables, pages with `SourceTable` bindings, reports, queries, codeunits performing record iteration.
-
-Resolve layer precedence per READ — `custom` > `community` > `microsoft`. Suppressed files go into the output's `suppressed[]` with `reason: "layer-precedence"`.
-
-## Action
-
-Per worklist entry, evaluate the diff or file against the file's `## Best Practice` and `## Anti Pattern` sections.
-
-Severity rules from the upstream skill:
-
-- `blocker` ONLY when the knowledge file states a platform-level guarantee (documented query timeouts, transaction size limits).
-- `major` for clear anti-pattern matches with high confidence.
-- `minor` for Best-Practice contradictions that aren't full anti-patterns.
-- `info` when the file is clearly applicable but no violation is detected (useful as context).
-
-Confidence: `high` only for unambiguous identifier/syntax/object-type matches; `medium` for heuristics or unknown dimensions; `low` for applicability-only advisories.
+Also read `<plugin>/content/bcapps-review-prompts/performance.md` — the MIT-licensed BCApps AI review prompt for performance (~28 KB). It complements the BCQuality knowledge files with bad/good AL code examples and richer reasoning. Both feed the worklist. The prompt is frozen at BCApps `7040033d` (upstream deleted it when its PR reviewer switched to BCQuality), so BCQuality wins on conflict.
 
 ## Output
 
-Single JSON document conforming to the DO output contract. Render via `scripts/render-findings.sh` for human-readable display in chat. Include each finding's `location.file:line` as a clickable reference.
+One strict-JSON findings report per DO, `skill.id: "al-performance-review"`:
+
+- Every finding sets `domain: "Performance"`.
+- A knowledge-backed finding has `id` equal to `references[0].path`, the exact path relative to `BCQ` (for example `microsoft/knowledge/performance/<slug>.md`), and cites only articles opened in full. `references[].sha` is the pinned `bcquality.ref`; omit it for `custom/` articles.
+- An agent finding has `references: []` and an id of the form `agent:<slug>`. It stays within this domain and is capped at `severity: minor` and `confidence: medium`.
+- Locations use 1-based line numbers in the final file. Mechanical fixes carry `suggested-code`, or else `suggested-code-omission-reason`.
+- `completed` with no findings means nothing was flagged. `not-applicable` and `no-knowledge` are different outcomes. `partial` and `failed` are not clean results.
+
+Render for chat with `bash <plugin>/scripts/render-findings.sh` and give each `location.file:line` as a clickable reference. User command: `/bcq-review-performance`.

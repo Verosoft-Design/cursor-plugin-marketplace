@@ -22,9 +22,10 @@ Compound flow that takes a worked-on AL extension through every step from local 
 
 1. Confirm cwd is an AL-Go repo of type `AppSource App`.
 2. Confirm all required secrets exist (`gh secret list`):
-   - `GhTokenWorkflow` (for releases)
-   - `AppSourceContext` (for AppSource)
-   - Codesign secrets OR `keyVaultCodesignCertificateName`
+   - `GhTokenWorkflow` (for releases; Stage 5 passes `useGhTokenWorkflow=true`)
+   - `AppSourceContext` (for AppSource; or the name in `appSourceContextSecretName`)
+   - Signing: legacy codesign secrets, `keyVaultCodesignCertificateName`, or the `trustedSigning` setting (the last two need `Azure_Credentials`)
+   - If Azure Key Vault is wired, secrets may not appear in `gh secret list`; run `/al-troubleshoot` with `displayNameOfSecrets=true` instead.
 3. Confirm `.AL-Go/settings.json` has:
    - `deliverToAppSource.productId`
    - `appSourceCopMandatoryAffixes` non-empty
@@ -64,7 +65,8 @@ For repos that have automated UI / API tests against the sandbox, the user can i
 Check that the latest commit on the user's branch has a green CI/CD run:
 
 ```bash
-gh run list --workflow "CI/CD" --branch <branch> --limit 1 --json conclusion,databaseId,headSha
+gh run list --workflow CICD.yaml --branch <branch> --limit 1 --json conclusion,databaseId,headSha
+# The display name is " CI/CD" (leading space), so always use the file name CICD.yaml
 ```
 
 If the latest run is `failure`, surface the failure and stop. If `success`, capture the run's `databaseId` for later reference.
@@ -78,16 +80,20 @@ Confirm with the user: "About to cut release `<tag>` from build `<buildVersion>`
 On confirmation, call `/al-release`:
 
 ```bash
-gh workflow run "Create release" \
+gh workflow run CreateRelease.yaml \
   --ref main \
   -f buildVersion=latest \
   -f name=<display name> \
   -f tag=<tag> \
   -f releaseType=Release \
+  -f createReleaseBranch=false \
+  -f updateVersionNumber=<bump> \
+  -f skipUpdatingDependencies=false \
   -f directCommit=false \
-  -f useGhTokenWorkflow=true \
-  -f updateVersionNumber=<bump>
+  -f useGhTokenWorkflow=true
 ```
+
+`buildVersion=latest` releases the latest successful CI/CD build of `main` (the `--ref`), i.e. the run captured in Stage 4. These input names match the v10.0 `CreateRelease.yaml`; see `/al-release` for the rest (`releaseBranchPrefix`). The workflow's separate `CheckForUpdates` job may report newer AL-Go system files; that is informational and does not block the release.
 
 Watch the run. If it fails, stop.
 
@@ -98,7 +104,7 @@ Confirm with the user: "About to submit release `<tag>` to AppSource in Preview 
 On confirmation:
 
 ```bash
-gh workflow run "Publish To AppSource" \
+gh workflow run PublishToAppSource.yaml \
   --ref main \
   -f appVersion=current \
   -f projects=* \
@@ -112,7 +118,7 @@ Watch the run. The workflow returns when the submission is accepted for validati
 If and only if the user explicitly requested Go Live at preflight AND the Stage 6 submission has passed Microsoft validation (visible in Partner Center), confirm once more with the user — "About to promote release `<tag>` to public AppSource. This makes it available to every BC customer immediately. Proceed?" — then:
 
 ```bash
-gh workflow run "Publish To AppSource" \
+gh workflow run PublishToAppSource.yaml \
   --ref main \
   -f appVersion=current \
   -f projects=* \

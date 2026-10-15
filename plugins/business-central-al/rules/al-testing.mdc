@@ -100,31 +100,43 @@ Tags: `[Scenario]` (one per test), then `[Given]` / `[When]` / `[Then]` sections
 
 When the tested code raises UI (Message, Confirm, ModalPage, Page, StrMenu, Notification), declare handler procedures and list them in `[HandlerFunctions(...)]`.
 
+Handlers only pass values in and out; the test body does the asserting. This is the pattern in BC-Bench's ALTest prompt, the only test-generation prompt with measured gains (see `/al-write-test`). Older BCApps tests often assert inside handlers; don't copy that into new tests. A failed assertion inside a handler is reported far from the test's intent, and handlers that silently accept anything hide missing UI.
+
 ```al
 [Test]
 [HandlerFunctions('MessageHandler,ConfirmHandler')]
 procedure ShouldHandleUiInteraction()
 begin
-    // ...
-end;
+    // [GIVEN] the reply the confirm dialog should get
+    LibraryVariableStorage.Enqueue(true);
 
-[MessageHandler]
-procedure MessageHandler(Message: Text[1024])
-begin
-    Assert.AreEqual(ExpectedMessageLbl, Message, 'Wrong message shown');
+    // [WHEN] ...
+
+    // [THEN] the expected question and message were shown
+    Assert.AreEqual(ExpectedQuestionLbl, LibraryVariableStorage.DequeueText(), 'Wrong question shown');
+    Assert.AreEqual(ExpectedMessageLbl, LibraryVariableStorage.DequeueText(), 'Wrong message shown');
+    LibraryVariableStorage.AssertEmpty();
 end;
 
 [ConfirmHandler]
 procedure ConfirmHandler(Question: Text[1024]; var Reply: Boolean)
 begin
-    Assert.AreEqual(ExpectedQuestionLbl, Question, 'Wrong question shown');
-    Reply := true;
+    Reply := LibraryVariableStorage.DequeueBoolean();
+    LibraryVariableStorage.Enqueue(Question);
+end;
+
+[MessageHandler]
+procedure MessageHandler(Message: Text[1024])
+begin
+    LibraryVariableStorage.Enqueue(Message);
 end;
 ```
 
+(`LibraryVariableStorage: Codeunit "Library - Variable Storage"` as a global; call `LibraryVariableStorage.Clear()` in `Initialize()`. Queue order is FIFO, so dequeue in the order the UI fired.)
+
 Available handler attributes: `[MessageHandler]`, `[ConfirmHandler]`, `[ModalPageHandler]`, `[PageHandler]`, `[StrMenuHandler]`, `[SendNotificationHandler]`, `[ReportHandler]`, `[RequestPageHandler]`, `[RecallNotificationHandler]`, `[HyperlinkHandler]`, `[FilterPageHandler]`, `[SessionSettingsHandler]`.
 
-Handler procedures SHOULD assert on the values they receive — without that, the handler just swallows the UI and the test loses coverage.
+Every handler listed in `[HandlerFunctions]` must fire during the test, and every value it captures should be checked in the test body; `LibraryVariableStorage.AssertEmpty()` at the end catches UI that fired more or less often than expected.
 
 ## Negative tests with `asserterror`
 

@@ -2,38 +2,87 @@
 description: BCQuality entry-point routing contract. Agent-requestable. Loads when the agent needs to route a task to the right action skill — the dispatch-record shape, goal matching, super-skill precedence, and layer precedence rules.
 alwaysApply: false
 ---
-
 # BCQuality entry-point contract
 
-The authoritative entry-point skill is vendored at `<plugin>/content/bcquality/entry.md` (sourced from `microsoft/BCQuality/skills/entry.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you need to route a task.** This rule is just a pointer.
+The authoritative entry-point skill is vendored at `<plugin>/content/bcquality/skills/entry.md`, sourced from `microsoft/BCQuality/skills/entry.md` at the SHA pinned in `content/PINNED.json`. **Read that file in full when you need to route a task.** This file is a pointer plus the plugin-side tables.
+
+`content/bcquality/` mirrors the upstream repo layout. Resolve every repo-relative path upstream names against `<plugin>/content/bcquality`, never against the user's project.
 
 ## What Entry defines
 
-- **Task context input**: `goal`, `inputs-available[]`, optional dimension filters (`technologies`, `bc-version`, `countries`, `application-area`), `enabled-layers`, `disabled-skills`.
-- **Candidate set**: all action skills under `*/skills/**/*.md` across enabled layers (meta-skills in `/skills/` are excluded — Entry never dispatches Entry).
-- **Relevance**: candidates pass if their `kind` is `action-skill`, their declared `inputs` intersect with `inputs-available`, and their dimension filters match.
-- **Worklist (the 3-tier ranking)**:
-  1. Goal match — score `description` and `id` against the task goal. Prefer exact keyword overlap before fuzzy signals.
-  2. Super-skill precedence — when goal broadly matches a super-skill, dispatch the super-skill and drop the listed sub-skills (`superseded-by-super-skill`). When goal specifically names a concern a sub-skill handles, dispatch the sub-skill and drop the super-skill (`narrower-sub-skill-selected`).
-  3. Layer precedence — when two skills share the same `id` across layers, keep the highest-precedence one (`/custom/` > `/community/` > `/microsoft/`).
-- **Dispatch record output**: `{ outcome: "routed" | "no-match" | "failed", dispatch[], skipped[] }`. Each `dispatch[]` entry names a skill, its rationale, and the strict intersection of inputs to pass.
+- **Task context input**: `goal` and `inputs-available` are required (`pr-diff`, `file-path`, `folder-path`, plus the other standard input types). Optional: the filter dimensions (`technologies`, `bc-version`, `countries`, `application-area`; an omitted dimension is a wildcard), `enabled-layers` (default: all three), and `disabled-skills` (repo-relative paths).
+- **Preparation**: before routing, make sure `knowledge-index.json` reflects the live tree by running `pwsh <BCQ>/tools/Build-KnowledgeIndex.ps1`. It takes under a second and writes `<BCQ>/knowledge-index.json`. In this plugin, a missing `pwsh` or a failed build is not fatal, because leaves fall back to path discovery. Preparation never changes the dispatch record.
+- **Candidates**: every `kind: action-skill` under `*/skills/**/*.md` in the enabled layers. `skills/` (Entry, READ, DO, WRITE) is excluded, and Entry never dispatches Entry.
+- **Relevance**: the frontmatter `kind` is `action-skill`, the declared `inputs` intersect `inputs-available`, the filters match per READ (an `unknown` dimension is admitted), and the path is not in `disabled-skills`.
+- **Worklist**:
+  1. Goal match: score `description` and `id` against the goal, preferring exact keyword overlap.
+  2. Super-skill precedence: Entry dispatches the narrowest skill that satisfies the goal. A broad goal keeps the super-skill and drops its sub-skills (`superseded-by-super-skill`). A goal naming a leaf's concern keeps the leaf and drops the super-skill (`narrower-sub-skill-selected`).
+  3. Layer precedence for the same `id`: `/custom/` beats `/community/`, which beats `/microsoft/` (`layer-precedence`).
+- **Dispatch record**: `{ "skill": {"id":"entry","version":1}, "outcome": "routed | no-match | failed", "outcome-reason", "dispatch": [{ "skill": {id, version, path}, "rationale", "inputs" }], "skipped": [{ "skill": {id, path}, "reason", "superseded-by"? }] }`. `dispatch[].inputs` is the strict intersection. Skip reasons are `inputs-unsatisfied`, `filter-mismatch`, `goal-mismatch`, `layer-precedence`, `superseded-by-super-skill`, `narrower-sub-skill-selected`, and `configuration`. The last three, plus `layer-precedence`, carry `superseded-by` (configuration does not).
 
-## Skill discovery in this plugin
+## Action skills at the pinned SHA
 
-Action skills live in:
+| Layer     | Skill (path under `content/bcquality/`)          | Kind                     | Knowledge domain   | `domain` label          | Plugin adapters                                   |
+| --------- | ------------------------------------------------ | ------------------------ | ------------------ | ----------------------- | ------------------------------------------------- |
+| microsoft | `microsoft/skills/review/al-code-review.md`      | super-skill (19 slots)   | n/a                | `Agent` (self-review)   | `al-code-review`, `/bcq-review`                   |
+| microsoft | `.../al-performance-review.md`                   | leaf                     | `performance`      | `Performance`           | `al-performance-review`, `/bcq-review-performance` |
+| microsoft | `.../al-security-review.md`                      | leaf                     | `security`         | `Security`              | `al-security-review`, `/bcq-review-security`      |
+| microsoft | `.../al-privacy-review.md`                       | leaf                     | `privacy`          | `Privacy`               | `al-privacy-review`, `/bcq-review-privacy`        |
+| microsoft | `.../al-upgrade-review.md`                       | leaf                     | `upgrade`          | `Upgrade`               | `al-upgrade-review`, `/bcq-review-upgrade`        |
+| microsoft | `.../al-style-review.md`                         | leaf                     | `style`            | `Style`                 | `al-style-review`, `/bcq-review-style`            |
+| microsoft | `.../al-ui-review.md`                            | leaf (`al`, `javascript`) | `ui`              | `Accessibility`         | `al-ui-review`, `/bcq-review-ui`                  |
+| microsoft | `.../al-error-handling-review.md`                | leaf                     | `error-handling`   | `Error Handling`        | `al-error-handling-review`, `/bcq-review-error-handling` |
+| microsoft | `.../al-events-review.md`                        | leaf                     | `events`           | `Events`                | `al-events-review`, `/bcq-review-events`          |
+| microsoft | `.../al-interfaces-review.md`                    | leaf                     | `interfaces`       | `Interfaces`            | `al-interfaces-review`, `/bcq-review-interfaces`  |
+| microsoft | `.../al-breaking-changes-review.md`              | leaf                     | `breaking-changes` | `Breaking Changes`      | `al-breaking-changes-review`, `/bcq-review-breaking-changes` |
+| microsoft | `.../al-web-services-review.md`                  | leaf (`al`, `javascript`) | `web-services`    | `Web Services`          | `al-web-services-review`, `/bcq-review-web-services` |
+| microsoft | `.../al-testing-review.md`                       | leaf                     | `testing`          | `Testing`               | `al-testing-review`, `/bcq-review-testing`        |
+| microsoft | `.../al-data-modeling-review.md`                 | leaf                     | `data-modeling`    | `Data Modeling`         | `al-data-modeling-review`, `/bcq-review-data-modeling` |
+| microsoft | `.../al-query-review.md`                         | leaf                     | `query`            | `Query`                 | `al-query-review`, `/bcq-review-query`            |
+| microsoft | `.../al-reporting-review.md`                     | leaf                     | `reporting`        | `Reporting`             | `al-reporting-review`, `/bcq-review-reporting`    |
+| microsoft | `.../al-appsource-review.md`                     | leaf                     | `appsource`        | `AppSource`             | `al-appsource-review`, `/bcq-review-appsource`    |
+| microsoft | `.../al-telemetry-review.md`                     | leaf                     | `telemetry`        | `Telemetry`             | `al-telemetry-review`, `/bcq-review-telemetry`    |
+| microsoft | `.../al-scm-review.md`                           | leaf                     | `scm`              | `Supply Chain Management` | `al-scm-review`, `/bcq-review-scm`              |
+| microsoft | `.../al-finance-review.md`                       | leaf                     | `finance`          | `Finance`               | `al-finance-review`, `/bcq-review-finance`        |
+| community | `community/skills/review/al-agents-review.md`    | leaf, top-level peer (not composed) | `agents` | `Agents`             | `al-agents-review`, `/bcq-review-agents`          |
+| custom    | `custom/skills/`                                 | empty                    | n/a                | n/a                     | n/a                                               |
 
-- `<plugin>/content/bcquality/microsoft/skills/review/` — `al-code-review.md` (super-skill) + 6 leaves.
-- `<plugin>/content/bcquality/community/skills/` — empty in upstream today.
-- `<plugin>/content/bcquality/custom/skills/` — empty by default. Add local action skills here.
+The rows are listed in `al-code-review`'s `sub-skills` slot order. Every skill declares `inputs: [pr-diff, file-path, folder-path]`, `outputs: [findings-report]`, `bc-version: [all]`, `countries: [w1]`, and `application-area: [all]`. `object-list` and `repository` remain valid DO input types, but no current skill accepts them.
+
+## Knowledge articles per domain at the pinned SHA
+
+| Domain           | microsoft | community | custom (TAG) |
+| ---------------- | --------- | --------- | ------------ |
+| performance      | 80        | 0         | 0            |
+| ui               | 39        | 0         | 0            |
+| data-modeling    | 35        | 0         | 0            |
+| style            | 32        | 0         | 6            |
+| security         | 28        | 0         | 0            |
+| upgrade          | 26        | 0         | 1            |
+| events           | 23        | 0         | 0            |
+| privacy          | 20        | 0         | 0            |
+| testing          | 20        | 0         | 0            |
+| web-services     | 16        | 0         | 1            |
+| error-handling   | 11        | 0         | 0            |
+| scm              | 10        | 0         | 0            |
+| breaking-changes | 9         | 0         | 0            |
+| finance          | 9         | 0         | 0            |
+| reporting        | 9         | 0         | 0            |
+| telemetry        | 7         | 0         | 0            |
+| interfaces       | 6         | 0         | 0            |
+| appsource        | 4         | 6         | 0            |
+| query            | 4         | 0         | 0            |
+| agents           | 0         | 20        | 0            |
+| **total**        | **388**   | **26**    | **8**        |
 
 ## How the plugin's commands consume Entry
 
-- `/bcq-review` invokes the `al-entry` Cursor skill, which reads `entry.md`, builds the dispatch record, and invokes each named skill in turn.
-- `/bcq-review-performance`, `/bcq-review-security`, etc. bypass Entry and dispatch the corresponding leaf skill directly with goal-specific dispatch.
-- `/al-entry` (the Cursor skill name) NEVER dispatches Entry recursively.
+- `/bcq-review` runs the `al-entry` skill. Entry routes a broad goal to `al-code-review`, which runs its 19 leaves and the self-review.
+- `/bcq-review-<domain>` runs `al-entry` with a goal naming that domain, so Entry selects the leaf (`narrower-sub-skill-selected`). `/bcq-review-agents` selects the community peer, which `/bcq-review` never runs.
+- `al-entry` never dispatches Entry recursively.
 
-## When to load this rule
+## When to load this file
 
 - Before invoking `al-entry` to route a task.
-- When debugging why a particular leaf review skill was or was not dispatched.
-- Before adding a custom action skill (to understand discovery semantics).
+- When debugging why a leaf was or was not dispatched.
+- Before adding a custom action skill under `content/bcquality/custom/skills/`. Use the same `id` as an upstream skill to override it, or a new `id` to add a skill. Update `al-entry`'s candidate list too.

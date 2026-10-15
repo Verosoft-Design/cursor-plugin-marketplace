@@ -1,53 +1,34 @@
 ---
 name: al-style-review
-description: Review AL code style using BCQuality's curated style knowledge plus BCApps' MIT-licensed style review prompt. Detects approved-suffix violations on Labels (Err/Msg/Qst/Lbl/Tok/Txt), missing Comment on placeholder labels, missing Locked = true on URLs and telemetry, FieldName instead of FieldCaption in user text, StrSubstNo-wrapping of Error/Message, missing ToolTip on page fields, missing this. qualification, API-page naming conventions, and other BC-specific style footguns. Use alongside a formal analyzer — this skill adds remedial explanations of why each rule exists.
+description: Review AL code against BCQuality's style knowledge, covering naming, labels and localization, captions and tooltips, API page naming, object and file organization, and code conventions. Rules already enforced by the compiler or CodeCop are left to those analyzers.
 ---
 
-# AL Style Review (leaf)
+# AL Style review (leaf)
 
-This skill is the Cursor adapter for BCQuality's `al-style-review` leaf skill.
+Cursor adapter for BCQuality's `al-style-review` leaf action skill (`microsoft/skills/review/al-style-review.md`). It is one of the 19 leaves composed by `al-code-review`; Entry dispatches it on its own when the goal names this concern. This adapter holds no review policy; the vendored upstream skill is authoritative.
 
-## Authoritative spec
+## BCQuality root
 
-Read `<plugin>/content/bcquality/microsoft/skills/review/al-style-review.md` in full. It declares the canonical Source → Relevance → Worklist → Action pattern for the style domain.
+`BCQ` = `<plugin>/content/bcquality`, a mirror of the microsoft/BCQuality repo at the SHA pinned in `content/PINNED.json`. Resolve every repo-relative path the upstream files name (`skills/read.md`, `tools/...`, `knowledge-index.json`, `microsoft/knowledge/...`) against `BCQ`, never against the user's project.
 
-Also read `<plugin>/content/bcapps-review-prompts/style.md` — the MIT-licensed BCApps AI review prompt for style (~30 KB, the largest of the 6). Both feed the worklist.
+## Execute
 
-## Apply contract rules
+1. Read `BCQ/microsoft/skills/review/al-style-review.md` in full and follow its Source, Relevance, Worklist, Action and Output steps exactly.
+2. Read `BCQ/skills/read.md` and `BCQ/skills/do.md` on demand (summaries: the `bcquality-read-contract` rule, the `bcquality-do-contract` rule).
+3. Inputs: `pr-diff`, `file-path`, or `folder-path`, carrying the actual diff or path. For `folder-path`, enumerate every relevant file under the folder; a folder has no baseline, so comparison-only rules do not apply.
+4. Knowledge: the `style` domain across all enabled layers: `BCQ/microsoft/knowledge/style/`, `BCQ/community/knowledge/style/`, `BCQ/custom/knowledge/style/` (custom wins conflicts). Use READ's bounded retrieval (`pwsh BCQ/tools/Search-Knowledge.ps1` / `Get-KnowledgeArticles.ps1` over `BCQ/knowledge-index.json`) when `pwsh` and the index exist. Otherwise use READ's fallback: list the domain folders and read every selected article in full. A retrieval failure is never an empty result.
+5. Where the AL MCP tools are available, use them per the `al-mcp-usage` rule to confirm symbols before reporting.
 
-Load `bcquality-do-contract`, `bcquality-read-contract`, and `al-mcp-usage`.
-
-## Source
-
-Read every knowledge file under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/style/*.md`. Today:
-
-- 33+ files under `microsoft/knowledge/style/`. Canonical examples: `label-suffix-approved-list.md`, `error-passes-parameters-directly-not-strsubstno.md`, `tooltip-required-on-page-fields.md`, `lowercase-reserved-keywords.md`, `this-keyword-in-codeunits.md`, `api-page-camelcase-properties.md`, `fieldcaption-not-fieldname-in-user-messages.md`, `named-invocations-not-object-ids.md`, `file-name-object-type-pattern.md`.
-- Custom-layer style articles (TAG): `tag-object-id-ranges.md`, `tag-filename-pattern.md`, `tag-object-name-prefix.md`, `tag-project-folder-structure.md`, `tag-procedure-parameter-prefix.md`, `tag-variable-naming-conventions.md`. Several of these CONTRADICT microsoft-layer articles — the custom layer wins per READ precedence; the suppressed microsoft files appear in `suppressed[]`.
-
-## Relevance
-
-Filter by frontmatter per the READ contract.
-
-## Worklist signal tokens (from upstream skill, verbatim)
-
-`Label`, `TextConst`, `Locked`, `Comment`, `MaxLength`, `temporary`, `OptionMembers`, `OptionCaption`, `APIPublisher`, `APIGroup`, `APIVersion`, `EntityName`, `EntitySetName`, `DelayedInsert`, `FieldCaption`, `TableCaption`, `FieldName`, `TableName`, `Page.RunModal`, `Report.Run`, `this.`, `StrSubstNo`.
-
-Weight toward API pages (`PageType = API`), tables and pages declaring `Label` or `TextConst`, codeunits issuing `Error`/`Message`/`Confirm`, and files violating the active filename convention (BCApps `<Object>.<Type>.al` OR TAG `[Type] [ID] - TAG [Name].al`, whichever the repo declares).
-
-Resolve layer precedence; suppressed files go into `suppressed[]`.
-
-## Action
-
-Style findings rarely reach `blocker` — reserve it for cases where the knowledge file documents a platform-level requirement (for example API page property constraints the OData runtime rejects).
-
-Most style findings are `minor` or `info`. Egregious misuse can reach `major`:
-
-- `Error` with pre-built Text losing translation and telemetry classification → `major`.
-- Object IDs outside the publisher's allocated range (per TAG `tag-object-id-ranges.md`) → `major`.
-- Missing mandatory affix per `tag-object-name-prefix.md` → `major` (will break the AppSource build).
-
-Use together with a formal analyzer (`/al-compile` with `enableCodeAnalysis: true` and the BCApps rulesets via `/al-apply-rulesets`). This skill adds BCQuality's remedial-knowledge explanations of why each rule exists; the analyzer catches the mechanical violations.
+Also read `<plugin>/content/bcapps-review-prompts/style.md` — the MIT-licensed BCApps AI review prompt for style (~30 KB, the largest of the 6). Both feed the worklist. The prompt is frozen at BCApps `7040033d` (upstream deleted it when its PR reviewer switched to BCQuality), so BCQuality wins on conflict.
 
 ## Output
 
-Single JSON document conforming to the DO output contract.
+One strict-JSON findings report per DO, `skill.id: "al-style-review"`:
+
+- Every finding sets `domain: "Style"`.
+- A knowledge-backed finding has `id` equal to `references[0].path`, the exact path relative to `BCQ` (for example `microsoft/knowledge/style/<slug>.md`), and cites only articles opened in full. `references[].sha` is the pinned `bcquality.ref`; omit it for `custom/` articles.
+- An agent finding has `references: []` and an id of the form `agent:<slug>`. It stays within this domain and is capped at `severity: minor` and `confidence: medium`.
+- Locations use 1-based line numbers in the final file. Mechanical fixes carry `suggested-code`, or else `suggested-code-omission-reason`.
+- `completed` with no findings means nothing was flagged. `not-applicable` and `no-knowledge` are different outcomes. `partial` and `failed` are not clean results.
+
+Render for chat with `bash <plugin>/scripts/render-findings.sh` and give each `location.file:line` as a clickable reference. User command: `/bcq-review-style`.

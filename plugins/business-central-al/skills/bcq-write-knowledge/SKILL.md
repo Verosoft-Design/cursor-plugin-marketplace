@@ -1,108 +1,87 @@
 ---
 name: bcq-write-knowledge
-description: Author a new BCQuality knowledge article for the plugin's custom layer. Guides the user through frontmatter authoring, the remedial-knowledge admission test, the pre-PR checklist, and runs the vendored upstream validator. Use when codifying a repo-specific or partner-specific BC convention that the agent should respect on future reviews.
+description: Author a new BCQuality knowledge article for the plugin's custom layer. Guides the user through the "is this a knowledge file?" and admission tests, frontmatter authoring, sample-file links, and the pre-PR checklist, then runs the vendored upstream validator. Use when codifying a repo-specific or partner-specific BC convention, or a false-positive guard, that the agent should respect on future reviews.
 ---
 
-# BCQuality — author a custom-layer knowledge file
+# BCQuality: author a custom-layer knowledge file
 
-This skill walks the user through writing a new knowledge article in `<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md`.
+This skill walks the user through writing a new knowledge article at `<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md`.
 
 ## Authoritative spec
 
-Read `<plugin>/content/bcquality/write.md` in full. It defines:
+Read `<plugin>/content/bcquality/skills/write.md` in full. It defines:
 
-- The admission test ("would a modern LLM otherwise get this wrong?")
-- Atomicity — one concern per file.
-- The target length (under 100 lines, ideal under 50).
-- Choosing `bc-version`.
+- *Is this a knowledge file?*: BC facts go in knowledge files, never in skill prose. Negative knowledge (false-positive guards) is first-class.
+- The admission test: "would a capable LLM get this wrong without the file?" See also `<plugin>/content/bcquality/docs/contributing.md#what-belongs-here`.
+- Atomicity (one concern per file), the target length (under 100 lines, ideally under 50), and sources for platform claims.
+- Choosing `bc-version`, including the open-ended `[N..]` range.
+- Choosing a layer, and the fork precondition for `/custom/`.
 - The pre-PR checklist.
 
-Apply the `bcquality-write-contract` and `bcquality-read-contract` rules.
+Apply the `bcquality-write-contract` rule and the `bcquality-read-contract` rule.
 
-## Step 1 — Confirm intent and apply the admission test
+## Step 1: Confirm intent and apply the tests
 
-Before writing anything, ask the user to articulate the concern as a single sentence. Then apply the BCQuality admission test:
+Ask the user to state the concern in one sentence, then check:
 
-> If this file did not exist, would a modern LLM reviewing or generating BC code make a mistake this file would have prevented?
+1. **Is it a BC fact, not skill mechanics?** If the user wants a review to stop flagging something, or to start flagging it, the remedy is a knowledge file, not a skill edit.
+2. **Admission test:** if this file did not exist, would a capable LLM reviewing or generating BC code make a mistake the file would have prevented? A false positive the reviewer keeps raising counts as such a mistake.
 
-If the answer is "no" — the advice is generic software-engineering guidance, or the LLM already knows the BC mechanic in question — DO NOT author the file. Surface the reasoning to the user and suggest they put the convention in a Cursor rule instead.
+If both answers are not "yes" (for example, generic engineering advice, or a BC mechanic the model already knows), do NOT author the file. Explain why, and suggest putting the convention in the repo's CLAUDE.md instead.
 
-Good examples of remedial knowledge:
+Good candidates:
 
-- "`SetLoadFields` must be called before filters, not after" (non-obvious ordering rule).
-- "TAG object IDs must fall in `70015000..70016999`" (publisher-specific, LLM cannot guess).
-- "TAG procedure parameters are prefixed with `p`" (repo convention contradicting BCApps default).
+- "TAG object IDs must fall in `70015000..70016999`": publisher-specific, so an LLM cannot guess it.
+- "TAG procedure parameters are prefixed with `p`": a repo convention that contradicts the BCApps default.
+- "Pattern X in our framework is not a defect, because codeunit Y already guards it": a negative clarification that suppresses a recurring false positive.
 
-Poor examples (do NOT author):
+Poor candidates (do NOT author): "Use HTTPS instead of HTTP." "Don't hardcode secrets." "Keep transactions short."
 
-- "Use HTTPS instead of HTTP."
-- "Don't hardcode secrets."
-- "Keep transactions short."
+**Fork precondition.** The plugin's custom layer is the right home for partner and customer rules. It is local content that the vendor script never overwrites, and nothing in it is ever sent to `microsoft/BCQuality`. Never propose custom content as an upstream PR; upstream auto-closes those. If the guidance is genuinely shareable, contribute it upstream to the layer that owns its domain instead (see write.md *Choosing a layer*).
 
-## Step 2 — Gather frontmatter
+## Step 2: Gather frontmatter
 
-All 6 fields are required:
+All 6 fields are required, and no others are allowed:
 
-- **`bc-version`**: default `[all]` unless the concern is genuinely version-gated. Use `[26, 27, 28]` or `[26..28]` only with a concrete reason.
-- **`domain`**: choose a standard value (`performance`, `security`, `privacy`, `style`, `ui`, `upgrade`, `testing`) or a documented additional value (`api`, `telemetry`, `pipelines`, `finance`, `supply-chain`, `manufacturing`, `jobs`).
-- **`keywords`**: 3–10 lowercase-kebab-case tags engineers and agents would search for.
-- **`technologies`**: usually `[al]`. Add `[javascript]` for control add-ins.
-- **`countries`**: `[w1]` for worldwide; otherwise lowercase ISO-3166 alpha-2 codes.
-- **`application-area`**: `[all]` is the common default; otherwise specific areas (`finance`, `manufacturing`, `jobs`, `warehousing`, `service`).
+- **`bc-version`**: default `[all]`. Use `[26, 27, 28]` or `[26..28]` only for genuinely version-gated guidance. For a feature introduced in version N that is not expected to go away, use the open-ended `[N..]`.
+- **`domain`**: MUST equal the folder name (validator R27). Use a domain that a review leaf sources, or no review will load the article: `performance`, `security`, `privacy`, `upgrade`, `style`, `ui`, `error-handling`, `events`, `interfaces`, `breaking-changes`, `web-services`, `testing`, `data-modeling`, `query`, `reporting`, `appsource`, `telemetry`, `scm`, `finance`, `agents`. API page conventions belong in `web-services`.
+- **`keywords`**: 3 to 10 lowercase kebab-case tags that engineers and agents would search for. Leaves match these against diff tokens.
+- **`technologies`**: usually `[al]`. Add `javascript` for control add-ins. `all` is not allowed.
+- **`countries`**: `[w1]` for worldwide; otherwise lowercase ISO 3166 alpha-2 codes.
+- **`application-area`**: `[all]` is the usual default; otherwise list specific areas (`finance`, `manufacturing`, `jobs`, `warehousing`, `service`).
 
-## Step 3 — Pick a path
+## Step 3: Pick a path
 
-`<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md` where:
+`<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md`, where `<slug>` is descriptive kebab-case (for example `tag-object-id-ranges`, not `obj-ids`).
 
-- `<domain>` is the chosen domain.
-- `<slug>` is kebab-case, descriptive (e.g. `tag-object-id-ranges`, not `obj-ids`).
+Under layer precedence, an article here OVERRIDES a contradicting microsoft or community article. The displaced article appears in the leaf's `suppressed[]` with `reason: "layer-precedence"`. Non-conflicting guidance is additive.
 
-Per the layer precedence: an article here OVERRIDES same-id microsoft and community articles on conflict.
+## Step 4: Write the body
 
-## Step 4 — Write the body
+- `## Description` (mandatory): 2 to 5 sentences. This is the primary retrieval target and feeds the knowledge index's one-line description, so write it as if a skill decides whether to load the file from this text alone.
+- `## Best Practice` and `## Anti Pattern` (recommended, normative). For a negative clarification, Best Practice says what NOT to flag and why, and Anti Pattern describes the mistaken review finding.
+- Optional non-normative sections such as `## References` (link authoritative sources for platform claims) and `## See also`.
 
-Mandatory section:
+Hard rules (validator-enforced): `## Description` is required, there are NO fenced code blocks in the article body, and the file is at most 100 lines.
 
-- `## Description` — 2–5 sentences. Primary retrieval target. Write it as if a skill is deciding whether to load this file based on this text alone.
+## Step 5: Optional sample files
 
-Recommended normative sections:
+Ship AL code as sibling files: `<slug>.good.al` and/or `<slug>.bad.al`, or `.js` for control add-in samples. Fenced code is allowed there. Link each sample from the body with a relative Markdown link that keeps the backticked filename, for example `` [`<slug>.good.al`](<slug>.good.al) ``. Every linked sample must exist.
 
-- `## Best Practice` — the recommended approach.
-- `## Anti Pattern` — what to avoid and the reasoning.
+## Step 6: Validate
 
-Optional non-normative sections (any `##` is permitted): `## See also`, `## Applies to`, etc. Consumers must not treat these as binding.
-
-**Hard rules** (CI-enforced by R09–R11):
-
-- `## Description` is required.
-- NO fenced code blocks anywhere in the body. Inline `code` with single backticks is fine.
-- File ≤ 100 lines.
-
-## Step 5 — Optional sample files
-
-If the article references AL code, ship it as sibling files:
-
-- `<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.good.al`
-- `<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.bad.al`
-
-Sample files CAN contain AL code (no fenced-code rule there). Reference them from the article body using their relative filename in inline backticks.
-
-## Step 6 — Validate
-
-Run the vendored upstream validator BEFORE committing:
+Run the vendored upstream validator. It needs PyYAML; set `PYTHON` if the default `python3` lacks it.
 
 ```bash
 python3 <plugin>/scripts/validate-bcquality-frontmatter.py --root <plugin>/content/bcquality
 ```
 
-The validator implements 25 rules (R01–R25). Exit 0 with no errors means the article is well-formed. Any error must be fixed before the file is useful.
+The summary line must read `Validator: 0 error(s), …`. Warnings, such as more than 10 keywords, do not fail. Fix every error before relying on the article.
 
-## Step 7 — Update PROGRESS if applicable
+## Step 7: Record it
 
-If this is a fresh-from-scratch custom article (not a port of an existing convention), add a note in the plugin's `docs/business-central-al-rebuild/TAG_CUSTOM_LAYER.md` so future maintainers know about it.
+If this is a brand-new custom article rather than a port of an existing convention, note it in the plugin's `CHANGELOG.md` so future maintainers know about it (the design history of the TAG layer is in `docs/business-central-al-rebuild/TAG_CUSTOM_LAYER.md` of the Cursor repo).
 
 ## After authoring
 
-The article is immediately consumable by `al-style-review`, `al-performance-review`, etc. — they Source from `custom/knowledge/<domain>/` automatically. No skill changes needed.
-
-The next review run will surface findings citing the new article. If the article contradicts an upstream microsoft or community article, the loser will appear in the output's `suppressed[]` with `reason: "layer-precedence"`.
+The article is consumable immediately. The matching leaf (for example `al-style-review` for `domain: style`) sources `custom/knowledge/<domain>/` automatically, and `al-entry` rebuilds the knowledge index on the next run when `pwsh` is available. No skill changes are needed. If the article contradicts an upstream article, the upstream one appears in that leaf's `suppressed[]`.

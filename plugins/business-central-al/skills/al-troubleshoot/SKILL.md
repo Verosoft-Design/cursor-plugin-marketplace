@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Troubleshoot AL-Go config
 
-Dispatches the `Troubleshooting` workflow.
+Dispatches the `Troubleshooting` workflow (`Troubleshooting.yaml`; display name `Troubleshooting`, no leading space).
 
 ## Purpose
 
@@ -16,12 +16,12 @@ This is the right first step before suggesting any settings or secrets change �
 
 ## Inputs
 
-- `displayNameOfSecrets` (boolean, default `false`) — when `true`, dumps secret names. Recommend `true` for most diagnostic runs.
+- `displayNameOfSecrets` (boolean, default `false`) — when `true`, dumps secret names. Recommend `true` for most diagnostic runs. This is the only input (v10.0).
 
 ## Dispatch
 
 ```bash
-gh workflow run "Troubleshooting" \
+gh workflow run Troubleshooting.yaml \
   --ref main \
   -f displayNameOfSecrets=true
 ```
@@ -29,7 +29,7 @@ gh workflow run "Troubleshooting" \
 ## Watch and read the output
 
 ```bash
-RUN_ID=$(gh run list --workflow "Troubleshooting" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow Troubleshooting.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 
 # Read the full log
@@ -51,7 +51,10 @@ The log contains:
 | `country: us` but the user targets DK / DE / …          | Wrong default; set `country` in `.AL-Go/settings.json`                                                 |
 | `useProjectDependencies: false` on a multi-project repo | Cross-project deps not enforced; multi-stage builds disabled                                           |
 | `appSourceCopMandatoryAffixes: []` on AppSource repo    | Will fail AS0011 on first build; set the affix                                                         |
-| Secret name `<EnvName>_AuthContext` missing for an env  | `/al-publish-to-environment` for that env will fail                                                    |
+| No `<EnvName>-AuthContext` / `<EnvName>_AuthContext` for an env | `/al-publish-to-environment` falls back to the generic `AuthContext` (possibly the wrong tenant) or, with none, waits on device login |
+| `<EnvName>_AuthContext` stored in Azure Key Vault       | Key Vault skips names with `_`; rename to `<EnvName>-AuthContext`                                      |
+| `unusedALGoSystemFiles` still set                       | Support ended 2026-10-01; migrate to `customALGoFiles.filesToExclude`                                  |
+| `alwaysBuildAllProjects` or `<workflow>Schedule` keys   | Deprecated and past due; use `incrementalBuilds` / `workflowSchedule`                                  |
 | No `GhTokenWorkflow` listed                             | `/al-update-system-files`, `/al-release`, and `Create a new app` family will fail. `/al-secrets-setup` |
 
 ## Privacy

@@ -32,7 +32,7 @@ codeunit 70015100 "<Feature> Test"
     var
         Assert: Codeunit "Library Assert";
         Any: Codeunit Any;
-        LibraryVariableStorage: Codeunit "Library Variable Storage";
+        LibraryVariableStorage: Codeunit "Library - Variable Storage";
         PermissionsMock: Codeunit "Permissions Mock";
         IsInitialized: Boolean;
         ExpectedErrorMsg: Label '<expected error text>', Locked = true;
@@ -66,11 +66,11 @@ codeunit 70015100 "<Feature> Test"
         Initialize();
 
         // [Given] <setup>
-        LibraryVariableStorage.Enqueue(<expected dialog text>);
 
         // [When] <action that raises UI>
 
-        // [Then] <state after dialog dismissed>
+        // [Then] <the dialog showed the expected text; state after it was dismissed>
+        Assert.AreEqual(<expected dialog text>, LibraryVariableStorage.DequeueText(), 'Wrong message shown');
         LibraryVariableStorage.AssertEmpty();
     end;
 
@@ -102,11 +102,9 @@ codeunit 70015100 "<Feature> Test"
 
     [MessageHandler]
     procedure MessageHandler(Message: Text[1024])
-    var
-        ExpectedMessage: Variant;
     begin
-        LibraryVariableStorage.Dequeue(ExpectedMessage);
-        Assert.AreEqual(Format(ExpectedMessage), Message, 'Wrong message shown');
+        // Capture only; the test body asserts (BC-Bench ALTest rule: no verification in handlers).
+        LibraryVariableStorage.Enqueue(Message);
     end;
 }
 ```
@@ -117,9 +115,9 @@ codeunit 70015100 "<Feature> Test"
 - [ ] Replace `<Feature>` with a name that fits the convention used elsewhere in the repo's tests.
 - [ ] Replace `<Publisher>` and the namespace path to match what existing `.al` files declare.
 - [ ] Add `tabledata ... = rd|rimd` permissions for every table the tests touch. Avoid wildcards.
-- [ ] Pick `TransactionModel::AutoRollback` (default), `AutoCommit` (code under test calls `Commit`), or `None` (read-only) per `al-testing` rule.
+- [ ] Pick `TransactionModel::AutoRollback` (default), `AutoCommit` (code under test calls `Commit`), or `None` (read-only) per the `al-testing` rule.
 - [ ] One `[Scenario]` per `[Test]` procedure. Multiple scenarios = multiple procedures.
-- [ ] Every `[HandlerFunctions(...)]` handler must be invoked during the test, and SHOULD assert on the values it receives.
+- [ ] Every `[HandlerFunctions(...)]` handler must be invoked during the test. Handlers only capture or set values (`LibraryVariableStorage.Enqueue(...)`, `Reply := ...`); assert in the test body and end with `LibraryVariableStorage.AssertEmpty()`.
 - [ ] Use `Library Assert` (codeunit 130002), never plain `TestField` or `Error` in test code.
 - [ ] Add dependencies to the test app's `app.json`: `Library Assert`, `Any`, `Library Variable Storage`, `Permissions Mock` (only those actually used).
 

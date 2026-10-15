@@ -1,50 +1,34 @@
 ---
 name: al-ui-review
-description: Review AL page, pageextension, and control-add-in changes for UI and accessibility issues using BCQuality's curated UI knowledge plus BCApps' MIT-licensed accessibility review prompt. Detects ShowCaption = false on editable fields, nested grids, semantic-style without textual meaning, broken data-table heuristics, missing tooltips, accessibility violations in control add-in JS, and other BC-specific UI footguns. Returns not-applicable when the diff contains no UI files.
+description: Review AL pages, page extensions, control add-ins, and notification code using BCQuality's UI knowledge, covering captions, tooltips, UI text, notifications, page-type conventions, and accessibility.
 ---
 
-# AL UI Review (leaf)
+# AL UI / accessibility review (leaf)
 
-This skill is the Cursor adapter for BCQuality's `al-ui-review` leaf skill.
+Cursor adapter for BCQuality's `al-ui-review` leaf action skill (`microsoft/skills/review/al-ui-review.md`). It is one of the 19 leaves composed by `al-code-review`; Entry dispatches it on its own when the goal names this concern. This adapter holds no review policy; the vendored upstream skill is authoritative.
 
-## Authoritative spec
+## BCQuality root
 
-Read `<plugin>/content/bcquality/microsoft/skills/review/al-ui-review.md` in full. It declares the canonical Source → Relevance → Worklist → Action pattern for the UI domain.
+`BCQ` = `<plugin>/content/bcquality`, a mirror of the microsoft/BCQuality repo at the SHA pinned in `content/PINNED.json`. Resolve every repo-relative path the upstream files name (`skills/read.md`, `tools/...`, `knowledge-index.json`, `microsoft/knowledge/...`) against `BCQ`, never against the user's project.
 
-Also read `<plugin>/content/bcapps-review-prompts/accessibility.md` — the MIT-licensed BCApps AI review prompt for accessibility (~26 KB). Both feed the worklist.
+## Execute
 
-## Apply contract rules
+1. Read `BCQ/microsoft/skills/review/al-ui-review.md` in full and follow its Source, Relevance, Worklist, Action and Output steps exactly.
+2. Read `BCQ/skills/read.md` and `BCQ/skills/do.md` on demand (summaries: the `bcquality-read-contract` rule, the `bcquality-do-contract` rule).
+3. Inputs: `pr-diff`, `file-path`, or `folder-path`, carrying the actual diff or path. For `folder-path`, enumerate every relevant file under the folder; a folder has no baseline, so comparison-only rules do not apply.
+4. Knowledge: the `ui` domain across all enabled layers: `BCQ/microsoft/knowledge/ui/`, `BCQ/community/knowledge/ui/`, `BCQ/custom/knowledge/ui/` (custom wins conflicts). Use READ's bounded retrieval (`pwsh BCQ/tools/Search-Knowledge.ps1` / `Get-KnowledgeArticles.ps1` over `BCQ/knowledge-index.json`) when `pwsh` and the index exist. Otherwise use READ's fallback: list the domain folders and read every selected article in full. A retrieval failure is never an empty result.
+5. Where the AL MCP tools are available, use them per the `al-mcp-usage` rule to confirm symbols before reporting.
 
-Load `bcquality-do-contract`, `bcquality-read-contract`, and `al-mcp-usage`.
-
-## Source
-
-Read every knowledge file under `<plugin>/content/bcquality/{microsoft,community,custom}/knowledge/ui/*.md`. Today:
-
-- 19+ files under `microsoft/knowledge/ui/`. Canonical examples: `show-caption-on-editable-fields.md`, `no-nested-grids.md`, `group-labeled-first-child-exception.md`, `tabular-intent-requires-data-table-conditions.md`, `semantic-styles-need-independent-textual-meaning.md`. Includes anti-false-positive articles: `group-show-caption-false-outside-grid-is-not-a-violation.md`, `group-caption-quality-is-not-an-accessibility-issue.md`, `layout-table-with-captions-is-valid.md`.
-
-## Relevance
-
-This is the ONE leaf where `technologies` is `[al, javascript]` — control add-ins use JS/CSS/HTML. Match accordingly.
-
-**UI-file filter (critical)**: this skill applies only to files declaring `page`, `pageextension`, `pagecustomization`, OR to control-add-in JavaScript/CSS/HTML that changes rendered UI. When the diff contains no such files, return `outcome: "not-applicable"` immediately. Do not evaluate knowledge files when the worklist is empty by construction.
-
-## Worklist signal tokens (from upstream skill, verbatim)
-
-`Caption`, `ToolTip`, `AboutTitle`, `AboutText`, `PageType`, `ShowCaption`, `InstructionalText`, `grid`, `fixed`, `GridLayout`, `Style`, `StyleExpr`, `Favorable`, `Unfavorable`, `Ambiguous`, `cuegroup`, `controladdin`, `usercontrol`, `aria-`, `tabindex`, `keydown`, `focus`, `innerHTML`, `createElement`, `&`, `Specifies`, `Message(`, `Confirm(`, `Error(` in a page context, `Disabled`, `Invalid`, `Whitelist`, `Blacklist`, trailing-punctuation patterns on captions.
-
-Resolve layer precedence; suppressed files go into `suppressed[]`.
-
-## Action
-
-UI text findings are generally `minor` — they affect localization and polish rather than correctness.
-
-`major` for: missing labels on editable fields, broken grid semantics that lose table structure, semantic color without textual meaning, UI-rendering control add-in changes that lack accessibility attributes (`aria-*`, `tabindex`, keyboard handlers).
-
-`blocker` only when a documented platform-level requirement is violated (e.g. illegal `PageType` combination the runtime rejects).
-
-Anti-false-positive articles are critical here — UI review is the most prone to over-flagging. Cite the relevant anti-false-positive article when the diff appears to trigger a known false positive (e.g. a `Group` with `ShowCaption = false` that lives outside a grid is NOT a violation per `group-show-caption-false-outside-grid-is-not-a-violation.md`).
+Also read `<plugin>/content/bcapps-review-prompts/accessibility.md` — the MIT-licensed BCApps AI review prompt for accessibility (~26 KB). Both feed the worklist. The prompt is frozen at BCApps `7040033d` (upstream deleted it when its PR reviewer switched to BCQuality), so BCQuality wins on conflict.
 
 ## Output
 
-Single JSON document conforming to the DO output contract.
+One strict-JSON findings report per DO, `skill.id: "al-ui-review"`:
+
+- Every finding sets `domain: "Accessibility"`.
+- A knowledge-backed finding has `id` equal to `references[0].path`, the exact path relative to `BCQ` (for example `microsoft/knowledge/ui/<slug>.md`), and cites only articles opened in full. `references[].sha` is the pinned `bcquality.ref`; omit it for `custom/` articles.
+- An agent finding has `references: []` and an id of the form `agent:<slug>`. It stays within this domain and is capped at `severity: minor` and `confidence: medium`.
+- Locations use 1-based line numbers in the final file. Mechanical fixes carry `suggested-code`, or else `suggested-code-omission-reason`.
+- `completed` with no findings means nothing was flagged. `not-applicable` and `no-knowledge` are different outcomes. `partial` and `failed` are not clean results.
+
+Render for chat with `bash <plugin>/scripts/render-findings.sh` and give each `location.file:line` as a clickable reference. User command: `/bcq-review-ui`.

@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Import an existing AL app
 
-Dispatches the `Add existing app or test app` workflow.
+Dispatches the `Add existing app or test app` workflow (`AddExistingAppOrTestApp.yaml`).
 
 ## What this command does
 
@@ -35,7 +35,7 @@ The URL must be reachable from the GitHub runner (i.e. publicly downloadable, or
 ## Step 3 — Dispatch
 
 ```bash
-gh workflow run "Add existing app or test app" \
+gh workflow run AddExistingAppOrTestApp.yaml \
   --ref main \
   -f project=. \
   -f url=<direct download URL> \
@@ -43,12 +43,12 @@ gh workflow run "Add existing app or test app" \
   -f useGhTokenWorkflow=true
 ```
 
-Use `directCommit=false` (PR mode) so the user can review the imported structure before merging.
+Inputs (v10.0): `project` (default `.`), `url` (required), `directCommit` (default `false`), `useGhTokenWorkflow` (default `false`). Use `directCommit=false` (PR mode) so the user can review the imported structure before merging. `useGhTokenWorkflow=true` needs the `GhTokenWorkflow` secret.
 
 ## Step 4 — Watch + review
 
 ```bash
-RUN_ID=$(gh run list --workflow "Add existing app or test app" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow AddExistingAppOrTestApp.yaml --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
 gh run watch $RUN_ID --exit-status
 ```
 

@@ -28,7 +28,7 @@ For official Microsoft Learn references and deeper Business Central AL guidance,
    - `HandlerFunctions('Name1,Name2')` and matching handler procedures for UI interaction
    - `asserterror` + `Assert.ExpectedError(text)` / `Assert.ExpectedErrorCode(code)` for negative tests
    - Given / When / Then narrative comments inside each test
-5. Be explicit when tests cannot be executed in the current session.
+5. Run tests with `/al-run-tests` when a BC server is reachable (project `launch.json` or `BC_SERVER_*` environment variables). Red means your assertion failed, not a missing handler, permission or setup error. Be explicit when tests cannot be executed in the current session.
 
 ## Workflow
 
@@ -54,7 +54,9 @@ Before writing production code, decide what should prove the change:
 
 ### 3. Write the failing test first
 
-When meaningful, start with the smallest failing test that expresses the desired Business Central behavior.
+When meaningful, start with the smallest failing test that expresses the desired Business Central behavior. To have the test generated, use the `al-write-test` skill. It applies BC-Bench's ALTest prompt, the only tooling setup BC-Bench has measured on test generation: 62.4% vs 51.7% mean on Claude Opus 4.6 / GitHub Copilot CLI, April-May 2026, still current as of BC-Bench `7c98b750` (2026-10-13).
+
+A failing test also pins down where the fix belongs, and that is where agents fail on AL. In the BC-Bench paper (arXiv 2608.20851, GitHub Copilot + Claude Opus 4.6, bug-fix v0.2.0), 47.7% of the 176 failed trials edited the wrong file or the wrong region. Another 44.3% reached the right region with the wrong fix, and only 5.7% failed to build. A compiling patch is not evidence of a correct one: a test that fails for the reported reason is.
 
 Prefer:
 
@@ -79,7 +81,7 @@ If the current session cannot run the test runner:
 - do not pretend the test was executed
 - state that execution was not verified
 - explain the expected failing condition
-- note what command or environment step still needs to be run (e.g. "the user must press F5 in VS Code with the test runner attached, or run `Run-TestsInBcContainer` via BcContainerHelper")
+- note what command or environment step still needs to be run (e.g. "no BC server reachable: configure `launch.json` or the `BC_SERVER_*` variables, then /al-run-tests")
 
 ### 5. Write the smallest implementation
 
@@ -174,7 +176,7 @@ When reviewing AL changes, prioritize:
 - missing `EventSubscriberInstance = Manual` on test codeunits (causes test cross-pollution)
 - mismatched `[TransactionModel]` (e.g. `AutoRollback` on code that calls `Commit`)
 - missing Given/When/Then narrative inside test bodies
-- handler procedures that swallow UI without asserting on the values
+- handler procedures that swallow UI without capturing the values for the test body to assert (per ALTest, handlers only set or enqueue values; verification belongs in the test body)
 - production logic added without a preceding test
 - missing negative-path coverage for business rules
 - behavior claims that were not actually verified

@@ -2,41 +2,50 @@
 description: BCQuality READ meta-skill contract. Agent-requestable. Loads when the agent needs to interpret a BCQuality knowledge file — frontmatter schema, sections, layer precedence, sample-file conventions, frontmatter matching semantics.
 alwaysApply: false
 ---
-
 # BCQuality READ contract
 
-The authoritative READ meta-skill is vendored at `<plugin>/content/bcquality/read.md` (sourced from `microsoft/BCQuality/skills/read.md` at the SHA pinned in `content/PINNED.json`). **Read that file in full when you need to interpret a knowledge file.** This rule is just a pointer to ensure the agent loads it.
+The authoritative READ meta-skill is vendored at `<plugin>/content/bcquality/skills/read.md`, sourced from `microsoft/BCQuality/skills/read.md` at the SHA pinned in `content/PINNED.json`. **Read that file in full when you need to interpret a knowledge file.** Task execution starts at Entry; READ is loaded on demand by the dispatched skill. This file is a pointer and a summary.
 
 ## What READ defines
 
-- **Knowledge file shape**: YAML frontmatter (6 required fields) + `## Description` (required) + optional `## Best Practice` / `## Anti Pattern` (normative) + any other `##` section (non-normative). NO fenced code blocks in the body.
-- **Frontmatter schema (v1)**: `bc-version`, `domain`, `keywords`, `technologies`, `countries`, `application-area` — all required, all with specific value constraints documented in READ.
-- **Sample-file naming**: `<slug>.good.al` and `<slug>.bad.al` siblings live next to each article. Articles MAY have neither, one, or both.
-- **Frontmatter matching semantics**: how a knowledge file is matched against a task context's `bc-version` / `technologies` / `countries` / `application-area`. Includes the "conditionally applicable" rule for partial contexts (confidence cap at `medium`, must record unknown dimensions in the finding's message).
-- **Layer precedence**: `/custom/` wins over `/community/` wins over `/microsoft/`. Conflicts surface in the output's `suppressed[]` with `reason: "layer-precedence"`.
+- **Knowledge file shape**: YAML frontmatter with exactly 6 required fields, then `## Description` (required), then the optional normative `## Best Practice` and `## Anti Pattern`, then any other non-normative `##` sections. The body contains NO fenced code blocks.
+- **Frontmatter schema (v1)**:
+  - `bc-version`: `[all]`, an explicit list, a closed range `[26..28]`, or an open-ended range `[26..]` (26 and later).
+  - `domain`: must equal the containing folder.
+  - `keywords`: lowercase kebab-case.
+  - `technologies`: `all` is not allowed.
+  - `countries`: `[w1]` or ISO alpha-2 codes.
+  - `application-area`: `[all]` or a list of specific areas.
+- **Sample files**: `<slug>.good.<ext>` and `<slug>.bad.<ext>` siblings, for example `.al` or `.js`. The article links each one as `` [`<slug>.good.al`](<slug>.good.al) ``.
+- **Matching semantics**: how a file matches the task's `bc-version`, `technologies`, `countries` and `application-area`. An open-ended range matches a target at or above its lower bound. A file is *conditionally applicable* when a task dimension is unknown: its findings are capped at `medium` confidence, and the message names the unknown dimensions.
+- **Layer precedence**: `/custom/` wins over `/community/`, which wins over `/microsoft/`. The losing file goes into the leaf's `suppressed[]` with `reason: "layer-precedence"`. Non-conflicting guidance is additive.
+- **Retrieval workflow**: candidates come from `knowledge-index.json`, which Entry builds over the live tree. The index is discovery metadata only: a finding cites only an article opened in full, and a row whose file is missing is discarded. Without an index, candidates are collected by domain folder across the enabled layers.
+- **Bounded retrieval for review skills** (PowerShell): `tools/Search-Knowledge.ps1 -Domain <d>` pages through the complete catalog, and the leaf consumes every page. `tools/Get-KnowledgeArticles.ps1 -Paths @(...)` fetches full bodies in chunks of at most 8, with hash checks. If PowerShell, the helpers, or the index are unavailable, READ's fallback applies: discover exact paths in the enabled domain folders and read each selected file through EOF. A retrieval failure is never an empty result.
 
 ## Layer locations in this plugin
 
-- `<plugin>/content/bcquality/microsoft/knowledge/<domain>/<slug>.md` — Microsoft-endorsed (vendored, pinned).
-- `<plugin>/content/bcquality/community/knowledge/<domain>/<slug>.md` — community (vendored, pinned).
-- `<plugin>/content/bcquality/custom/knowledge/<domain>/<slug>.md` — local plugin content. Highest precedence. Seeded with TAG-specific articles.
+`BCQ` = `<plugin>/content/bcquality`. It mirrors the upstream repo, so upstream repo-relative paths resolve against it.
+
+- `BCQ/microsoft/knowledge/<domain>/<slug>.md`: Microsoft-endorsed (vendored, pinned). 19 domains.
+- `BCQ/community/knowledge/<domain>/<slug>.md`: community (vendored, pinned). Currently `agents` and `appsource`.
+- `BCQ/custom/knowledge/<domain>/<slug>.md`: local plugin content, never vendored, highest precedence. It holds the TAG house rules: 6 in `style`, 1 in `upgrade`, 1 in `web-services`.
+- `BCQ/knowledge-index.json`: generated by `pwsh BCQ/tools/Build-KnowledgeIndex.ps1` (run by `al-entry`); git-ignored.
+
+Per-domain article counts are in the `bcquality-entry-contract` rule.
 
 ## Citing references
 
-When emitting a finding that cites a knowledge file, the `references[0].path` MUST be the repo-relative path (forward slashes). When the plugin has pinned a specific SHA (it has — see `content/PINNED.json` → `bcquality.ref`), the reference SHOULD also include the `sha` field for reproducibility.
-
-Example reference object:
+`references[0].path` is the path relative to `BCQ`, with forward slashes, copied verbatim from the index or the discovered file, for example `microsoft/knowledge/performance/apply-filters-before-iterating.md`. Never cite a plugin-absolute path and never construct a slug. `sha` is the BCQuality commit reviewed: include the pinned `bcquality.ref` for `microsoft/` and `community/` articles, and omit it for `custom/` articles, which are not upstream commits.
 
 ```json
 {
   "path": "microsoft/knowledge/performance/use-setloadfields-for-partial-records.md",
-  "sha": "4d59fb73bcdfb17865c875c84c7ff8fd4a170fe2"
+  "sha": "86d809b5252aa2fe187ccb9f16bef435bb8c9be6"
 }
 ```
 
-## When to load this rule
+## When to load this file
 
-- Before parsing any knowledge file's frontmatter.
-- Before deciding whether a file is applicable to the task at hand.
+- Before parsing a knowledge file's frontmatter, or deciding whether a file applies to the task.
 - Before resolving a conflict between layers.
-- Before authoring a new knowledge file (also pair with `bcquality-write-contract`).
+- Before authoring a new knowledge file (pair it with `bcquality-write-contract.md`).

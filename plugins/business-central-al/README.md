@@ -2,9 +2,9 @@
 
 A Cursor plugin for the full lifecycle of Microsoft Dynamics 365 Business Central AL extension development — from scaffolding through coding, testing, debugging, publishing, and shipping to AppSource.
 
-Currently at **v0.6.0** — all 5 phases of the original rebuild shipped. Phase 6 (BC runtime MCP) remains deferred per the original plan. Roadmap below.
+Currently at **v0.7.0** (upstream refresh, Oct 2026; see CHANGELOG) — all 5 phases of the original rebuild shipped. Phase 6 (BC runtime MCP) remains deferred per the original plan. Roadmap below.
 
-## What's in the box (v0.6.0)
+## What's in the box (v0.7.0)
 
 ### Inner dev loop — via the AL MCP
 
@@ -54,7 +54,7 @@ The plugin now ships with the measured-winner test-generation prompt plus a full
 
 The plugin now embeds the full BCQuality contract — Microsoft's machine-readable AL review system, pinned at SHA `4d59fb73` in `content/PINNED.json`.
 
-- **154 knowledge articles + 234 AL samples** vendored in `content/bcquality/{microsoft,community}/knowledge/` across 7 domains (performance, privacy, security, style, testing, ui, upgrade) — every article passes the upstream R01–R25 frontmatter validator.
+- **388 Microsoft + 26 community knowledge articles** vendored in `content/bcquality/{microsoft,community}/knowledge/` across 19 domains — every article passes the upstream R01–R29 frontmatter validator (as of 0.7.0).
 - **4 meta-skill contracts** (entry, READ, DO, WRITE) at `content/bcquality/` root, exposed to the agent via 4 agent-requestable rules.
 - **`al-code-review` super-skill** that composes 6 leaf review skills (performance, security, privacy, upgrade, style, UI) and runs an agent self-review pass producing knowledge-validated agent findings.
 - **Strict JSON output contract** (DO) with `outcome`, `findings[]` (severity, message, location, references, confidence, from-sub-skill), `suppressed[]`, `sub-results[]`. Identical shape to what AL-Go consumes in CI.
@@ -63,6 +63,17 @@ The plugin now embeds the full BCQuality contract — Microsoft's machine-readab
 - **Vendored 586-line upstream validator** at `scripts/validate-bcquality-frontmatter.py`. Runs after every refresh.
 - **Findings renderer** (`scripts/render-findings.py` + `.sh` wrapper) for human-readable terminal output.
 - **`/bcq-update`** refreshes all vendored sources (BCApps + BCQuality) and re-runs the validator.
+
+## New in 0.7.0: real-environment loops
+
+| Skill | What it does |
+| --- | --- |
+| `al-run-tests` | Publish app + test app, run test codeunits with `al runtests` (BC 2026 wave 2+), JSON per method; BcContainerHelper / AL-Go CI fallbacks |
+| `al-call-graph` | `al graph` call graph: who calls a procedure, impact of a change, event and interface edges |
+| `al-snapshot-debug` | ALTool Snapshot Debugging MCP proxy: arm, reproduce, get error + call stack + variables (BC 29 preview) |
+| `al-profile` | ALTool Performance Profiling MCP proxy: CPU profiles with SQL/HTTP timings (BC 29 preview) |
+
+Claude Code users: the Claude version of this plugin (with an AL language server, a post-edit lint hook, BC server setup and web-client UI testing) is in [Verosoft-Design/claude-plugins](https://github.com/Verosoft-Design/claude-plugins).
 
 ## Roadmap
 
@@ -218,7 +229,7 @@ Verify the AL MCP wiring by asking the agent in a Cursor chat:
 
 | Command                   | Purpose                                                                                                               |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `/bcq-review`             | Comprehensive AL review via the al-code-review super-skill (6 leaves + agent self-review pass).                       |
+| `/bcq-review`             | Comprehensive AL review via the al-code-review super-skill (19 domain leaves + agent self-review pass). `/bcq-review-<domain>` runs one domain.                       |
 | `/bcq-review-performance` | Targeted review — performance leaf only.                                                                              |
 | `/bcq-review-security`    | Targeted review — security leaf only.                                                                                 |
 | `/bcq-review-privacy`     | Targeted review — privacy leaf only (excludes test code).                                                             |

@@ -12,7 +12,14 @@ This workspace looks like a Business Central AL project (matched on `app.json`, 
 
 Build / compile / publish / search symbols / read diagnostics on AL projects natively. Tools: `al_build`, `al_compile`, `al_publish`, `al_downloadsymbols`, `al_symbolsearch`, `al_getdiagnostics`, `al_getpackagedependencies`, `al_auth_login`, `al_auth_logout`. **Critical quirk:** `al_symbolsearch` requires a `parameters: {...}` wrapper — see the `al-mcp-usage` rule.
 
-Inner-loop commands: `/al-symbols`, `/al-symbol-search`, `/al-compile`, `/al-build`, `/al-publish-sandbox`.
+Inner-loop commands: `/al-symbols`, `/al-symbol-search`, `/al-compile`, `/al-build`, `/al-publish-sandbox`. New object IDs come from `al_getnextobjectid`; `al_symbolsearch` with `source: "environment"` searches what is installed on the connected tenant.
+
+## Real-environment loops (ALTool, BC 2026 release wave 2)
+
+- `al-run-tests` — `al runtests`: publish, then run test codeunits on a BC server, JSON result per test method.
+- `al-call-graph` — `al graph`: who calls a procedure, what a change reaches (events and interfaces included).
+- `al-snapshot-debug` — Snapshot Debugging MCP proxy: arm, user reproduces, get the error, call stack and variables (BC 29 preview).
+- `al-profile` — Performance Profiling MCP proxy: CPU profiles with SQL/HTTP timings for a slow session (BC 29 preview).
 Orchestration skill: `al-build-and-publish`.
 
 ## Full AL-Go lifecycle (via `gh workflow run`)
@@ -24,7 +31,8 @@ Orchestration skill: `al-go-lifecycle` (with full workflow inventory in `workflo
 
 - Microsoft's canonical analyzer rulesets are vendored in `<plugin>/content/bcapps-rulesets/` (pinned via `content/PINNED.json`). Apply them with `/al-apply-rulesets`.
 - Microsoft's BCApps VS Code defaults are at `<plugin>/content/bcapps-defaults/DefaultSettings.json`. Apply them with `/al-apply-vscode-defaults`.
-- Six MIT-licensed AI review prompts (security, performance, style, accessibility, upgrade, privacy) are vendored in `<plugin>/content/bcapps-review-prompts/`. Phase 4's BCQuality review skills will consume them.
+- BCQuality review across 19 domains (`/bcq-review`, `/bcq-review-<domain>`), 388 Microsoft knowledge articles plus the TAG custom layer.
+- Six MIT-licensed AI review prompts (security, performance, style, accessibility, upgrade, privacy) are vendored in `<plugin>/content/bcapps-review-prompts/`, frozen at BCApps `7040033d` (Microsoft retired them upstream in favour of BCQuality; BC-Bench still measures them at ~+20 F1 for code review). The BCQuality review skills read them alongside the BCQuality knowledge.
 - Module scaffolder: `/al-scaffold-module` (skill `al-scaffold-module`), aware of both BCApps `src/<Module>/src/` and TAG-style `BC/{API,CodeUnit,Enums,…}` project layouts.
 
 ## Testing baseline
@@ -39,4 +47,4 @@ Orchestration skill: `al-go-lifecycle` (with full workflow inventory in `workflo
 - `al-license-header` — standard 4-line MIT header (configurable publisher line).
 - `al-xmldoc-public-procedures` — XML doc on every `Access = Public` codeunit procedure.
 
-Repo-specific overrides (TAG prefixes, custom ID ranges, alternative file-naming) belong in `.cursor/rules/` inside the consuming project. Phase 4 will add the BCQuality custom-layer mechanism for declaring such overrides in a structured, version-aware way.
+Repo-specific overrides (TAG prefixes, custom ID ranges, alternative file-naming) belong in `.cursor/rules/` inside the consuming project. Structured, citable house rules go in the BCQuality custom layer (`content/bcquality/custom/knowledge/`, see `/bcq-write-knowledge`).
