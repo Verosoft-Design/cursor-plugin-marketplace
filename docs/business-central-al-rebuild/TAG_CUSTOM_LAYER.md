@@ -18,7 +18,7 @@ Per the BCQuality DO contract, `/custom/` precedence overrides `/community/` and
 | 4 | `tag-project-folder-structure.md` | style | **YES** — overrides BCApps `src/<Module>/src/` convention | `tag-naming.mdc` §"Directory Structure" |
 | 5 | `tag-procedure-parameter-prefix.md` | style | **YES** — adds `p`-prefix on parameters (BCApps does not) | `al-general.mdc` §"Procedure Structure" + `codeunits.mdc` |
 | 6 | `tag-variable-naming-conventions.md` | style | New concern | `al-general.mdc` §"Naming Conventions" + `codeunits.mdc` §"Variable Organization" |
-| 7 | `tag-api-page-conventions.md` | api | New concern | `api-pages.mdc` (entire file) |
+| 7 | `tag-api-page-conventions.md` | web-services | New concern | `api-pages.mdc` (entire file) |
 | 8 | `tag-clean-version-preprocessor.md` | upgrade | New concern | `al-general.mdc` §"Preprocessor Directives" |
 
 ## Drafts (ready to drop into knowledge files in Phase 4)
@@ -181,10 +181,12 @@ Inventing a new prefix per file ("Equip", "Eq", "TagEquip", "EquipmentRecord", "
 
 ### 7. `tag-api-page-conventions.md`
 
+(Lives in `custom/knowledge/web-services/` since BCQuality added the `web-services` domain.)
+
 ```yaml
 ---
 bc-version: [all]
-domain: style
+domain: web-services
 keywords: [api-page, verosoft, tag, apipublisher, apigroup]
 technologies: [al]
 countries: [w1]

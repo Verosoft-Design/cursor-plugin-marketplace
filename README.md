@@ -2,6 +2,8 @@
 
 This repository is a shareable Cursor plugin marketplace repo for custom plugins.
 
+The Claude Code versions live in [Verosoft-Design/claude-plugins](https://github.com/Verosoft-Design/claude-plugins) (`claude plugin marketplace add Verosoft-Design/claude-plugins`).
+
 It currently contains:
 
 - `business-central-al`
