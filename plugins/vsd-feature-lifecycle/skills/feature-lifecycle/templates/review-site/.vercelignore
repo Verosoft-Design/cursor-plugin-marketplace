@@ -1,0 +1,5 @@
+scripts/
+node_modules/
+*.template.html
+site.config.json
+README.md

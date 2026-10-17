@@ -1,0 +1,9 @@
+{
+  "name": "design-review-site",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "ai": "7.0.126"
+  }
+}

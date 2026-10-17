@@ -1,0 +1,198 @@
+/*
+ * Prototype stylesheet for f-0d7b34b4 (Mobi UX, design stage).
+ * Colour, radius and font values are copied from apps/mobi/src/app/globals.css
+ * and app/layout.tsx (Geist Sans) so the mocks stay on the shipped tokens.
+ * Tokens marked "proposed" do not exist in globals.css yet.
+ * This file is a design artefact, not product code.
+ */
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222.2 84% 4.9%);
+  --card: hsl(0 0% 100%);
+  --popover: hsl(0 0% 100%);
+  --primary: hsl(215 80.2% 47.5%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(210 40% 96.1%);
+  --secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --muted: hsl(210 40% 96.1%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96.1%);
+  --accent-foreground: hsl(222.2 47.4% 11.2%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(215 80.2% 47.5%);
+  --radius: 0.5rem;
+  --sidebar: hsl(212 24% 97%);
+  --sidebar-foreground: hsl(215 25% 27%);
+  --sidebar-accent: hsl(214 32% 93.5%);
+  --sidebar-border: hsl(214.3 31.8% 91.4%);
+  /* proposed: semantic tones for status pills (not in globals.css) */
+  --tone-info-bg: hsl(215 80% 95%);
+  --tone-info-fg: hsl(215 80% 36%);
+  --tone-ok-bg: hsl(145 55% 93%);
+  --tone-ok-fg: hsl(145 60% 26%);
+  --tone-warn-bg: hsl(40 95% 92%);
+  --tone-warn-fg: hsl(30 80% 32%);
+  --tone-bad-bg: hsl(0 85% 95%);
+  --tone-bad-fg: hsl(0 70% 42%);
+  --skeleton: hsl(214 32% 93%);
+  --shadow-pop: 0 10px 30px -10px hsl(222 47% 11% / 0.25), 0 2px 6px hsl(222 47% 11% / 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: hsl(222.2 84% 4.9%);
+    --foreground: hsl(210 40% 98%);
+    --card: hsl(222.2 84% 4.9%);
+    --popover: hsl(222.2 84% 6%);
+    --secondary: hsl(217.2 32.6% 17.5%);
+    --secondary-foreground: hsl(210 40% 98%);
+    --muted: hsl(217.2 32.6% 12.5%);
+    --muted-foreground: hsl(215 20.2% 65.1%);
+    --accent: hsl(217.2 32.6% 12.5%);
+    --accent-foreground: hsl(210 40% 98%);
+    --destructive: hsl(0 62.8% 50%);
+    --border: hsl(217.2 32.6% 17.5%);
+    --input: hsl(217.2 32.6% 17.5%);
+    --ring: hsl(224.3 76.3% 48%);
+    --sidebar: hsl(218 55% 8%);
+    --sidebar-foreground: hsl(214 32% 84%);
+    --sidebar-accent: hsl(217.2 32.6% 17.5%);
+    --sidebar-border: hsl(217.2 32.6% 18%);
+    --tone-info-bg: hsl(215 60% 18%);
+    --tone-info-fg: hsl(215 90% 78%);
+    --tone-ok-bg: hsl(145 40% 15%);
+    --tone-ok-fg: hsl(145 55% 70%);
+    --tone-warn-bg: hsl(35 50% 16%);
+    --tone-warn-fg: hsl(40 90% 70%);
+    --tone-bad-bg: hsl(0 45% 18%);
+    --tone-bad-fg: hsl(0 85% 75%);
+    --skeleton: hsl(217 32% 16%);
+  }
+}
+:root[data-theme="dark"] {
+  --background: hsl(222.2 84% 4.9%);
+  --foreground: hsl(210 40% 98%);
+  --card: hsl(222.2 84% 4.9%);
+  --popover: hsl(222.2 84% 6%);
+  --secondary: hsl(217.2 32.6% 17.5%);
+  --secondary-foreground: hsl(210 40% 98%);
+  --muted: hsl(217.2 32.6% 12.5%);
+  --muted-foreground: hsl(215 20.2% 65.1%);
+  --accent: hsl(217.2 32.6% 12.5%);
+  --accent-foreground: hsl(210 40% 98%);
+  --destructive: hsl(0 62.8% 50%);
+  --border: hsl(217.2 32.6% 17.5%);
+  --input: hsl(217.2 32.6% 17.5%);
+  --ring: hsl(224.3 76.3% 48%);
+  --sidebar: hsl(218 55% 8%);
+  --sidebar-foreground: hsl(214 32% 84%);
+  --sidebar-accent: hsl(217.2 32.6% 17.5%);
+  --sidebar-border: hsl(217.2 32.6% 18%);
+  --tone-info-bg: hsl(215 60% 18%);
+  --tone-info-fg: hsl(215 90% 78%);
+  --tone-ok-bg: hsl(145 40% 15%);
+  --tone-ok-fg: hsl(145 55% 70%);
+  --tone-warn-bg: hsl(35 50% 16%);
+  --tone-warn-fg: hsl(40 90% 70%);
+  --tone-bad-bg: hsl(0 45% 18%);
+  --tone-bad-fg: hsl(0 85% 75%);
+  --skeleton: hsl(217 32% 16%);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; }
+[data-lucide], .lucide { width: 16px; height: 16px; stroke-width: 1.75; flex: none; }
+.tnum { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted-foreground); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---------- prototype chrome (outside the app frame) ---------- */
+.proto-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 8px 16px; background: hsl(222 47% 11%); color: hsl(210 40% 96%);
+  font-size: 12px; position: sticky; top: 0; z-index: 50;
+}
+.proto-bar strong { font-weight: 600; margin-right: 8px; }
+.proto-bar button {
+  border: 1px solid hsl(215 25% 35%); background: transparent; color: inherit;
+  border-radius: 999px; padding: 3px 10px; cursor: pointer;
+}
+.proto-bar button[aria-pressed="true"] { background: hsl(215 80% 47.5%); border-color: transparent; }
+.proto-bar .spacer { flex: 1; }
+.proto-note {
+  margin: 0; padding: 6px 16px; font-size: 12px; color: var(--muted-foreground);
+  background: var(--muted); border-bottom: 1px solid var(--border);
+}
+
+/* ---------- app shell ---------- */
+.shell { display: grid; grid-template-columns: 232px 1fr; height: calc(100vh - 36px); min-height: 640px; }
+.rail {
+  background: var(--sidebar); color: var(--sidebar-foreground);
+  border-right: 1px solid var(--sidebar-border); padding: 12px 10px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 2px; font-size: 13px;
+}
+.rail .brand { display: flex; align-items: baseline; gap: 6px; padding: 2px 6px 12px; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; color: var(--foreground); }
+.rail .brand small { font-weight: 500; font-size: 14px; color: var(--primary); }
+.rail .search { min-width: 0; display: flex; align-items: center; gap: 6px; border: 1px solid var(--sidebar-border); background: var(--background); border-radius: 6px; padding: 5px 8px; color: var(--muted-foreground); margin-bottom: 8px; }
+.rail .section { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-foreground); padding: 10px 6px 4px; }
+.rail a { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; color: inherit; text-decoration: none; }
+.rail a.sub { padding-left: 28px; }
+.rail a.active { background: var(--sidebar-accent); color: var(--foreground); font-weight: 500; }
+.main { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.assistant-bar {
+  display: flex; justify-content: flex-end; gap: 14px; padding: 6px 16px; font-size: 12px;
+  border-top: 1px solid var(--border); color: var(--muted-foreground);
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
+  border-radius: calc(var(--radius) - 2px); border: 1px solid var(--border);
+  background: var(--background); cursor: pointer; white-space: nowrap; font-weight: 500; font-size: 13px;
+}
+.btn:hover { background: var(--accent); }
+.btn.primary { background: var(--primary); color: var(--primary-foreground); border-color: transparent; }
+.btn.primary:hover { background: hsl(215 80.2% 42%); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: var(--accent); }
+.btn.icon { width: 32px; padding: 0; justify-content: center; }
+.btn:focus-visible, .tab:focus-visible, .subtab:focus-visible, .link:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.kbd { font-size: 11px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--muted-foreground); }
+
+/* ---------- pills / badges ---------- */
+.pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.info { background: var(--tone-info-bg); color: var(--tone-info-fg); }
+.pill.ok { background: var(--tone-ok-bg); color: var(--tone-ok-fg); }
+.pill.warn { background: var(--tone-warn-bg); color: var(--tone-warn-fg); }
+.pill.bad { background: var(--tone-bad-bg); color: var(--tone-bad-fg); }
+.pill.neutral { background: var(--secondary); color: var(--secondary-foreground); }
+.count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--secondary); color: var(--secondary-foreground); font-variant-numeric: tabular-nums; }
+.active > .count, [aria-selected="true"] > .count { background: var(--primary); color: var(--primary-foreground); }
+
+/* ---------- menus / popovers ---------- */
+.menu {
+  position: absolute; z-index: 30; min-width: 232px; padding: 4px; border-radius: var(--radius);
+  background: var(--popover); border: 1px solid var(--border); box-shadow: var(--shadow-pop);
+}
+.menu .label { font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted-foreground); padding: 8px 8px 4px; }
+.menu .item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: default; font-size: 13px; }
+.menu .item:hover, .menu .item.hover { background: var(--accent); }
+.menu .item .hint { margin-left: auto; font-size: 12px; color: var(--muted-foreground); }
+.menu .item.danger { color: var(--destructive); }
+.menu hr { border: 0; border-top: 1px solid var(--border); margin: 4px -4px; }
+
+/* ---------- skeleton ---------- */
+.sk { display: inline-block; background: var(--skeleton); border-radius: 4px; height: 12px; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } }

@@ -9,6 +9,7 @@ It currently contains:
 - `business-central-al`
 - `mobi-knowledge`
 - `vsd-code-review`
+- `vsd-feature-lifecycle` (mirror of the Claude plugin; synced with `scripts/sync-vsd-feature-lifecycle.sh`)
 
 ## Structure
 

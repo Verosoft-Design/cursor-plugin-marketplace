@@ -1,0 +1,11 @@
+{
+  "feature": "<Feature name>",
+  "issue": "<ISSUE-ID>",
+  "approver": "Stéphane Levert",
+  "specDir": "..",
+  "guideDirs": [],
+  "examples": [
+    { "lang": "en", "text": "<A question the team is likely to ask>" },
+    { "lang": "fr", "text": "<Une question en français>" }
+  ]
+}

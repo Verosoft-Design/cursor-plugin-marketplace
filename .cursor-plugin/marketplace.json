@@ -28,6 +28,11 @@
       "name": "vsd-analytics",
       "source": "plugins/vsd-analytics",
       "description": "Verosoft analytics — LogRocket MCP for session replay and product analytics investigation."
+    },
+    {
+      "name": "vsd-feature-lifecycle",
+      "source": "plugins/vsd-feature-lifecycle",
+      "description": "Verosoft feature lifecycle for BC and Mobi: sizes the work, runs its steps, keeps one home for specs and stops for approval at named gates."
     }
   ]
 }

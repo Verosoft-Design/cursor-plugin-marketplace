@@ -1,0 +1,32 @@
+/* "Ask about this design" button on each screen page.
+ * Styled as dark review chrome, so it never reads as part of the design itself. */
+.ask-fab {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 65; /* above the sample tag (60), below sheets and scrims (70+) */
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 16px 0 14px;
+  border-radius: 999px;
+  border: 1px solid hsl(215 25% 35%);
+  background: hsl(222 47% 11%); color: hsl(210 40% 96%);
+  font: 500 14px/1 "Geist", ui-sans-serif, system-ui, sans-serif;
+  text-decoration: none;
+  box-shadow: var(--shadow-pop);
+}
+.ask-fab:hover { background: hsl(222 47% 19%); }
+/* Desktop: clear the mock's assistant footer bar. */
+@media (min-width: 768px) { .ask-fab { bottom: 44px; } }
+.ask-fab:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+.ask-fab svg { width: 18px; height: 18px; flex: none; }
+.ask-fab .long { display: inline; }
+.ask-fab .short { display: none; }
+@media (max-width: 560px) {
+  .ask-fab .long { display: none; }
+  .ask-fab .short { display: inline; }
+}
+html.embed .ask-fab, html.framed .ask-fab { display: none; }
+@media print { .ask-fab { display: none; } }
+/* Screens with a sticky action bar at the bottom (body[data-page]): keep the button above it. */
+body[data-page] .ask-fab { bottom: 124px; }
+@media (min-width: 768px) { body[data-page] .ask-fab { bottom: 72px; } }

@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Ask about this design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="mobi-proto.css">
+<style>
+  :root { color-scheme: light dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  body { margin: 0; background: var(--background); color: var(--foreground); font-family: "Geist", ui-sans-serif, system-ui, sans-serif; }
+  .skip { position: absolute; left: 16px; top: -60px; z-index: 10; padding: 10px 14px; border-radius: var(--radius); background: var(--foreground); color: var(--background); }
+  .skip:focus { top: 12px; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 0; min-height: 100vh; display: flex; flex-direction: column; }
+  a { color: var(--primary); }
+  a:focus-visible, button:focus-visible, textarea:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px; }
+  .crumbs a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 2px; font-size: 14px; text-decoration: none; }
+  .crumbs a:hover { text-decoration: underline; }
+  .eyebrow { font: 500 11px/1.2 "Geist Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+  h1 { font-size: 24px; margin: 6px 0 6px; text-wrap: balance; }
+  .lead { color: var(--muted-foreground); margin: 0; max-width: 68ch; text-wrap: pretty; font-size: 14px; line-height: 1.5; }
+  .context { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 14px 0 0; padding: 4px 4px 4px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--secondary); font-size: 13px; }
+  .context[hidden] { display: none; }
+  .context span { flex: 1 1 220px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--background); color: var(--foreground); font: 500 14px/1 inherit; font-family: inherit; cursor: pointer; }
+  .btn:hover { background: var(--secondary); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+  .btn.primary:hover { background: hsl(215 80.2% 41%); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--muted-foreground); padding: 0 10px; }
+  .btn.ghost:hover { color: var(--foreground); background: var(--secondary); }
+  .btn[disabled] { opacity: .55; cursor: not-allowed; }
+
+  .examples { margin: 24px 0 8px; }
+  .examples h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; color: var(--muted-foreground); }
+  .ex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+  .ex { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 12px; text-align: left; border: 1px solid var(--border); border-radius: var(--radius); background: var(--background); color: var(--foreground); font: 400 13.5px/1.35 inherit; font-family: inherit; cursor: pointer; }
+  .ex:hover { background: var(--secondary); border-color: var(--foreground); }
+  .ex .lang { flex: none; font: 500 10px/1 "Geist Mono", ui-monospace, monospace; letter-spacing: .06em; color: var(--muted-foreground); border: 1px solid var(--border); border-radius: 4px; padding: 3px 4px; }
+  .examples[hidden] { display: none; }
+
+  .log { display: grid; gap: 28px; margin: 24px 0 0; }
+  .log:empty { display: none; }
+  .turn { display: grid; gap: 10px; scroll-margin-top: 16px; }
+  .who { display: block; font: 500 11px/1.2 "Geist Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 4px; }
+  .q { justify-self: end; max-width: 88%; padding: 10px 14px; border-radius: 12px 12px 4px 12px; background: var(--secondary); color: var(--secondary-foreground); }
+  .q p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
+  .a { padding: 2px 0 0; }
+  .md { font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
+  .md p { margin: 0 0 10px; }
+  .md ul, .md ol { margin: 0 0 10px; padding-left: 22px; }
+  .md li { margin: 0 0 6px; }
+  .md code { font: 13px/1 "Geist Mono", ui-monospace, monospace; background: var(--muted); padding: 1px 4px; border-radius: 4px; }
+  .md em { color: var(--muted-foreground); }
+  .cite { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; margin: 0 1px 0 3px; border-radius: 999px; font: 600 11px/1 "Geist Mono", ui-monospace, monospace; color: var(--tone-info-fg); background: var(--tone-info-bg); text-decoration: none; vertical-align: 2px; }
+  .cite + .cite { margin-left: 1px; }
+  .cite:hover { background: var(--primary); color: var(--primary-foreground); }
+  .md.streaming > :last-child::after { content: ""; display: inline-block; width: 7px; height: 15px; margin-left: 3px; vertical-align: -2px; background: var(--muted-foreground); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .sources { margin-top: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .sources h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); }
+  .sources ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; line-height: 1.45; }
+  .sources li { display: flex; gap: 8px; align-items: baseline; scroll-margin: 16px 0 140px; border-radius: 4px; }
+  .sources li:target { background: var(--tone-info-bg); }
+  .sources .n { flex: none; min-width: 20px; text-align: center; font: 600 11px/1.6 "Geist Mono", ui-monospace, monospace; color: var(--tone-info-fg); background: var(--tone-info-bg); border-radius: 999px; }
+  .sources .path { font: 12px/1 "Geist Mono", ui-monospace, monospace; color: var(--muted-foreground); }
+  .sources .secs { color: var(--muted-foreground); }
+  .err { margin: 0; padding: 10px 12px; border-radius: var(--radius); background: var(--tone-bad-bg); color: var(--tone-bad-fg); font-size: 14px; line-height: 1.5; }
+  .err span { display: block; }
+  .waiting { color: var(--muted-foreground); font-size: 14px; margin: 0; }
+
+  .status { min-height: 20px; margin: 12px 0 0; font-size: 13px; color: var(--muted-foreground); }
+  .spacer { flex: 1; }
+  .composer { position: sticky; bottom: 0; margin: 8px -16px 0; padding: 10px 16px max(12px, env(safe-area-inset-bottom)); background: var(--background); border-top: 1px solid var(--border); }
+  .composer label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+  .composer label .muted { font-weight: 400; }
+  .row { display: flex; gap: 8px; align-items: flex-end; }
+  textarea { flex: 1; min-width: 0; min-height: 44px; max-height: 40vh; resize: none; padding: 11px 12px; border: 1px solid var(--input); border-radius: var(--radius); background: var(--background); color: var(--foreground); font: 15px/1.45 inherit; font-family: inherit; }
+  textarea::placeholder { color: var(--muted-foreground); }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; margin-top: 4px; font-size: 12px; color: var(--muted-foreground); }
+  .meta #count.over { color: var(--tone-warn-fg); font-weight: 600; }
+  .fine { font-size: 12px; color: var(--muted-foreground); margin: 10px 0 0; line-height: 1.45; }
+  @media (max-width: 560px) {
+    .q { max-width: 100%; }
+    #hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#q">Skip to the question box</a>
+<main>
+  <nav class="crumbs" aria-label="Back">
+    <a href="index.html">← Design review</a>
+    <a id="ctxBack" href="#" hidden></a>
+  </nav>
+  <div class="eyebrow">{{FEATURE}} · design review</div>
+  <h1>Ask about this design</h1>
+  <p class="lead">Ask in English or French. Answers come only from this change's documents: the spec, the binding decisions, the decision log, the team FAQ, the guide and each screen's "What to review" note. Each claim names its source. If something isn't documented, the assistant says so.</p>
+  <p class="fine">Answers can be wrong, so check the cited source. Questions are logged, without your IP address, so {{APPROVER}} can see what the team asks. Limit: 20 questions per hour.</p>
+
+  <p class="context" id="context" hidden>
+    <span id="ctxText"></span>
+    <button type="button" class="btn ghost" id="ctxClear">Ask about everything</button>
+  </p>
+
+  <section class="examples" id="examples" aria-labelledby="exTitle">
+    <h2 id="exTitle">Try a question</h2>
+    <div class="ex-grid">
+{{EXAMPLES_HTML}}
+    </div>
+  </section>
+
+  <section class="log" id="log" aria-label="Conversation"></section>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <div class="spacer"></div>
+
+  <form class="composer" id="composer" novalidate>
+    <label for="q">Your question <span class="muted">(English or French)</span></label>
+    <div class="row">
+      <textarea id="q" name="q" rows="1" maxlength="2000" placeholder="Ask about {{FEATURE}}…" aria-describedby="hint count" autocomplete="off"></textarea>
+      <button type="submit" class="btn primary" id="send">Ask</button>
+    </div>
+    <div class="meta">
+      <span id="hint">Enter to send · Shift+Enter for a new line</span>
+      <span id="count"></span>
+      <span class="spacer"></span>
+      <button type="button" class="btn ghost" id="reset" hidden>New conversation</button>
+    </div>
+  </form>
+</main>
+
+<script>
+(() => {
+  const SCREENS = {{SCREENS_JSON}};
+  const DOCS = {
+    'decisions.md': 'Decisions (binding rules)',
+    'decision-log.md': 'Decision log',
+    'team-faq.md': 'Team FAQ',
+    'README.md': 'Spec: overview',
+    'design.md': 'Spec: design',
+    'data-model.md': 'Spec: data model',
+    'migration.md': 'Spec: migration',
+    'delivery-plan.md': 'Spec: delivery plan',
+    'open-questions.md': 'Spec: open questions',
+  };
+  const MAX = 2000;
+  const STORE = 'ask-{{ISSUE}}-v1';
+  const $ = (id) => document.getElementById(id);
+  const form = $('composer'), q = $('q'), send = $('send'), log = $('log'), statusEl = $('status');
+  const examples = $('examples'), reset = $('reset'), count = $('count');
+
+  // Screen context from ?screen=<slug>, validated against the known screens.
+  const params = new URLSearchParams(location.search);
+  let screen = SCREENS[params.get('screen')] ? params.get('screen') : '';
+  function showContext() {
+    $('context').hidden = !screen;
+    $('ctxBack').hidden = !screen;
+    if (!screen) return;
+    $('ctxText').textContent = `Asking from the "${SCREENS[screen]}" screen. Answers start from its review note.`;
+    $('ctxBack').textContent = `← ${SCREENS[screen]}`;
+    $('ctxBack').href = `${screen}.html`;
+  }
+  $('ctxClear').addEventListener('click', () => {
+    screen = '';
+    history.replaceState(null, '', location.pathname);
+    showContext();
+    q.focus();
+  });
+  showContext();
+
+  // Conversation state; kept for this tab so going back to a screen doesn't lose it.
+  let turns = [];
+  try { turns = JSON.parse(sessionStorage.getItem(STORE) || '[]'); } catch { turns = []; }
+  if (!Array.isArray(turns)) turns = [];
+  const save = () => { try { sessionStorage.setItem(STORE, JSON.stringify(turns)); } catch {} };
+
+  // Minimal, safe Markdown: escape first, then bold, code, lists, paragraphs and citations.
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const CITE = /\[([A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.md)(?:\s*§\s*([^\]\n]+))?\]/g;
+  // Citations become numbered markers that link to the answer's Sources list.
+  function inline(text, cites, prefix) {
+    let s = esc(text);
+    s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/_\((.+?)\)_/g, '<em>($1)</em>');
+    s = s.replace(CITE, (_, path, section) => {
+      const secs = section ? section.split(/\s*,\s*§\s*/).map((x) => x.trim()).filter(Boolean) : [''];
+      return secs.map((sec) => {
+        const key = `${path}§${sec}`;
+        let c = cites.get(key);
+        if (!c) { c = { n: cites.size + 1, path, sec }; cites.set(key, c); }
+        const full = `${path}${sec ? ` § ${sec}` : ''}`;
+        return `<a class="cite" href="#${prefix}-src-${c.n}" title="${full}" aria-label="Source ${c.n}: ${full}">${c.n}</a>`;
+      }).join('');
+    });
+    return s;
+  }
+  function render(md, prefix = 't') {
+    const cites = new Map();
+    let html = '', list = '', para = [];
+    const flush = () => { if (para.length) { html += `<p>${inline(para.join(' '), cites, prefix)}</p>`; para = []; } };
+    const close = () => { if (list) { html += `</${list}>`; list = ''; } };
+    for (const line of md.replace(/\r/g, '').split('\n')) {
+      const ul = line.match(/^\s*[-*•]\s+(.*)$/);
+      const ol = line.match(/^\s*\d+[.)]\s+(.*)$/);
+      if (ul || ol) {
+        flush();
+        const tag = ul ? 'ul' : 'ol';
+        if (list !== tag) { close(); html += `<${tag}>`; list = tag; }
+        html += `<li>${inline((ul || ol)[1], cites, prefix)}</li>`;
+      } else if (!line.trim()) {
+        flush(); close();
+      } else if (/^#{1,6}\s/.test(line)) {
+        flush(); close();
+        html += `<p><strong>${inline(line.replace(/^#{1,6}\s+/, ''), cites, prefix)}</strong></p>`;
+      } else {
+        close();
+        para.push(line.trim());
+      }
+    }
+    flush(); close();
+    return { html, cites };
+  }
+  const docCount = (cites) => new Set([...cites.values()].map((c) => c.path)).size;
+  function sourcesHtml(cites, prefix) {
+    if (!cites.size) return '';
+    const items = [...cites.values()].map((c) => {
+      const slug = c.path.startsWith('screens/') ? c.path.slice(8, -3) : '';
+      const name = slug ? `Screen note: ${SCREENS[slug] || slug}` : DOCS[c.path] || c.path;
+      const label = slug && SCREENS[slug] ? `<a href="${esc(slug)}.html">${esc(name)}</a>` : `<strong>${esc(name)}</strong>`;
+      // c.sec was escaped with the rest of the answer text.
+      return `<li id="${prefix}-src-${c.n}"><span class="n">${c.n}</span><span>${label} <span class="path">${esc(c.path)}</span>${c.sec ? ` <span class="secs">§ ${c.sec}</span>` : ''}</span></li>`;
+    });
+    return `<h3>Sources</h3><ol>${items.join('')}</ol>`;
+  }
+
+  let turnSeq = 0;
+  function turnEl(turn) {
+    const el = document.createElement('article');
+    el.className = 'turn';
+    el.dataset.prefix = `t${++turnSeq}`;
+    el.innerHTML = `<div class="q"><span class="who">You</span><p></p></div><div class="a"><span class="who">Answer</span><div class="body"></div><div class="sources" hidden></div></div>`;
+    el.querySelector('.q p').textContent = turn.q;
+    log.append(el);
+    paint(el, turn, false);
+    return el;
+  }
+  function paint(el, turn, streaming) {
+    const body = el.querySelector('.body');
+    const src = el.querySelector('.sources');
+    if (turn.error) {
+      body.innerHTML = `<p class="err" role="alert"><span lang="en">${esc(turn.error.en)}</span>${turn.error.fr ? `<span lang="fr">${esc(turn.error.fr)}</span>` : ''}</p>`;
+      src.hidden = true;
+      return;
+    }
+    if (!turn.a) {
+      body.innerHTML = '<p class="waiting">Reading the documents…</p>';
+      return;
+    }
+    const { html, cites } = render(turn.a, el.dataset.prefix);
+    body.innerHTML = `<div class="md${streaming ? ' streaming' : ''}">${html}</div>`;
+    src.innerHTML = sourcesHtml(cites, el.dataset.prefix);
+    src.hidden = streaming || !cites.size;
+  }
+
+  function syncChrome() {
+    examples.hidden = turns.length > 0;
+    reset.hidden = turns.length === 0 || busy;
+  }
+  function setStatus(text) { statusEl.textContent = text; }
+
+  let busy = false;
+  let controller = null;
+
+  async function ask(question) {
+    question = question.trim();
+    if (!question || busy) return;
+    if (question.length > MAX) { setStatus(`Questions are limited to ${MAX} characters.`); return; }
+    busy = true;
+    const history = turns.filter((t) => t.a && !t.error).flatMap((t) => [
+      { role: 'user', content: t.q },
+      { role: 'assistant', content: t.a },
+    ]);
+    const turn = { q: question, a: '' };
+    turns.push(turn);
+    q.value = '';
+    sizeBox();
+    syncChrome();
+    const el = turnEl(turn);
+    el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    send.textContent = 'Stop';
+    send.classList.remove('primary');
+    setStatus('Answering…');
+    controller = new AbortController();
+    let frame = 0;
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...history, { role: 'user', content: question }], screen: screen || undefined }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        let data = {};
+        try { data = await res.json(); } catch {}
+        turn.error = data.error
+          ? { en: data.error, fr: data.erreur }
+          : { en: `Something went wrong (${res.status}). Try again.`, fr: `Une erreur s'est produite (${res.status}). Réessayez.` };
+      } else {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          turn.a += decoder.decode(value, { stream: true });
+          if (!frame) frame = requestAnimationFrame(() => { frame = 0; paint(el, turn, true); });
+        }
+        turn.a += decoder.decode();
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        if (turn.a) turn.a += '\n\n_(Stopped.)_';
+        else turn.error = { en: 'Stopped before an answer arrived.', fr: 'Arrêté avant la réponse.' };
+      } else {
+        turn.error = { en: "Couldn't reach the assistant. Check your connection and try again.", fr: "Impossible de joindre l'assistant. Vérifiez la connexion et réessayez." };
+      }
+    } finally {
+      if (frame) cancelAnimationFrame(frame);
+      busy = false;
+      controller = null;
+      paint(el, turn, false);
+      send.textContent = 'Ask';
+      send.classList.add('primary');
+      const n = turn.error ? 0 : docCount(render(turn.a).cites);
+      setStatus(turn.error ? 'No answer. See the message above the question box.' : `Answer ready${n ? `, citing ${n} document${n > 1 ? 's' : ''}` : ''}.`);
+      syncChrome();
+      save();
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (busy) {
+      if (e.submitter === send && controller) controller.abort();
+      return;
+    }
+    ask(q.value);
+  });
+  q.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      if (!busy) ask(q.value);
+    }
+  });
+  function sizeBox() {
+    q.style.height = 'auto';
+    q.style.height = `${Math.min(q.scrollHeight + 2, innerHeight * 0.4)}px`;
+    const n = q.value.length;
+    count.textContent = n > MAX * 0.75 ? `${n.toLocaleString()} / ${MAX.toLocaleString()} characters` : '';
+    count.classList.toggle('over', n >= MAX);
+  }
+  q.addEventListener('input', sizeBox);
+  for (const b of examples.querySelectorAll('.ex')) {
+    b.addEventListener('click', () => { q.focus(); ask(b.lastElementChild.textContent); });
+  }
+  reset.addEventListener('click', () => {
+    turns = [];
+    save();
+    log.innerHTML = '';
+    setStatus('New conversation.');
+    syncChrome();
+    q.focus();
+  });
+
+  for (const t of turns) turnEl(t);
+  syncChrome();
+  if (turns.length) log.lastElementChild.scrollIntoView({ block: 'start' });
+})();
+</script>
+</body>
+</html>

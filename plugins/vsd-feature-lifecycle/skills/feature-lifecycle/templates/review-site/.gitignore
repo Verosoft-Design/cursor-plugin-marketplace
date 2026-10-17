@@ -1,0 +1,6 @@
+.vercel
+node_modules/
+# Built by scripts/build-knowledge.mjs. Deploys still upload them: Vercel follows .vercelignore, not this file.
+api/_*.generated.ts
+ask.html
+index.html
