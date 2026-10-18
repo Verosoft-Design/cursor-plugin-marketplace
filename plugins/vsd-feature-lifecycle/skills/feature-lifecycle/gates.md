@@ -53,6 +53,7 @@ Hand-offs wait the same way, but they aren't approvals. The work needs something
 
 - **Needs a mockup:** no design tool is reachable (Open Design or Claude Design).
 - **Needs a BC test run:** there's no CI that runs AL tests and no reachable BC server.
+- **Needs UI test access:** the app's development login isn't configured on this machine. A person runs `bun run dev:auth:setup` once, as `docs/agents/development-access.md` in mobi describes.
 
 The run resumes once the missing piece is on the issue.
 

@@ -82,8 +82,8 @@ Waiting on: <gate or hand-off, with who> | nothing
 
 When you say what comes next (a plan, or after resuming), name what the rest of the path involves for the size:
 
-- **Bug:** a test that fails before the fix, the fix, one PR, and a release-notes entry at `docs/release-notes/unreleased/<ISSUE-ID>.md`.
-- **Feature:** one PR per repo, then tests plus a code review, then the release-notes entry, plus the manual page if users see the change.
+- **Bug:** a test that fails before the fix, the fix, one PR, and a release-notes entry at `docs/release-notes/unreleased/<ISSUE-ID>.md`. A bug with UI steps in a mobi app is also reproduced in the running app before and after the fix, with screenshots in the PR (`steps/prove.md`).
+- **Feature:** one PR per repo, then tests plus a code review and, when a screen changes, a walkthrough of the flow in the running app with screenshots (`steps/prove.md`), then the release-notes entry, plus the manual page if users see the change.
 - **Major:** one integration branch and one large PR, test campaigns, UI walkthroughs, a real-data run and CI, then release notes and a guide section with screenshots.
 
 - **A bug goes straight from intake to step 5.**
