@@ -38,9 +38,9 @@ Any bug with UI steps, and any feature that changes a screen, is proven in the *
    - Go through the UX flow from the spec and the approved mockup as a user would, start to finish.
    - Include the edge cases the spec names: empty states, errors, permissions.
    - Take a screenshot of each key screen.
-5. **Screenshots for the reviewer:**
-   - Commit them to `docs/pr-assets/<PR number>/`. Open the PR as a draft first to get the number.
-   - Show them in the PR description's Screenshots section, so the approver sees what was tested.
+5. **Screenshots for the reviewer,** in two places, because mobi is private and GitHub's mobile app can't show images stored in the repo:
+   - **On the Linear issue:** upload each one with the Linear MCP tools: `prepare_attachment_upload`, then PUT the file's raw bytes with the signed headers verbatim, then `create_attachment_from_upload`, one file at a time. Show them in your lifecycle comment as images, using each upload's `assetUrl`. Linear's apps show them to anyone signed in, phone included.
+   - **In the repo:** commit them to `docs/pr-assets/<PR number>/` and show them in the PR description's Screenshots section (open the PR as a draft first to get the number). Add a link to the Linear issue there, for anyone reading on a phone.
    - Keep them few and small.
 6. **Committed browser tests:** add a Playwright test (in the app's `e2e/`) only when the flow is already in that app's e2e suite, or for major work. Otherwise the committed test is a unit or integration test, and the walkthrough is the UI proof.
 
