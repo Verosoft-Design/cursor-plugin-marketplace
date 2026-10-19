@@ -53,7 +53,7 @@ Waiting on: <the gate or hand-off, with who>
 
 The status block in the comment is what a fresh run resumes from. It may not have the branch with the spec.
 
-On Linear, the agent server reads the lifecycle comment: it moves the issue to **Needs Human** with a **Needs** label saying what for (Spec approval, Info, Mockup…), and putting `ready-for-agent` back moves it to In Progress again. Don't change the status yourself. Until then, use the triage labels in the repo's `docs/agents/triage-labels.md` if it exists (`needs-info`, `ready-for-human`), and otherwise just the comment.
+On Linear, the agent server reads the lifecycle comment: it moves the issue to **Needs Human** with a **Needs** label saying what for (Spec approval, Info, Mockup…), and a reply in the agent's thread moves it to In Progress again. Don't change the status yourself. Until then, use the triage labels in the repo's `docs/agents/triage-labels.md` if it exists (`needs-info`, `ready-for-human`), and otherwise just the comment.
 
 ## Hand-offs
 

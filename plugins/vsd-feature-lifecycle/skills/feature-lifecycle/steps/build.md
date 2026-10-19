@@ -26,6 +26,7 @@ Use the business-central-al skills if they're installed:
 - **Two code PRs,** one per repo. Each links the spec and the other PR.
 - **One Linear issue** carries both repos' work and the resume state. A docs-only mobi PR for a BC feature continues the same issue.
 - The business-central-al skills only load in AL repos, so the BC part and the Mobi part run as two sessions.
+- **On the agent server,** the lead hands the BC part off with a lifecycle comment whose header is `**Lifecycle: BC hand-off**`, and the BC session hands back with `**Lifecycle: BC ready**` once its PR is open. The server starts the other session each time.
 
 ## Status
 
