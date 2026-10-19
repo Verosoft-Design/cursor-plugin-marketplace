@@ -5,7 +5,7 @@ A gate is a point where the work stops and waits for a named person. It works th
 | Gate | When | Who approves | Bug | Feature | Major |
 | --- | --- | --- | --- | --- | --- |
 | G1 Size | The size goes up, or work starts as major | Stéphane or Alexis | only on escalation | only on escalation | yes |
-| G2 Spec | The spec or its decisions are written | Stéphane or Alexis | — | yes | yes, each grilling round |
+| G2 Spec | The spec or its decisions are written | The issue's assignee, or the team's product owner when nobody is assigned; Stéphane or Alexis too | — | yes | yes, each grilling round |
 | G3 Design | A Mobi mockup is ready | Stéphane or Alexis (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
 | G4 Customer data | Anything that reads a customer environment or uses customer data | Alexis | — | yes, if needed | yes, if needed |
 | G5 Merge | The PR is ready | Stéphane or Alexis | yes | yes | yes |
@@ -13,7 +13,14 @@ A gate is a point where the work stops and waits for a named person. It works th
 
 ## Who can approve
 
-Only **Stéphane Levert** (Linear `@stephane.levert`), who is in charge of all dev work, or **Alexis Turgeon** (Linear `@alexisturgeon`), and **G4 Customer data and G6 Release are Alexis's alone**. A teammate running the session can't approve a gate for their own work, however sure they are.
+**Stéphane Levert** (Linear `@stephane.levert`), who is in charge of all dev work, and **Alexis Turgeon** (Linear `@alexisturgeon`) can approve any gate, but **G4 Customer data and G6 Release are Alexis's alone**.
+
+**G2 Spec** is also approved by the person the Linear issue is assigned to. When nobody is assigned, the team's product owner approves it, and the agent server assigns the issue to them so they're notified:
+
+- **Verovia (VERO):** Frederick Cleroux (`@frederick.cleroux`).
+- **Every other team:** Stéphane Levert (`@stephane.levert`).
+
+Nobody approves the spec of work they're doing themselves. When the assignee is the person running the session, the product owner approves instead. A teammate running the session can't approve a gate for their own work, however sure they are.
 
 - **In a session:** who is there comes from `git config user.name` or the `gh` login. A name typed in the chat only counts when it matches, or when there's no identity to check.
 - **On a Linear issue:** an approval counts only when the comment's author is the gate's approver. A comment written "on behalf of" an approver doesn't count.
@@ -35,7 +42,7 @@ The comment:
 **Lifecycle: <G2 Spec approval | … | needs a mockup | needs a BC test run>** (<ISSUE-ID>)
 Ready: <what's ready, with links>
 Needed: <the one approval or item>
-<@stephane.levert, or @alexisturgeon for G4 and G6>
+<the gate's approver: for G2 the assignee, or the team's product owner when nobody is assigned; @alexisturgeon for G4 and G6; otherwise @stephane.levert>
 
 <!-- lifecycle-status -->
 Size: <Bug|Feature|Major>
@@ -45,7 +52,7 @@ Waiting on: <the gate or hand-off, with who>
 
 The status block in the comment is what a fresh run resumes from. It may not have the branch with the spec.
 
-Labels and statuses for the waiting state come with the Linear agent setup. Until then, use the triage labels in the repo's `docs/agents/triage-labels.md` if it exists (`needs-info`, `ready-for-human`), and otherwise just the comment.
+On Linear, the agent server reads the lifecycle comment: it moves the issue to **Needs Human** with a **Needs** label saying what for (Spec approval, Info, Mockup…), and putting `ready-for-agent` back moves it to In Progress again. Don't change the status yourself. Until then, use the triage labels in the repo's `docs/agents/triage-labels.md` if it exists (`needs-info`, `ready-for-human`), and otherwise just the comment.
 
 ## Hand-offs
 
@@ -60,5 +67,5 @@ The run resumes once the missing piece is on the issue.
 ## Never
 
 - Agents never merge a PR. G5 is always a person.
-- Never treat an approval from anyone other than the gate's approver as a gate passed. That means Stéphane or Alexis, and only Alexis for G4 and G6.
+- Never treat an approval from anyone other than the gate's approver as a gate passed. That means Stéphane or Alexis (only Alexis for G4 and G6), plus, for G2, the assignee or the team's product owner.
 - Never skip a gate because the work looks small. Size it again instead.

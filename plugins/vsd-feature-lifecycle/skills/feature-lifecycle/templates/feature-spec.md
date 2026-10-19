@@ -4,7 +4,7 @@
 - **Linear:** <ISSUE-ID> (<link>)
 - **Size:** Feature
 - **Repos:** <tag-bc | mobi | both>
-- **Approver:** Stéphane Levert
+- **Approver:** <the issue's assignee, or the team's product owner when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
 
 ## Why
 
@@ -35,4 +35,4 @@
 <!-- lifecycle-status -->
 Size: Feature
 Step: 2 Spec
-Waiting on: G2 Spec approval (@stephane.levert)
+Waiting on: G2 Spec approval (@<approver>)

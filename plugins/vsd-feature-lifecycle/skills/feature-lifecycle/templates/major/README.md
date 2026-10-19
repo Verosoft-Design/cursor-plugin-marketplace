@@ -4,7 +4,7 @@
 - **Status:** <Draft | Design approved | Building | Shipped>
 - **Scope:** <repos and apps>
 - **Linear:** <project link>
-- **Approver:** Stéphane Levert
+- **Approver:** <the issue's assignee, or the team's product owner when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
 
 ## Documents
 
@@ -30,4 +30,4 @@
 <!-- lifecycle-status -->
 Size: Major
 Step: 2 Spec
-Waiting on: G2 Spec approval (@stephane.levert)
+Waiting on: G2 Spec approval (@<approver>)

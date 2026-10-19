@@ -6,7 +6,7 @@ The spec lives in its home repo (BC only: the BC repo; Mobi only, or BC and Mobi
 
 1. **Brainstorm briefly.** Use superpowers `brainstorming` if it's installed; otherwise ask a few focused questions yourself. Keep it short: a feature is a change inside an existing process.
 2. **Write the spec** from `templates/feature-spec.md` to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. Every question asked and answered goes into its `## Decisions` list, numbered (D1, D2…), with who answered.
-3. **G2 Spec approval** (see `gates.md`). Set the status block to `Step: 2 Spec` and `Waiting on: G2 Spec approval (@stephane.levert)`.
+3. **G2 Spec approval** (see `gates.md`). Set the status block to `Step: 2 Spec` and `Waiting on: G2 Spec approval (@<the issue's assignee, or the team's product owner when nobody is assigned>)`.
 4. **After G2:**
    - Write a plan with superpowers `writing-plans` if it's installed, to `docs/superpowers/plans/YYYY-MM-DD-<topic>.md`.
    - Link the spec from the Linear issue.
