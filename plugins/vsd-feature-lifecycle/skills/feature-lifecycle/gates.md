@@ -45,15 +45,14 @@ Ready: <what's ready, with links>
 Needed: <the approval or item; at G2, also every later approval you can foresee>
 <the gate's approver: for G2 the assignee, or the team lead when nobody is assigned; @alexisturgeon for G4 and G6; otherwise the team lead, @frederick.cleroux on Verovia or @stephane.levert>
 
-<!-- lifecycle-status -->
-Size: <Bug|Feature|Major>
-Step: <number> <name>
-Waiting on: <the gate or hand-off, with who>
+**Status:** <Bug|Feature|Major> · Step <number> <name> · Waiting on <the gate or hand-off, with who>
 ```
 
-The status block in the comment is what a fresh run resumes from. It may not have the branch with the spec.
+The status line is what a fresh run resumes from: it may not have the branch with the spec. Write it as that one line: Linear prints HTML comments, so never put `<!-- … -->` in a Linear comment.
 
-**Keep it short.** One line each for Ready and Needed, with links instead of explanations, then the mention and the status block. Don't quote the skill or explain the process: the approver needs the decision, not the rules.
+**Reply where you were called.** When the agent server says a comment called you, post every comment, lifecycle comments included, as a reply in that comment's thread (save_comment with its `parentId`), not as a new top-level comment.
+
+**Keep it short.** One line each for Ready and Needed, with links instead of explanations, then the mention and the status line. Don't quote the skill or explain the process: the approver needs the decision, not the rules.
 
 **Ask once.** In the G2 comment, ask now for every later approval you can foresee, so the run doesn't stop again for each:
 

@@ -26,7 +26,7 @@ Every piece of Verosoft dev work (Business Central/AL in tag-bc or other AL repo
 
 ## 2. Resume first
 
-Look for a status block at the end of the spec, or in the issue's latest lifecycle comment:
+Look for the status at the end of the spec, or in the issue's latest lifecycle comment. In the spec it's a block (GitHub hides the HTML comment):
 
 ```text
 <!-- lifecycle-status -->
@@ -35,9 +35,11 @@ Step: <number> <name>
 Waiting on: <gate or hand-off, with who> | nothing
 ```
 
-- **If a status block exists, continue from it.** If its "Waiting on" gate now has an approval from that gate's approver (see section 1), mark it passed and go to the next step. Don't restart intake, and don't ask again.
+In a Linear comment it's one line, because Linear prints HTML comments as text: `**Status:** <Bug|Feature|Major> · Step <number> <name> · Waiting on <gate or hand-off, with who> | nothing`. Older comments may still have the block; read either.
+
+- **If a status exists, continue from it.** If its "Waiting on" gate now has an approval from that gate's approver (see section 1), mark it passed and go to the next step. Don't restart intake, and don't ask again.
 - **When the issue's latest lifecycle comment and the spec disagree,** the latest comment wins. It's what a fresh run, which may not have the branch, can see.
-- **Keep the block current** at every step change. A bug keeps it in a Linear comment.
+- **Keep the status current** at every step change: the block in the spec, the line in Linear comments. A bug keeps it in a Linear comment.
 
 ## 3. Intake and size
 
