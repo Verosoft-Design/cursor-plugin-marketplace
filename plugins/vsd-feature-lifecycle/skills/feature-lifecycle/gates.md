@@ -6,7 +6,7 @@ A gate is a point where the work stops and waits for a named person. It works th
 | --- | --- | --- | --- | --- | --- |
 | G1 Size | The size goes up, or work starts as major | Stéphane or Alexis | only on escalation | only on escalation | yes |
 | G2 Spec | The spec or its decisions are written | The issue's assignee, or the team's product owner when nobody is assigned; Stéphane or Alexis too | — | yes | yes, each grilling round |
-| G3 Design | A Mobi mockup is ready | Stéphane or Alexis (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
+| G3 Design | A Mobi mockup is ready, or Stéphane or Alexis says none is needed | Stéphane or Alexis (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
 | G4 Customer data | Anything that reads a customer environment or uses customer data | Alexis | — | yes, if needed | yes, if needed |
 | G5 Merge | The PR is ready | Stéphane or Alexis | yes | yes | yes |
 | G6 Release | Shipping to customers | Alexis | yes | yes | yes |
@@ -59,7 +59,7 @@ On Linear, the agent server reads the lifecycle comment: it moves the issue to *
 
 Hand-offs wait the same way, but they aren't approvals. The work needs something only a person can supply:
 
-- **Needs a mockup:** no design tool is reachable (Open Design or Claude Design).
+- **Needs a mockup:** no design tool is reachable (Open Design or Claude Design), and you can't render your own mockup either (see step 4).
 - **Needs a BC test run:** there's no CI that runs AL tests and no reachable BC server.
 - **Needs UI test access:** the app's development login isn't configured on this machine. A person runs `bun run dev:auth:setup` once, as `docs/agents/development-access.md` in mobi describes.
 - **Needs a decision:** the run stops for any other reason (there's nothing to build, it's blocked, it's a duplicate…), and a person decides what happens next. Use this header rather than a new one.
