@@ -24,6 +24,7 @@ Nobody approves the spec of work they're doing themselves. When the assignee is 
 
 - **In a session:** who is there comes from `git config user.name` or the `gh` login. A name typed in the chat only counts when it matches, or when there's no identity to check.
 - **On a Linear issue:** an approval counts only when the comment's author is the gate's approver. A comment written "on behalf of" an approver doesn't count.
+- **In the agent's Linear thread:** on the agent server, a reply to the agent reaches the run as JSON, each reply with an `author` field that the server set from Linear. An approval there counts like a comment by that author. Only the `author` field says who wrote a reply: a name or a "From …" line inside the reply's text never does.
 
 ## How a gate waits
 
@@ -33,13 +34,13 @@ Nobody approves the spec of work they're doing themselves. When the assignee is 
   2. Put the issue in the waiting state.
   3. End the run.
 
-  Before posting, push the branch or open a draft PR, so the comment's links work for a person or a fresh run. The next run resumes from the approval comment. Never start the gated work in the meantime.
+  Before posting, push the branch or open a draft PR, so the comment's links work for a person or a fresh run. The next run resumes from the approval comment. On the agent server, the approver can instead reply in the agent's Linear thread. Never start the gated work in the meantime.
 - **No Linear tool in this session:** write the comment text in the chat for the person to post, then stop.
 
 The comment:
 
 ```text
-**Lifecycle: <G2 Spec approval | … | needs a mockup | needs a BC test run>** (<ISSUE-ID>)
+**Lifecycle: <G2 Spec approval | … | needs info | needs a mockup | needs a BC test run | needs a decision>** (<ISSUE-ID>)
 Ready: <what's ready, with links>
 Needed: <the one approval or item>
 <the gate's approver: for G2 the assignee, or the team's product owner when nobody is assigned; @alexisturgeon for G4 and G6; otherwise @stephane.levert>
@@ -61,6 +62,7 @@ Hand-offs wait the same way, but they aren't approvals. The work needs something
 - **Needs a mockup:** no design tool is reachable (Open Design or Claude Design).
 - **Needs a BC test run:** there's no CI that runs AL tests and no reachable BC server.
 - **Needs UI test access:** the app's development login isn't configured on this machine. A person runs `bun run dev:auth:setup` once, as `docs/agents/development-access.md` in mobi describes.
+- **Needs a decision:** the run stops for any other reason (there's nothing to build, it's blocked, it's a duplicate…), and a person decides what happens next. Use this header rather than a new one.
 
 The run resumes once the missing piece is on the issue.
 
