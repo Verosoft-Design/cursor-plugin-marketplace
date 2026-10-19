@@ -42,6 +42,7 @@ Waiting on: <gate or hand-off, with who> | nothing
 ## 3. Intake and size
 
 1. **Read the issue:** title, description, labels (`Bug`, `Feature`, `Improvement`), comments, and which repo.
+   - **A question, not work?** When the person asks about the code base or the issue rather than for a change, answer it: read the code as needed, but don't size it, branch, change code or open a PR. On Linear, post the answer as a comment whose first line is `**Lifecycle: answered**`, then stop. If the code doesn't settle it, say what you looked at, still as `answered`; if only the person can tell you more, use `needs info` instead.
 2. **Too little to size?** If you can't tell what's wrong, where, or what's expected, don't size it and don't start. Say what's missing and ask, or propose marking the issue `needs-info`.
 3. **Propose a size** with `sizes.md`.
    - A label is a hint, not the size: check the escalation list in `sizes.md`.
