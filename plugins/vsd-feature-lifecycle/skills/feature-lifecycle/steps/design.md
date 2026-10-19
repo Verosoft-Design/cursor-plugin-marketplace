@@ -1,5 +1,7 @@
 # Step 4: Design (only when a Mobi screen is added or changed)
 
+A small feature that only tweaks an existing screen (spacing, sizes, wording, a setting on an existing page) skips the mockup: screenshots of the built screen in the PR show it.
+
 BC pages never get a design step, because BC dictates its own UI.
 
 1. **Make the mockup** in Open Design (the `open-design` MCP server) or Claude Design, whichever is reachable.

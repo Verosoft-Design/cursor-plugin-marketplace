@@ -99,5 +99,6 @@ Gates G1 to G6 and the two hand-offs ("needs a mockup", "needs a BC test run") a
 
 - The team lead (Frederick Cleroux on Verovia, Stéphane on every other team) or Alexis can pass any gate. G4 and G6 are Alexis's alone (`@alexisturgeon`). G2 Spec also passes with the issue's assignee or, when nobody is assigned, the team lead.
 - **Ask once.** The G2 comment asks for every later approval you can foresee, so a run stops as rarely as possible (`gates.md`).
+- **An approver's own request counts.** When an approver asks for the work and their request already sets the size, says to implement it or says no design is needed, those gates are passed: don't stop to ask them again (`gates.md`).
 - Anyone else, or an agent, posts the lifecycle comment on the issue, mentioning the gate's approver, and stops.
 - Agents never merge.

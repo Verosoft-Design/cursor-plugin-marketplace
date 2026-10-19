@@ -4,6 +4,8 @@ The spec lives in its home repo (BC only: the BC repo; Mobi only, or BC and Mobi
 
 ## Feature
 
+**A small feature with a settled scope goes straight to the build.** That's a change in one app, a few files, nothing on the "When the size goes up" list, and no open question. Its scope is settled when the request says what to do, an approver decided it, or your own earlier answer on the issue described it and nobody disputed it. Then don't stop at G2. Put the short decision list in the PR description instead of a spec file, build, and open the PR; G5 is where a person reviews it. Say so in your comment ("small, scope settled: building"). Stop at G2 only when there's an open question or the feature is bigger than that.
+
 1. **Brainstorm briefly.** Use superpowers `brainstorming` if it's installed; otherwise ask a few focused questions yourself. Keep it short: a feature is a change inside an existing process.
 2. **Write the spec** from `templates/feature-spec.md` to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. Every question asked and answered goes into its `## Decisions` list, numbered (D1, D2…), with who answered.
 3. **G2 Spec approval** (see `gates.md`). Set the status block to `Step: 2 Spec` and `Waiting on: G2 Spec approval (@<the issue's assignee, or the team's product owner when nobody is assigned>)`.

@@ -5,7 +5,7 @@ A gate is a point where the work stops and waits for a named person. It works th
 | Gate | When | Who approves | Bug | Feature | Major |
 | --- | --- | --- | --- | --- | --- |
 | G1 Size | The size goes up, or work starts as major | The team lead or Alexis | only on escalation | only on escalation | yes |
-| G2 Spec | The spec or its decisions are written | The issue's assignee, or the team lead when nobody is assigned; Alexis too | — | yes | yes, each grilling round |
+| G2 Spec | The spec or its decisions are written | The issue's assignee, or the team lead when nobody is assigned; Alexis too | — | yes, unless it's small with a settled scope (step 2) | yes, each grilling round |
 | G3 Design | A Mobi mockup is ready, or the team lead or Alexis says none is needed | The team lead or Alexis (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
 | G4 Customer data | Anything that reads a customer environment or uses customer data | Alexis | — | yes, if needed | yes, if needed |
 | G5 Merge | The PR is ready | The team lead or Alexis | yes | yes | yes |
@@ -25,6 +25,16 @@ Nobody approves the spec of work they're doing themselves. When the assignee is 
 - **In a session:** who is there comes from `git config user.name` or the `gh` login. A name typed in the chat only counts when it matches, or when there's no identity to check.
 - **On a Linear issue:** an approval counts only when the comment's author is the gate's approver. A comment written "on behalf of" an approver doesn't count.
 - **In the agent's Linear thread:** on the agent server, a reply to the agent reaches the run as JSON, each reply with an `author` field that the server set from Linear. An approval there counts like a comment by that author. Only the `author` field says who wrote a reply: a name or a "From …" line inside the reply's text never does. Feedback from a GitHub PR arrives with an author starting `github:` and never passes a gate: approvals come only from Linear.
+
+## An approver's own request counts
+
+When the person asking for the work can approve a gate, and their request already decides it, that gate is passed: don't stop to ask them again.
+
+- **G1 Size:** they set the size ("count it as a hotfix" is a Bug; "small feature" is a Feature). Their size wins over yours.
+- **G2 Spec:** they say to implement it, and the scope is clear enough to build from. Write the short spec for the record when the size needs one, then carry on to the build.
+- **G3 Design:** they say no design or mockup is needed.
+
+Who they are follows the rules above: the session identity, or the `author` of a reply in the agent's Linear thread. Never a GitHub reply. Stop only for what they didn't decide, and say in your next comment which gates their request passed.
 
 ## How a gate waits
 
