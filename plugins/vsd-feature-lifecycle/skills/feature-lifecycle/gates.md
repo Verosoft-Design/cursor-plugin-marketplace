@@ -66,6 +66,17 @@ Hand-offs wait the same way, but they aren't approvals. The work needs something
 
 The run resumes once the missing piece is on the issue.
 
+## Closing the issue
+
+On Linear, a run closes the issue with a lifecycle comment whose header is:
+
+- `**Lifecycle: done**` when what was asked is complete and nothing needs merging;
+- `**Lifecycle: canceled**` when a person said to stop, or that it isn't needed.
+
+Say why in the comment. On the agent server, that comment moves the issue to Done or Canceled. Elsewhere, set the status by hand.
+
+Never close an issue with an open PR (merging closes it), or one that's waiting on a gate. Don't cancel on your own judgment that there's nothing to build: post `needs a decision` and let a person choose.
+
 ## Never
 
 - Agents never merge a PR. G5 is always a person.
