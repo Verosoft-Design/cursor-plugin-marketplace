@@ -4,7 +4,7 @@
 - **Linear:** <ISSUE-ID> (<link>)
 - **Size:** Feature
 - **Repos:** <tag-bc | mobi | both>
-- **Approver:** <the issue's assignee, or the team's product owner when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
+- **Approver:** <the issue's assignee, or the team lead when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
 
 ## Why
 
@@ -26,7 +26,7 @@
 
 | # | Question | Answer | Who |
 | --- | --- | --- | --- |
-| D1 | <question> | <answer> | <Stéphane / Alexis> |
+| D1 | <question> | <answer> | <the team lead / Alexis> |
 
 ## Testing
 

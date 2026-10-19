@@ -4,21 +4,21 @@ A gate is a point where the work stops and waits for a named person. It works th
 
 | Gate | When | Who approves | Bug | Feature | Major |
 | --- | --- | --- | --- | --- | --- |
-| G1 Size | The size goes up, or work starts as major | Stéphane or Alexis | only on escalation | only on escalation | yes |
-| G2 Spec | The spec or its decisions are written | The issue's assignee, or the team's product owner when nobody is assigned; Stéphane or Alexis too | — | yes | yes, each grilling round |
-| G3 Design | A Mobi mockup is ready, or Stéphane or Alexis says none is needed | Stéphane or Alexis (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
+| G1 Size | The size goes up, or work starts as major | The team lead or Alexis | only on escalation | only on escalation | yes |
+| G2 Spec | The spec or its decisions are written | The issue's assignee, or the team lead when nobody is assigned; Alexis too | — | yes | yes, each grilling round |
+| G3 Design | A Mobi mockup is ready, or the team lead or Alexis says none is needed | The team lead or Alexis (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
 | G4 Customer data | Anything that reads a customer environment or uses customer data | Alexis | — | yes, if needed | yes, if needed |
-| G5 Merge | The PR is ready | Stéphane or Alexis | yes | yes | yes |
+| G5 Merge | The PR is ready | The team lead or Alexis | yes | yes | yes |
 | G6 Release | Shipping to customers | Alexis | yes | yes | yes |
 
 ## Who can approve
 
-**Stéphane Levert** (Linear `@stephane.levert`), who is in charge of all dev work, and **Alexis Turgeon** (Linear `@alexisturgeon`) can approve any gate, but **G4 Customer data and G6 Release are Alexis's alone**.
+**The team lead** and **Alexis Turgeon** (Linear `@alexisturgeon`) can approve any gate, but **G4 Customer data and G6 Release are Alexis's alone**. The team lead is:
 
-**G2 Spec** is also approved by the person the Linear issue is assigned to. When nobody is assigned, the team's product owner approves it, and the agent server assigns the issue to them so they're notified:
+- **Verovia (VERO):** Frederick Cleroux (`@frederick.cleroux`). Stéphane doesn't approve Verovia work.
+- **Every other team:** Stéphane Levert (`@stephane.levert`), who is in charge of all other dev work.
 
-- **Verovia (VERO):** Frederick Cleroux (`@frederick.cleroux`).
-- **Every other team:** Stéphane Levert (`@stephane.levert`).
+**G2 Spec** is also approved by the person the Linear issue is assigned to. When nobody is assigned, the team lead approves it, and the agent server assigns the issue to them so they're notified.
 
 Nobody approves the spec of work they're doing themselves. When the assignee is the person running the session, the product owner approves instead. A teammate running the session can't approve a gate for their own work, however sure they are.
 
@@ -28,7 +28,7 @@ Nobody approves the spec of work they're doing themselves. When the assignee is 
 
 ## How a gate waits
 
-- **Stéphane or Alexis is in the session.** Ask in the chat and wait for a clear yes.
+- **The team lead or Alexis is in the session.** Ask in the chat and wait for a clear yes.
 - **Anyone else is in the session, or an agent is running from Linear.**
   1. Write one comment on the issue, in the format below.
   2. Put the issue in the waiting state.
@@ -42,8 +42,8 @@ The comment:
 ```text
 **Lifecycle: <G2 Spec approval | … | needs info | needs a mockup | needs a BC test run | needs a decision>** (<ISSUE-ID>)
 Ready: <what's ready, with links>
-Needed: <the one approval or item>
-<the gate's approver: for G2 the assignee, or the team's product owner when nobody is assigned; @alexisturgeon for G4 and G6; otherwise @stephane.levert>
+Needed: <the approval or item; at G2, also every later approval you can foresee>
+<the gate's approver: for G2 the assignee, or the team lead when nobody is assigned; @alexisturgeon for G4 and G6; otherwise the team lead, @frederick.cleroux on Verovia or @stephane.levert>
 
 <!-- lifecycle-status -->
 Size: <Bug|Feature|Major>
@@ -52,6 +52,16 @@ Waiting on: <the gate or hand-off, with who>
 ```
 
 The status block in the comment is what a fresh run resumes from. It may not have the branch with the spec.
+
+**Keep it short.** One line each for Ready and Needed, with links instead of explanations, then the mention and the status block. Don't quote the skill or explain the process: the approver needs the decision, not the rules.
+
+**Ask once.** In the G2 comment, ask now for every later approval you can foresee, so the run doesn't stop again for each:
+
+- **A migration on a shared database:** on the agent server the AI database is production. Ask `@alexisturgeon` to approve applying it. With his yes, apply it at the step that needs it, as its file says (one transaction, stop on any error). Only Alexis applies a migration that deletes or rewrites rows.
+- **Customer data** (G4): ask `@alexisturgeon`.
+- **No mockup needed:** the team lead or Alexis can waive it here (see step 4).
+
+An answer given in that round covers the later step: don't stop again for it.
 
 On Linear, the agent server reads the lifecycle comment: it moves the issue to **Needs Human** with a **Needs** label saying what for (Spec approval, Info, Mockup…), and a reply in the agent's thread moves it to In Progress again. Don't change the status yourself. Until then, use the triage labels in the repo's `docs/agents/triage-labels.md` if it exists (`needs-info`, `ready-for-human`), and otherwise just the comment.
 
@@ -80,5 +90,5 @@ Never close an issue with an open PR (merging closes it), or one that's waiting 
 ## Never
 
 - Agents never merge a PR. G5 is always a person.
-- Never treat an approval from anyone other than the gate's approver as a gate passed. That means Stéphane or Alexis (only Alexis for G4 and G6), plus, for G2, the assignee or the team's product owner.
+- Never treat an approval from anyone other than the gate's approver as a gate passed. That means the team lead or Alexis (only Alexis for G4 and G6), plus, for G2, the assignee or, when nobody is assigned, the team lead.
 - Never skip a gate because the work looks small. Size it again instead.

@@ -1,6 +1,6 @@
 ---
 name: feature-lifecycle
-description: "Start, size and run Verosoft dev work in Business Central (AL) and Mobi: a bug, a feature or a major change, from a Linear issue or a request. Decides the size, the steps, where the spec lives and when to stop for Stéphane Levert's approval. Use when picking up an issue, starting a fix or feature, or resuming one."
+description: "Start, size and run Verosoft dev work in Business Central (AL) and Mobi: a bug, a feature or a major change, from a Linear issue or a request. Decides the size, the steps, where the spec lives and when to stop for an approval. Use when picking up an issue, starting a fix or feature, or resuming one."
 ---
 
 # Feature lifecycle
@@ -11,9 +11,9 @@ Every piece of Verosoft dev work (Business Central/AL in tag-bc or other AL repo
 
 ## 1. Who's here and what's installed
 
-- **Is the person an approver?** Stéphane Levert and Alexis Turgeon approve any gate, but G4 and G6 are Alexis's alone. G2 Spec is also approved by the Linear issue's assignee, or by the team's product owner when nobody is assigned (`gates.md`). Nobody approves the spec of work they're doing themselves.
+- **Is the person an approver?** The team lead (Frederick Cleroux on Verovia, Stéphane Levert on every other team) and Alexis Turgeon approve any gate, but G4 and G6 are Alexis's alone. G2 Spec is also approved by the Linear issue's assignee, or by the team's product owner when nobody is assigned (`gates.md`). Nobody approves the spec of work they're doing themselves.
   - **Who is in the session** comes from `git config user.name` or the `gh` login. A name stated in the chat ("I'm …") counts only when it matches that identity, or when there's no identity to check. If they don't match, don't treat the person as an approver: say so and ask them to confirm, or use the Linear path in `gates.md`.
-  - **On a Linear issue,** an approval counts only when the comment's author is the gate's approver: `@stephane.levert` or `@alexisturgeon`, only `@alexisturgeon` for G4 and G6, and for G2 also the assignee or, when nobody is assigned, the team's product owner. A comment "on behalf of" an approver doesn't count.
+  - **On a Linear issue,** an approval counts only when the comment's author is the gate's approver: the team lead (`@frederick.cleroux` on Verovia, `@stephane.levert` otherwise) or `@alexisturgeon`, only `@alexisturgeon` for G4 and G6, and for G2 also the assignee or, when nobody is assigned, the team's product owner. A comment "on behalf of" an approver doesn't count.
 - **Companion plugins.** Steps call these skills when they're installed:
   - superpowers (brainstorming, writing-plans, test-driven-development, systematic-debugging, verification-before-completion);
   - mattpocock-skills (grilling);
@@ -95,6 +95,7 @@ When you say what comes next (a plan, or after resuming), name what the rest of 
 
 Gates G1 to G6 and the two hand-offs ("needs a mockup", "needs a BC test run") are in `gates.md`. Read it the first time you reach a gate. In short:
 
-- Stéphane or Alexis can pass any gate. G4 and G6 are Alexis's alone (`@alexisturgeon`). G2 Spec also passes with the issue's assignee or, when nobody is assigned, the team's product owner (Frederick Cleroux for Verovia, Stéphane for every other team).
+- The team lead (Frederick Cleroux on Verovia, Stéphane on every other team) or Alexis can pass any gate. G4 and G6 are Alexis's alone (`@alexisturgeon`). G2 Spec also passes with the issue's assignee or, when nobody is assigned, the team lead.
+- **Ask once.** The G2 comment asks for every later approval you can foresee, so a run stops as rarely as possible (`gates.md`).
 - Anyone else, or an agent, posts the lifecycle comment on the issue, mentioning the gate's approver, and stops.
 - Agents never merge.

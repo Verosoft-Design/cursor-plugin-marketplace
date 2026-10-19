@@ -40,7 +40,7 @@ Any bug with UI steps, and any feature that changes a screen, is proven in the *
    - Take a screenshot of each key screen.
 5. **Screenshots for the reviewer:**
    - Commit them to `docs/pr-assets/<PR number>/`. Open the PR as a draft first to get the number.
-   - Show them in the PR description's Screenshots section, so Stéphane sees what was tested.
+   - Show them in the PR description's Screenshots section, so the approver sees what was tested.
    - Keep them few and small.
 6. **Committed browser tests:** add a Playwright test (in the app's `e2e/`) only when the flow is already in that app's e2e suite, or for major work. Otherwise the committed test is a unit or integration test, and the walkthrough is the UI proof.
 

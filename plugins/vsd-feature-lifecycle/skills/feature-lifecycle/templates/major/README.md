@@ -4,7 +4,7 @@
 - **Status:** <Draft | Design approved | Building | Shipped>
 - **Scope:** <repos and apps>
 - **Linear:** <project link>
-- **Approver:** <the issue's assignee, or the team's product owner when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
+- **Approver:** <the issue's assignee, or the team lead when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
 
 ## Documents
 
