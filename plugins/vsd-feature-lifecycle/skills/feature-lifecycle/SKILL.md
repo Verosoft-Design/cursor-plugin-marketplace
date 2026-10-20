@@ -18,11 +18,13 @@ Every piece of Verosoft dev work (Business Central/AL in tag-bc or other AL repo
 - **Companion plugins.** Steps call these skills when they're installed:
   - superpowers (brainstorming, writing-plans, test-driven-development, systematic-debugging, verification-before-completion);
   - mattpocock-skills (grilling);
+  - impeccable, for screens in the mobi apps (mockups and UI);
   - business-central-al, in AL repos.
 
   If one is missing, name it with its install line and carry on with the step's plain instructions:
   - `claude plugin install superpowers@claude-plugins-official`
   - `claude plugin install mattpocock-skills@claude-plugins-official`
+  - `npx impeccable install -y --providers=claude,codex --global --no-hooks`
   - `claude plugin install business-central-al@verosoft-design --scope local`
 
 ## 2. Resume first
@@ -93,7 +95,7 @@ When you say what comes next (a plan, or after resuming), name what the rest of 
 - **A bug goes straight from intake to step 5.**
 - **BC pages never get a design step,** because BC dictates its own UI.
 - **The size can go up at any step, never down.** When it becomes major, stop at G1. A bug that becomes a feature carries on as one.
-- **You review the work yourself,** your subagents' included. Never another agent reviewing it, and never review rounds between agents (`steps/build.md`, `steps/prove.md`).
+- **You review the work yourself,** your subagents' included. Never another agent reviewing it, apart from one pass of `bcq-review` or of impeccable's finish review, and never review rounds between agents (`steps/build.md`, `steps/prove.md`).
 
 ## 5. Gates
 

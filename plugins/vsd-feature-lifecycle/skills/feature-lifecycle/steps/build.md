@@ -28,6 +28,10 @@ Use the business-central-al skills if they're installed:
 - The business-central-al skills only load in AL repos, so the BC part and the Mobi part run as two sessions.
 - **On the agent server,** the lead hands the BC part off with a lifecycle comment whose header is `**Lifecycle: BC hand-off**`, and the BC session hands back with `**Lifecycle: BC ready**` once its PR is open. The server starts the other session each time.
 
+## Screens in the mobi apps
+
+Build a new or changed screen with the impeccable skill when it's installed, from the approved mockup (or like the existing screens, after a waiver). It reads the app's `PRODUCT.md` and `DESIGN.md`. Its finish review is the one review pass it gets (`steps/prove.md`).
+
 ## Subagents
 
 You can give a subagent a search, or a piece of the build that doesn't depend on the others. **You review what it produces yourself:** read its diff against the spec and the repo's rules, and send it back only for a real defect.

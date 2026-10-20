@@ -8,7 +8,7 @@ BC pages never get a design step, because BC dictates its own UI.
 
 1. **Make the mockup** in Open Design (the `open-design` MCP server) or Claude Design, whichever is reachable.
    - Open Design only connects while its app or service runs. When its MCP server doesn't answer, use the next option.
-   - **If neither tool is reachable, make a quick mockup yourself.** Write one static HTML page per screen, in the spec folder at `mockups/<screen>.html`.
+   - **If neither tool is reachable, make a quick mockup yourself.** Write one static HTML page per screen, in the spec folder at `mockups/<screen>.html`. Design it with the impeccable skill when it's installed: it reads the app's `PRODUCT.md` and `DESIGN.md`.
      - Give it the app's own look: copy the Tailwind classes, component markup, colors and spacing of the screen it changes, or of the closest existing screen.
      - Screenshot each page at desktop and phone width with a headless browser (`agent-browser`, or Playwright).
      - Attach the screenshots to the Linear issue and commit the HTML with the spec.
