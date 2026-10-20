@@ -6,10 +6,7 @@
   - Use superpowers `test-driven-development`, or business-central-al `business-central-al-tdd` in AL repos.
   - For anything non-obvious, use systematic debugging (superpowers `systematic-debugging`).
 - **Bug with UI steps (mobi monorepo apps):** also reproduced in the running app before and after the fix, with screenshots. See "UI testing" below.
-- **Feature:** tests for the new behavior, plus a code review, plus a walkthrough of the flow in the running app when a screen changes. See "UI testing" below. The code reviews:
-  - `bcq-review` in AL repos;
-  - `vsd-code-review` in Cursor;
-  - `/code-review` in Claude Code.
+- **Feature:** tests for the new behavior, plus your own code review (below), plus a walkthrough of the flow in the running app when a screen changes. See "UI testing" below.
 - **Major:** all of the above, plus:
   - test campaigns per area;
   - TestPage tests for every new or changed BC page;
@@ -17,6 +14,14 @@
   - a read-only real-data run where an agreement exists (G4);
   - an upgrade test for BC;
   - CI on the PR.
+
+## The code review: you do it
+
+The session that did the work reviews it, not another agent.
+
+- **Read the branch's full diff yourself,** subagents' work included, against the spec and the repo's rules (`AGENTS.md`, `docs/agents/*`). A review skill is a checklist you apply in this session, not an agent you start: don't run `/code-review` and don't dispatch reviewer subagents. In Cursor, apply the `vsd-code-review` rubric yourself.
+- **In AL repos, run `bcq-review` once.** Its checks may run as subagents. Judge each finding yourself: fix it, or say in the PR description why not. Don't run it again after the fixes.
+- **One pass.** Fix what you find and move on: don't review your fixes again. The independent reviews come on the PR: the Verovia Review code and security reviews on the agent server, and the person who merges at G5.
 
 ## UI testing in the mobi monorepo apps (Mobi, Hub, Trax, Verovia)
 

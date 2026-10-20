@@ -13,7 +13,7 @@ BC pages never get a design step, because BC dictates its own UI.
      - Screenshot each page at desktop and phone width with a headless browser (`agent-browser`, or Playwright).
      - Attach the screenshots to the Linear issue and commit the HTML with the spec.
      - It's a picture for approval, not screen code: nothing in the app's source changes.
-   - **Only if you can't render a screenshot** either, ask for the mockup in the same G2 comment (or use the **"needs a mockup" hand-off**, see `gates.md`, when the spec is already approved). Ask for a person to attach the mockup to the issue, or to waive it. The work resumes at G3 once the mockup is on the issue.
+   - **Only if you can't render a screenshot** either, ask for the mockup in the same G2 comment (or use the **"needs a mockup" hand-off**, see `gates.md`, when the spec is already approved): ask for a person to attach the mockup to the issue. The work resumes at G3 once it's there.
    - **Don't ask whether to make one.** When the change needs a mockup, make it; when it's only a tweak (above), skip it and say so. Never put "mockup or waiver?" to the approver.
    - **The waiver:** the assignee, the team lead or Alexis can say on their own that no mockup is needed, in the agent's Linear thread or on the issue. That approves G3 without a mockup. Build the screens like the existing ones, and put screenshots of the built screens in the PR.
    - **Never write screen code before G3 is approved,** by an approved mockup or by that waiver.
