@@ -17,7 +17,10 @@ Every piece of work is a **Bug**, a **Feature** or a **Major** change. Use this 
 
 ## When the size goes up
 
-The size can go up, never down. An agent applies this list mechanically. Hitting any item means it stops, says which item it hit, and waits for approval of the new size (gate G1).
+The size can go up, never down. An agent applies this list mechanically and says which item it hit.
+
+- **A bug that becomes a feature carries on as a feature,** without stopping for the size: step 2 decides whether it builds straight away (small, with a settled scope) or stops at G2 with the spec.
+- **Work that becomes major stops** and waits for the assignee to approve the new size (gate G1).
 
 - **Bug becomes a feature** when the fix needs any of these:
   - a new table, field, API page, API entity or enum value;

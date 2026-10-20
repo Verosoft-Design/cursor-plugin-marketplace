@@ -26,7 +26,7 @@
 
 | # | Question | Answer | Who |
 | --- | --- | --- | --- |
-| D1 | <question> | <answer> | <the team lead / Alexis> |
+| D1 | <question> | <answer, or "open, recommend …"> | <the assignee / the team lead / Alexis / agent call, from <file or comment>> |
 
 ## Testing
 

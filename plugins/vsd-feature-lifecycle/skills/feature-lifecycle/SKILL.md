@@ -11,9 +11,10 @@ Every piece of Verosoft dev work (Business Central/AL in tag-bc or other AL repo
 
 ## 1. Who's here and what's installed
 
-- **Is the person an approver?** The team lead (Frederick Cleroux on Verovia, Stéphane Levert on every other team) and Alexis Turgeon approve any gate, but G4 and G6 are Alexis's alone. G2 Spec is also approved by the Linear issue's assignee, or by the team's product owner when nobody is assigned (`gates.md`). Nobody approves the spec of work they're doing themselves.
+- **Is the person an approver?** The Linear issue's assignee owns the work's decisions: they approve the size, the spec and the design and merge the PR (G1, G2, G3, G5), also on their own work and in their own session. When nobody is assigned, the team lead does. The team lead (Frederick Cleroux on Verovia, Stéphane Levert on every other team) and Alexis Turgeon can also approve any gate, but G4 and G6 are Alexis's alone (`gates.md`).
   - **Who is in the session** comes from `git config user.name` or the `gh` login. A name stated in the chat ("I'm …") counts only when it matches that identity, or when there's no identity to check. If they don't match, don't treat the person as an approver: say so and ask them to confirm, or use the Linear path in `gates.md`.
-  - **On a Linear issue,** an approval counts only when the comment's author is the gate's approver: the team lead (`@frederick.cleroux` on Verovia, `@stephane.levert` otherwise) or `@alexisturgeon`, only `@alexisturgeon` for G4 and G6, and for G2 also the assignee or, when nobody is assigned, the team's product owner. A comment "on behalf of" an approver doesn't count.
+  - **Who is assigned** is the issue's Assignee field in Linear (never its delegate, the agent). Without a Linear tool, a person's "it's assigned to me" counts when their name matches the session identity.
+  - **On a Linear issue,** an approval counts only when the comment's author is the gate's approver: the assignee (the team lead when nobody is assigned), the team lead (`@frederick.cleroux` on Verovia, `@stephane.levert` otherwise) or `@alexisturgeon`, and only `@alexisturgeon` for G4 and G6. A comment "on behalf of" an approver doesn't count.
 - **Companion plugins.** Steps call these skills when they're installed:
   - superpowers (brainstorming, writing-plans, test-driven-development, systematic-debugging, verification-before-completion);
   - mattpocock-skills (grilling);
@@ -48,8 +49,8 @@ In a Linear comment it's one line, because Linear prints HTML comments as text: 
 2. **Too little to size?** If you can't tell what's wrong, where, or what's expected, don't size it and don't start. Say what's missing and ask, or propose marking the issue `needs-info`.
 3. **Propose a size** with `sizes.md`.
    - A label is a hint, not the size: check the escalation list in `sizes.md`.
-   - If you hit an item, say which one, and wait for G1.
-   - Major work always waits for G1.
+   - If you hit an item, say which one. A bug that becomes a feature carries on as a feature: step 2 decides whether it needs a spec stop.
+   - Work that becomes or starts as major waits for G1.
 4. **Pick the spec's home:**
    - BC only: the BC repo.
    - Mobi only: mobi.
@@ -91,14 +92,14 @@ When you say what comes next (a plan, or after resuming), name what the rest of 
 
 - **A bug goes straight from intake to step 5.**
 - **BC pages never get a design step,** because BC dictates its own UI.
-- **The size can go up at any step, never down.** When it does, stop at G1.
+- **The size can go up at any step, never down.** When it becomes major, stop at G1. A bug that becomes a feature carries on as one.
 
 ## 5. Gates
 
 Gates G1 to G6 and the two hand-offs ("needs a mockup", "needs a BC test run") are in `gates.md`. Read it the first time you reach a gate. In short:
 
-- The team lead (Frederick Cleroux on Verovia, Stéphane on every other team) or Alexis can pass any gate. G4 and G6 are Alexis's alone (`@alexisturgeon`). G2 Spec also passes with the issue's assignee or, when nobody is assigned, the team lead.
-- **Ask once.** The G2 comment asks for every later approval you can foresee, so a run stops as rarely as possible (`gates.md`).
+- The issue's assignee passes G1, G2, G3 and G5, also on their own work; the team lead does when nobody is assigned. The team lead (Frederick Cleroux on Verovia, Stéphane on every other team) or Alexis can pass any gate. G4 and G6 are Alexis's alone (`@alexisturgeon`).
+- **Decide what you can, ask the rest once.** Settle what the code, the issue and the repo's rules answer yourself. The G2 comment carries the spec, the open questions with your recommendations, the mockup when a screen changes, and every later approval you can foresee, so a run stops as rarely as possible. The answers approve it (`gates.md`).
 - **An approver's own request counts.** When an approver asks for the work and their request already sets the size, says to implement it or says no design is needed, those gates are passed: don't stop to ask them again (`gates.md`).
 - Anyone else, or an agent, posts the lifecycle comment on the issue, mentioning the gate's approver, and stops.
 - Agents never merge.
