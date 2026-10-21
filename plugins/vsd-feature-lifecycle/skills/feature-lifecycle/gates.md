@@ -7,15 +7,15 @@ A gate is a point where the work stops and waits for a named person. It works th
 | G1 Size | The work becomes major, or starts as major | The assignee | only if it becomes major | only if it becomes major | yes |
 | G2 Spec | The spec and its open questions are written | The assignee | — | yes, unless it's small with a settled scope (step 2) | yes, each grilling round |
 | G3 Design | A Mobi mockup is ready (approved with the spec when they're ready together), or the approver says none is needed | The assignee (the team weighs in for major) | — | yes, if there's a Mobi screen | yes |
-| G4 Customer data | Anything that reads a customer environment or uses customer data | Alexis | — | yes, if needed | yes, if needed |
+| G4 Customer data | Anything that reads a customer environment or uses customer data | Stéphane (Alexis on Verovia) | — | yes, if needed | yes, if needed |
 | G5 Merge | The PR is ready, with the reviews and CI green | The assignee | yes | yes | yes |
-| G6 Release | Shipping to customers | Alexis | yes | yes | yes |
+| G6 Release | Shipping to customers | Stéphane (Alexis on Verovia) | yes | yes | yes |
 
 ## Who can approve
 
 **The issue's assignee owns the work's decisions.** The person the Linear issue is assigned to approves the size (G1), the spec (G2) and the design (G3), and merges the PR (G5). That holds when it's their own work, and when they run the session themselves. When nobody is assigned, the team lead approves instead, and the agent server assigns the issue to them so they're notified.
 
-**The team lead** and **Alexis Turgeon** (Linear `@alexisturgeon`) can also approve any gate, but **G4 Customer data and G6 Release are Alexis's alone**, whoever is assigned. The team lead is:
+**The team lead** and **Alexis Turgeon** (Linear `@alexisturgeon`) can also approve any gate, except **G4 Customer data and G6 Release**. Whoever is assigned, those two go to **Stéphane Levert** (`@stephane.levert`) on every team but Verovia, and to **Alexis** on Verovia. Alexis can approve them on any team; Frederick doesn't approve G4 or G6. The team lead is:
 
 - **Verovia (VERO):** Frederick Cleroux (`@frederick.cleroux`). Stéphane doesn't approve Verovia work.
 - **Every other team:** Stéphane Levert (`@stephane.levert`), who is in charge of all other dev work.
@@ -54,7 +54,7 @@ The comment:
 **Lifecycle: <G2 Spec approval | … | needs info | needs a mockup | needs a BC test run | needs a decision>** (<ISSUE-ID>)
 Ready: <what's ready, with links>
 Needed: <the approval or item; at G2, also the open questions and every later approval you can foresee>
-<the gate's approver: the assignee, or the team lead when nobody is assigned (@frederick.cleroux on Verovia, @stephane.levert otherwise); @alexisturgeon for G4, G6 and a migration on a shared database>
+<the gate's approver: the assignee, or the team lead when nobody is assigned (@frederick.cleroux on Verovia, @stephane.levert otherwise); for G4 and G6, @stephane.levert (@alexisturgeon on Verovia); @alexisturgeon for a migration on a shared database>
 
 **Status:** <Bug|Feature|Major> · Step <number> <name> · Waiting on <the gate or hand-off, with who>
 ```
@@ -68,9 +68,9 @@ The status line is what a fresh run resumes from: it may not have the branch wit
 **Ask once.** The G2 comment carries everything the assignee has to decide, so the run stops as rarely as possible: the spec, its open questions, the mockup when a screen changes (step 4), and every later approval you can foresee:
 
 - **A migration on a shared database:** on the agent server the AI database is production. Ask `@alexisturgeon` to approve applying it. With his yes, apply it at the step that needs it, as its file says (one transaction, stop on any error). Only Alexis applies a migration that deletes or rewrites rows.
-- **Customer data** (G4): ask `@alexisturgeon`.
+- **Customer data** (G4): ask `@stephane.levert`, or `@alexisturgeon` on Verovia.
 
-These two stay Alexis's even when the assignee approves everything else. An answer given in that round covers the later step: don't stop again for it.
+These two stay with their named approver even when the assignee approves everything else. An answer given in that round covers the later step: don't stop again for it.
 
 **Answers approve.** When the approver answers the open questions (taking your recommendation or another choice) and asks for no other change, that's the approval: write their answers into the spec's decisions and carry on. Don't ask them to approve the updated spec again. Stop again only when an answer opens a question you can't settle yourself.
 
@@ -101,5 +101,5 @@ Never close an issue with an open PR (merging closes it), or one that's waiting 
 ## Never
 
 - Agents never merge a PR. G5 is always a person: the assignee, or the team lead when nobody is assigned, or Alexis.
-- Never treat an approval from anyone other than the gate's approver as a gate passed. That means the assignee (the team lead when nobody is assigned), the team lead or Alexis, and only Alexis for G4 and G6.
+- Never treat an approval from anyone other than the gate's approver as a gate passed. That means the assignee (the team lead when nobody is assigned), the team lead or Alexis; for G4 and G6, only Stéphane or Alexis, and only Alexis on Verovia.
 - Never skip a gate because the work looks small. Size it again instead.

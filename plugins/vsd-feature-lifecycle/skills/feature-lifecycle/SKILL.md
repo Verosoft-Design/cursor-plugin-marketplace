@@ -11,10 +11,10 @@ Every piece of Verosoft dev work (Business Central/AL in tag-bc or other AL repo
 
 ## 1. Who's here and what's installed
 
-- **Is the person an approver?** The Linear issue's assignee owns the work's decisions: they approve the size, the spec and the design and merge the PR (G1, G2, G3, G5), also on their own work and in their own session. When nobody is assigned, the team lead does. The team lead (Frederick Cleroux on Verovia, Stéphane Levert on every other team) and Alexis Turgeon can also approve any gate, but G4 and G6 are Alexis's alone (`gates.md`).
+- **Is the person an approver?** The Linear issue's assignee owns the work's decisions: they approve the size, the spec and the design and merge the PR (G1, G2, G3, G5), also on their own work and in their own session. When nobody is assigned, the team lead does. The team lead (Frederick Cleroux on Verovia, Stéphane Levert on every other team) and Alexis Turgeon can also approve any gate, but G4 and G6 go to Stéphane Levert on every team but Verovia, and to Alexis on Verovia; Alexis can approve them on any team (`gates.md`).
   - **Who is in the session** comes from `git config user.name` or the `gh` login. A name stated in the chat ("I'm …") counts only when it matches that identity, or when there's no identity to check. If they don't match, don't treat the person as an approver: say so and ask them to confirm, or use the Linear path in `gates.md`.
   - **Who is assigned** is the issue's Assignee field in Linear (never its delegate, the agent). Without a Linear tool, a person's "it's assigned to me" counts when their name matches the session identity.
-  - **On a Linear issue,** an approval counts only when the comment's author is the gate's approver: the assignee (the team lead when nobody is assigned), the team lead (`@frederick.cleroux` on Verovia, `@stephane.levert` otherwise) or `@alexisturgeon`, and only `@alexisturgeon` for G4 and G6. A comment "on behalf of" an approver doesn't count.
+  - **On a Linear issue,** an approval counts only when the comment's author is the gate's approver: the assignee (the team lead when nobody is assigned), the team lead (`@frederick.cleroux` on Verovia, `@stephane.levert` otherwise) or `@alexisturgeon`. For G4 and G6, only `@stephane.levert` or `@alexisturgeon`, and only `@alexisturgeon` on Verovia. A comment "on behalf of" an approver doesn't count.
 - **Companion plugins.** Steps call these skills when they're installed:
   - superpowers (brainstorming, writing-plans, test-driven-development, systematic-debugging, verification-before-completion);
   - mattpocock-skills (grilling);
@@ -101,7 +101,7 @@ When you say what comes next (a plan, or after resuming), name what the rest of 
 
 Gates G1 to G6 and the two hand-offs ("needs a mockup", "needs a BC test run") are in `gates.md`. Read it the first time you reach a gate. In short:
 
-- The issue's assignee passes G1, G2, G3 and G5, also on their own work; the team lead does when nobody is assigned. The team lead (Frederick Cleroux on Verovia, Stéphane on every other team) or Alexis can pass any gate. G4 and G6 are Alexis's alone (`@alexisturgeon`).
+- The issue's assignee passes G1, G2, G3 and G5, also on their own work; the team lead does when nobody is assigned. The team lead (Frederick Cleroux on Verovia, Stéphane on every other team) or Alexis can pass any gate. G4 and G6 are Stéphane's (`@stephane.levert`) on every team but Verovia, and Alexis's (`@alexisturgeon`) on Verovia; Alexis can pass them anywhere.
 - **Decide what you can, ask the rest once.** Settle what the code, the issue and the repo's rules answer yourself. The G2 comment carries the spec, the open questions with your recommendations, the mockup when a screen changes, and every later approval you can foresee, so a run stops as rarely as possible. The answers approve it (`gates.md`).
 - **An approver's own request counts.** When an approver asks for the work and their request already sets the size, says to implement it or says no design is needed, those gates are passed: don't stop to ask them again (`gates.md`).
 - Anyone else, or an agent, posts the lifecycle comment on the issue, mentioning the gate's approver, and stops.

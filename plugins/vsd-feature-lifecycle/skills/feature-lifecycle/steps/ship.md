@@ -10,5 +10,5 @@
    - Set `Waiting on: G5 Merge (@<the assignee>)`. When nobody is assigned, mention the team lead: `@frederick.cleroux` on Verovia, `@stephane.levert` otherwise.
    - Stop.
 2. **Merging to `main` isn't a release.**
-3. **G6 Release (Alexis)** runs the `lifecycle-release` skill. It gathers the product's unreleased entries into that version's notes for Hub, then follows the product's own release process: AppSource for TAG, and the Vercel promotion for Mobi and Hub.
+3. **G6 Release (Stéphane; Alexis on Verovia)** runs the `lifecycle-release` skill. It gathers the product's unreleased entries into that version's notes for Hub, then follows the product's own release process: AppSource for TAG, and the Vercel promotion for Mobi and Hub.
 4. **Once merged,** set the status block to `Step: 9 Ship` and `Waiting on: nothing`. The work is done.

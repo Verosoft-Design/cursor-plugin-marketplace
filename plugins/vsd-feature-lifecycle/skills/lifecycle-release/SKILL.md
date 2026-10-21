@@ -26,7 +26,7 @@ Run this in the product's repo: tag-bc for `tag`, mobi for `mobi`. The entries l
 
    - **Exit 1:** reword every line it lists, then check again.
    - **Exit 2:** there's no names list on this machine. Say so.
-3. **G6 Release: Alexis approves** the notes and the release. Ask in the chat if Alexis is here. Otherwise, post the drafted notes as a comment for `@alexisturgeon` and stop. Never apply the notes before that approval.
+3. **G6 Release: Stéphane approves** the notes and the release (Alexis on Verovia; Alexis can approve any release). Ask in the chat if the approver is here. Otherwise, post the drafted notes as a comment for `@stephane.levert` (`@alexisturgeon` on Verovia) and stop. Never apply the notes before that approval.
 4. **After approval,** move the entries and commit them in a PR (repo rules from `AGENTS.md`):
 
    ```bash
