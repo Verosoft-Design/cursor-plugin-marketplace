@@ -54,6 +54,7 @@ Any bug with UI steps, and any feature that changes a screen, is proven in the *
 
 1. **CI:** push the failing test, show the red run, then push the fix.
 2. **Otherwise, a reachable BC server,** with `al-run-tests`.
+   - **No BC server yet, on Windows with Docker:** propose a local container first, set up with business-central-al `/bc-server-setup container`. Never set it up without the person's yes.
 3. **Otherwise, the "needs a BC test run" hand-off** (see `gates.md`). Never skip the failing test.
 
 As of 2026-10, tag-bc `main` has no AL test workflow. Its tests sit behind `#if TESTS`, which a normal build doesn't define. The `PM tests` workflow and the test-build setup arrive with tag-bc #193, and until that merges, BC agent runs mostly end at the hand-off.
