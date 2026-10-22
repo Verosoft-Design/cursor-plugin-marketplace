@@ -34,7 +34,7 @@ Build a new or changed screen with the impeccable skill when it's installed, fro
 
 ## Subagents
 
-You can give a subagent a search, or a piece of the build that doesn't depend on the others. **You review what it produces yourself:** read its diff against the spec and the repo's rules, and send it back only for a real defect.
+You can give a subagent a search, a piece of the build that doesn't depend on the others, or a UI test lane (`steps/prove.md`). **You review what it produces yourself:** read its diff against the spec and the repo's rules, and send it back only for a real defect. A tester only reports findings, which you triage.
 
 - Never give a subagent's work to another agent to review, and never run review → fix → re-review rounds between agents.
 - When a plan skill offers subagent-driven development, which adds a reviewer per task, skip its reviewers: you are the reviewer.

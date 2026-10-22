@@ -6,9 +6,9 @@
   - Use superpowers `test-driven-development`, or business-central-al `business-central-al-tdd` in AL repos.
   - For anything non-obvious, use systematic debugging (superpowers `systematic-debugging`).
 - **Bug with UI steps (mobi monorepo apps):** also reproduced in the running app before and after the fix, with screenshots. See "UI testing" below.
-- **Feature:** tests for the new behavior, plus your own code review (below), plus a walkthrough of the flow in the running app when a screen changes. See "UI testing" below.
+- **Feature:** tests for the new behavior, plus your own code review (below), plus a walkthrough of the flow in the running app when a screen changes. See "UI testing" below. When several screens or flows change, run UI test rounds with tester subagents instead of walking it all yourself (see "UI test rounds" below).
 - **Major:** all of the above, plus:
-  - test campaigns per area;
+  - test campaigns per area, run as UI test rounds with a lane per area;
   - TestPage tests for every new or changed BC page;
   - a browser walkthrough with screenshots (`al-ui-test` for BC, and a visual check for Mobi);
   - a read-only real-data run where an agreement exists (G4);
@@ -49,6 +49,34 @@ Any bug with UI steps, and any feature that changes a screen, is proven in the *
    - **In the repo:** commit them to `docs/pr-assets/<PR number>/` and show them in the PR description's Screenshots section (open the PR as a draft first to get the number). Add a link to the Linear issue there, for anyone reading on a phone.
    - Keep them few and small.
 6. **Committed browser tests:** add a Playwright test (in the app's `e2e/`) only when the flow is already in that app's e2e suite, or for major work. Otherwise the committed test is a unit or integration test, and the walkthrough is the UI proof.
+
+## UI test rounds with subagents
+
+When a feature adds or changes several screens or flows, in a mobi app or on BC pages, and for major work, don't walk everything yourself. Run UI test rounds with tester subagents. This is how the PM refactor found most of its usability and logic problems before review.
+
+- **Not for a bug or a one-screen change.** Walk those yourself, as above.
+- **Lanes:** split the spec's flows into lanes by area, role or scenario. For example: the planner's flow, the technician's flow, permissions with empty and error states, and existing or imported data. Start one tester subagent per lane, all at once.
+- **Each lane gets its own data:** its own test records, and on BC its own company or tenant, so lanes don't trip over each other.
+  - In a mobi app, the testers share one running dev server. On the agent server, never start one per tester: memory is tight.
+- **A short brief per tester:**
+  - the spec's flows and decisions for its lane;
+  - the user role, and how to sign in (test data only, as above);
+  - what to check: the flow works as the spec says, the edge cases, wording and layout, empty and error states, permissions.
+
+  Mobi testers drive the app with agent-browser or Playwright. BC testers use business-central-al `al-ui-test` on the BC server.
+- **Testers only use the app.** They don't read or change the code, and they don't review anyone's work. Each finding is numbered and has:
+  - one line saying what's wrong;
+  - the steps to reproduce it;
+  - a screenshot;
+  - its weight: blocker, bug or polish.
+- **You triage every finding:**
+  - fix it;
+  - defer it, with a line in the PR description;
+  - or reject it, with the reason.
+
+  You make the fixes, or give them to a build subagent and review its diff yourself (`steps/build.md`).
+- **At most two rounds.** After your fixes, the same lanes re-test only what was fixed. Anything still open after round two goes in the PR description, not into a third round.
+- **Screenshots:** keep the ones that show the final state for the PR, as above.
 
 ## How AL tests run, in this order
 

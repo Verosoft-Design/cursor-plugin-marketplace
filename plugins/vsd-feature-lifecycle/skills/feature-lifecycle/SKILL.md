@@ -96,6 +96,7 @@ When you say what comes next (a plan, or after resuming), name what the rest of 
 - **BC pages never get a design step,** because BC dictates its own UI.
 - **The size can go up at any step, never down.** When it becomes major, stop at G1. A bug that becomes a feature carries on as one.
 - **You review the work yourself,** your subagents' included. Never another agent reviewing it, apart from one pass of `bcq-review` or of impeccable's finish review, and never review rounds between agents (`steps/build.md`, `steps/prove.md`).
+- **UI test rounds with tester subagents** when several screens or flows change, and for major work. One lane per area or role. Testers only use the app and report numbered findings with screenshots. You triage and fix them, in at most two rounds (`steps/prove.md`).
 
 ## 5. Gates
 
