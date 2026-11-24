@@ -4,7 +4,7 @@
 - **Linear:** <ISSUE-ID> (<link>)
 - **Size:** Feature
 - **Repos:** <tag-bc | mobi | both>
-- **Approver:** <the issue's assignee, or the team lead when nobody is assigned: Frederick Cleroux for Verovia, Stéphane Levert otherwise>
+- **Approver:** <the issue's assignee, or the team lead when nobody is assigned: Alexis Turgeon for Verovia, Stéphane Levert otherwise>
 
 ## Why
 

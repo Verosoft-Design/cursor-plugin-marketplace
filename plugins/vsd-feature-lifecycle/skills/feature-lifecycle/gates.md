@@ -15,9 +15,9 @@ A gate is a point where the work stops and waits for a named person. It works th
 
 **The issue's assignee owns the work's decisions.** The person the Linear issue is assigned to approves the size (G1), the spec (G2) and the design (G3), and merges the PR (G5). That holds when it's their own work, and when they run the session themselves. When nobody is assigned, the team lead approves instead, and the agent server assigns the issue to them so they're notified.
 
-**The team lead** and **Alexis Turgeon** (Linear `@alexisturgeon`) can also approve any gate, except **G4 Customer data and G6 Release**. Whoever is assigned, those two go to **Stéphane Levert** (`@stephane.levert`) on every team but Verovia, and to **Alexis** on Verovia. Alexis can approve them on any team; Frederick doesn't approve G4 or G6. The team lead is:
+**The team lead** and **Alexis Turgeon** (Linear `@alexisturgeon`) can also approve any gate, except **G4 Customer data and G6 Release**. Whoever is assigned, those two go to **Stéphane Levert** (`@stephane.levert`) on every team but Verovia, and to **Alexis** on Verovia. Alexis can approve them on any team. The team lead is:
 
-- **Verovia (VERO):** Frederick Cleroux (`@frederick.cleroux`). Stéphane doesn't approve Verovia work.
+- **Verovia (VERO):** Alexis Turgeon (`@alexisturgeon`), Verovia's product owner since 2026-11-02. Stéphane doesn't approve Verovia work, and Frederick Cleroux no longer approves its gates.
 - **Every other team:** Stéphane Levert (`@stephane.levert`), who is in charge of all other dev work.
 
 Nobody else approves a gate: not a teammate who isn't the assignee, however sure they are, and never an agent.
@@ -54,7 +54,7 @@ The comment:
 **Lifecycle: <G2 Spec approval | … | needs info | needs a mockup | needs a BC test run | needs a decision>** (<ISSUE-ID>)
 Ready: <what's ready, with links>
 Needed: <the approval or item; at G2, also the open questions and every later approval you can foresee>
-<the gate's approver: the assignee, or the team lead when nobody is assigned (@frederick.cleroux on Verovia, @stephane.levert otherwise); for G4 and G6, @stephane.levert (@alexisturgeon on Verovia); @alexisturgeon for a migration on a shared database>
+<the gate's approver: the assignee, or the team lead when nobody is assigned (@alexisturgeon on Verovia, @stephane.levert otherwise); for G4 and G6, @stephane.levert (@alexisturgeon on Verovia); @alexisturgeon for a migration on a shared database>
 
 **Status:** <Bug|Feature|Major> · Step <number> <name> · Waiting on <the gate or hand-off, with who>
 ```
@@ -62,6 +62,10 @@ Needed: <the approval or item; at G2, also the open questions and every later ap
 The status line is what a fresh run resumes from: it may not have the branch with the spec. Write it as that one line: Linear prints HTML comments, so never put `<!-- … -->` in a Linear comment.
 
 **Reply where you were called.** When the agent server says a comment called you, post every comment, lifecycle comments included, as a reply in that comment's thread (save_comment with its `parentId`), not as a new top-level comment.
+
+**Never in the agent-session thread.** A delegation opens a thread on the issue whose first comment reads "This thread is for an agent session with …". Linear keeps that thread out of the issue's comments, so a lifecycle comment posted there, screenshots included, is invisible on the issue (TAG-2276's G5 comment and its before/after screenshots went unseen this way). Post lifecycle comments top-level, or in the thread of the comment that called you as above, even when people answered you in the session thread. The agent server shows your lifecycle comment in the session as well.
+
+**Show the proof.** The lifecycle comment that hands the work over (G5, or a hand-off) carries the evidence next to its links: the test result in the Ready line and, when the run has screenshots, the images themselves (**Before** / **After** for a bug, one per key screen for a feature), uploaded to Linear as `steps/prove.md` says. Issue attachments and the PR description alone don't count: people read the issue's comments. At G5, also post the `## QA test card` comment `steps/ship.md` describes, so the QA agent can check the change after release.
 
 **Keep it short.** One line each for Ready and Needed, with links instead of explanations, then the open questions if any (numbered, each with your recommendation), the mention and the status line. Don't quote the skill or explain the process: the approver needs the decision, not the rules.
 
@@ -81,7 +85,7 @@ On Linear, the agent server reads the lifecycle comment: it moves the issue to *
 Hand-offs wait the same way, but they aren't approvals. The work needs something only a person can supply:
 
 - **Needs a mockup:** no design tool is reachable (Open Design or Claude Design), and you can't render your own mockup either (see step 4).
-- **Needs a BC test run:** there's no CI that runs AL tests and no reachable BC server.
+- **Needs a BC test run:** no CI runs the AL tests, `al-test` isn't available (you're not on the agent server, or it exits 3), and no BC server is reachable. See "How AL tests run" in `steps/prove.md`.
 - **Needs UI test access:** the app's development login isn't configured on this machine. A person runs `bun run dev:auth:setup` once, as `docs/agents/development-access.md` in mobi describes.
 - **Needs a decision:** the run stops for any other reason (there's nothing to build, it's blocked, it's a duplicate…), and a person decides what happens next. Use this header rather than a new one.
 

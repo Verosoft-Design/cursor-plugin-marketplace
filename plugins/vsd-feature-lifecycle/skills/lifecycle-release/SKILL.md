@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Arguments: `$ARGUMENTS`, the product (`tag` or `mobi`) and the version. If either is missing, ask for it.
 
-Run this in the product's repo: tag-bc for `tag`, mobi for `mobi`. The entries live in `docs/release-notes/unreleased/`, one file per PR. Mobi and TAG work both live in Linear's TAG team, so a `mobi` entry with a `TAG-` ID is normal.
+Run this in the product's repo: tag-bc for `tag`, mobi for `mobi`. The entries live in `docs/release-notes/unreleased/`, one file per PR. Mobi and TAG work both live in Linear's TAG team, so a `mobi` entry with a `TAG-` ID is normal. A `product` lists every app the change reaches, so Mobi's notes also take entries such as `product: mobi, trax, verovia`, and a highlight gives its first paragraph.
 
 1. **Draft the notes,** without moving anything:
 
@@ -38,4 +38,4 @@ Run this in the product's repo: tag-bc for `tag`, mobi for `mobi`. The entries l
    - **Mobi:** Hub's Documentation Management, in the published document whose id is `MOBI_RELEASE_NOTES_DOCUMENT_ID`. That's the one Mobi's "new version" pop-up shows.
    - **TAG:** the "TAG release notes" document in Hub's Documentation Management, with one entry per version.
 
-Trax, Verovia and `packages/ai` keep their release-please changelogs. Don't use this skill for them.
+Trax and Verovia release from mobi with `bun run release:trax-verovia <version>`, as mobi's `docs/release-notes/unreleased/README.md` says. Don't use this skill for them.

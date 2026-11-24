@@ -45,9 +45,10 @@ Any bug with UI steps, and any feature that changes a screen, is proven in the *
    - Include the edge cases the spec names: empty states, errors, permissions.
    - Take a screenshot of each key screen.
 5. **Screenshots for the reviewer,** in two places, because mobi is private and GitHub's mobile app can't show images stored in the repo:
-   - **On the Linear issue:** upload each one with the Linear MCP tools: `prepare_attachment_upload`, then PUT the file's raw bytes with the signed headers verbatim, then `create_attachment_from_upload`, one file at a time. Show them in your lifecycle comment as images, using each upload's `assetUrl`. Linear's apps show them to anyone signed in, phone included.
+   - **On the Linear issue:** upload each one with the Linear MCP tools: `prepare_attachment_upload`, then PUT the file's raw bytes with the signed headers verbatim, then `create_attachment_from_upload`, one file at a time. Then show them as images, using each upload's `assetUrl`, in the **top-level** lifecycle comment that hands the work over (the G5 comment for a bug or feature): under **Before** and **After** for a bug, one per key screen for a feature. Never in Linear's agent-session thread, which the issue's comments don't show (`gates.md`, "Never in the agent-session thread"). Linear's apps show them to anyone signed in, phone included.
    - **In the repo:** commit them to `docs/pr-assets/<PR number>/` and show them in the PR description's Screenshots section (open the PR as a draft first to get the number). Add a link to the Linear issue there, for anyone reading on a phone.
    - Keep them few and small.
+   - BC screenshots (`al-ui-test`, UI test rounds on BC pages) go to the same two places.
 6. **Committed browser tests:** add a Playwright test (in the app's `e2e/`) only when the flow is already in that app's e2e suite, or for major work. Otherwise the committed test is a unit or integration test, and the walkthrough is the UI proof.
 
 ## UI test rounds with subagents
@@ -81,11 +82,20 @@ When a feature adds or changes several screens or flows, in a mobi app or on BC 
 ## How AL tests run, in this order
 
 1. **CI:** push the failing test, show the red run, then push the fix.
-2. **Otherwise, a reachable BC server,** with `al-run-tests`.
+2. **On the Verosoft agent server (orca-agents-1): `al-test`.**
+   - `al-test --range <your test codeunits>` builds the branch with `TESTS`, publishes it to a free tenant of the agents' BC server (`bc-agents-0` on AKS, BC 26.5) and runs the codeunits. It prints PASS/FAIL per method with each failure's error and call stack.
+   - `--range` takes a BC filter: `73332625`, `73332620..73332629` or `73332625|73332630`.
+   - Exit codes: 0 all passed, 1 a test failed, 2 no tests matched, 3 runner or server error, 4 build or publish failed.
+   - `al-compile [--tests]` only builds, in about 15 s. Use it to check the build before a hand-off or a PR.
+   - **Red:** run your codeunit on the unfixed code and see it fail. **Green:** run it again after the fix. Put both results in the PR description and the G5 comment.
+   - **Before calling a failure yours,** compare a full run (`al-test` without `--range`) with `main`'s baseline in the server's shared memory. `main` has failing tests of its own.
+   - **Rebase on `origin/main` first.** A branch behind `main` can fail the `--tests` build on test code `main` has already fixed.
+   - Never commit the `TESTS` symbol or the Library Assert dependency to `app.json`: `--tests` adds them to a temporary copy only.
+3. **Otherwise, a reachable BC server,** with `al-run-tests`.
    - **No BC server yet, on Windows with Docker:** propose a local container first, set up with business-central-al `/bc-server-setup container`. Never set it up without the person's yes.
-3. **Otherwise, the "needs a BC test run" hand-off** (see `gates.md`). Never skip the failing test.
+4. **Otherwise, the "needs a BC test run" hand-off** (see `gates.md`). Also use it when `al-test` exits 3: say what failed. Never skip the failing test.
 
-As of 2026-10, tag-bc `main` has no AL test workflow. Its tests sit behind `#if TESTS`, which a normal build doesn't define. The `PM tests` workflow and the test-build setup arrive with tag-bc #193, and until that merges, BC agent runs mostly end at the hand-off.
+As of 2026-10, tag-bc `main` has no AL test workflow. Its tests sit behind `#if TESTS`, which a normal build doesn't define. The `PM tests` workflow and the test-build setup arrive with tag-bc #193. Until then, only the agent server runs them by itself (`al-test`); elsewhere BC runs mostly end at the hand-off.
 
 ## Before a PR is marked ready
 

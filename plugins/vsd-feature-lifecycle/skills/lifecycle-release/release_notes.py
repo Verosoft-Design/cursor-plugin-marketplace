@@ -7,12 +7,18 @@
 An entry is DIR/unreleased/<ISSUE-ID>.md:
 
   ---
-  product: tag | mobi
+  product: mobi, tag, trax or verovia, separated by commas
   type: feature | change | fix
   issue: TAG-123
   audience: users | admins | consultants
   ---
   One to three plain sentences, written for a customer.
+
+A `title` makes a Trax and Verovia highlight: a few paragraphs, the first one
+being the line. Only its front matter is checked here; mobi's
+`bun run test:shared packages/ai/src/lib/release-notes` checks the rest.
+Trax and Verovia release with `bun run release:trax-verovia` in mobi, so
+`gather` is for tag and mobi only.
 """
 
 import argparse
@@ -22,24 +28,42 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-PRODUCTS = ("tag", "mobi")
+PRODUCTS = ("mobi", "tag", "trax", "verovia")
+GATHER_PRODUCTS = ("tag", "mobi")
 TYPES = ("feature", "change", "fix")
 AUDIENCES = ("users", "admins", "consultants")
 ISSUE_RE = r"^[A-Z][A-Z0-9]+-\d+$"
 MAX_BODY_CHARS = 500
 MAX_SENTENCES = 3
+MAX_TITLE_CHARS = 32
 KEYS = ("product", "type", "issue", "audience")
 SECTIONS = (("feature", "New"), ("change", "Changed"), ("fix", "Fixed"))
 
 
 @dataclass
 class Entry:
-    product: str
+    products: list[str]
     type: str
     issue: str
     audience: str
     body: str
     path: Path
+    title: str = ""
+
+    @property
+    def line(self) -> str:
+        """A highlight's first paragraph is its line."""
+        if not self.title:
+            return self.body
+        first = re.split(r"\n\s*\n", self.body, maxsplit=1)[0]
+        return " ".join(part.strip() for part in first.splitlines()).strip()
+
+    def blocks(self, product: str) -> bool:
+        """Checked before gathering `product`: its own entries, and any entry
+        with a missing or mistyped product, which no release would ever take."""
+        return product in self.products or not self.products or any(
+            p not in PRODUCTS for p in self.products
+        )
 
 
 def _split(text: str) -> tuple[dict[str, str], str]:
@@ -59,21 +83,24 @@ def _split(text: str) -> tuple[dict[str, str], str]:
 def parse_entry(path: Path) -> Entry:
     meta, body = _split(path.read_text(encoding="utf-8"))
     return Entry(
-        product=meta.get("product", ""),
+        products=[p.strip() for p in meta.get("product", "").split(",") if p.strip()],
         type=meta.get("type", ""),
         issue=meta.get("issue", ""),
         audience=meta.get("audience", ""),
         body=body,
         path=path,
+        title=meta.get("title", ""),
     )
 
 
 def validate_entry(path: Path) -> list[str]:
     meta, body = _split(path.read_text(encoding="utf-8"))
-    problems = [f"missing {key}" for key in KEYS if not meta.get(key)]
     entry = parse_entry(path)
-    if entry.product and entry.product not in PRODUCTS:
-        problems.append(f"product must be one of {', '.join(PRODUCTS)}, not {entry.product}")
+    meta["product"] = ", ".join(entry.products)
+    problems = [f"missing {key}" for key in KEYS if not meta.get(key)]
+    for product in entry.products:
+        if product not in PRODUCTS:
+            problems.append(f"product must be one of {', '.join(PRODUCTS)}, not {product}")
     if entry.type and entry.type not in TYPES:
         problems.append(f"type must be one of {', '.join(TYPES)}, not {entry.type}")
     if entry.audience and entry.audience not in AUDIENCES:
@@ -84,6 +111,9 @@ def validate_entry(path: Path) -> list[str]:
         problems.append(f"file name must be {entry.issue}.md")
     if not body:
         problems.append("body is empty")
+    elif entry.title:
+        if len(entry.title) > MAX_TITLE_CHARS:
+            problems.append(f"title is longer than {MAX_TITLE_CHARS} characters")
     else:
         if len(body) > MAX_BODY_CHARS:
             problems.append(f"body is longer than {MAX_BODY_CHARS} characters")
@@ -100,7 +130,7 @@ def _natural(issue: str) -> tuple[str, int]:
 
 def _bullet(entry: Entry) -> str:
     prefix = "**For admins:** " if entry.audience == "admins" else ""
-    return f"- {prefix}{entry.body}"
+    return f"- {prefix}{entry.line}"
 
 
 def render(entries: list[Entry], version: str) -> str:
@@ -134,14 +164,14 @@ def _cmd_gather(directory: Path, product: str, version: str, apply: bool) -> int
     problems = [
         (p, problem)
         for p in unreleased
-        if parse_entry(p).product in (product, "") or parse_entry(p).product not in PRODUCTS
+        if parse_entry(p).blocks(product)
         for problem in validate_entry(p)
     ]
     if problems:
         for path, problem in problems:
             print(f"{path}: {problem}", file=sys.stderr)
         return 1
-    mine = [p for p in unreleased if parse_entry(p).product == product]
+    mine = [p for p in unreleased if product in parse_entry(p).products]
     if not mine:
         print(f"No unreleased entries for {product}.")
         return 0
@@ -161,7 +191,7 @@ def main(argv: list[str]) -> int:
     validate.add_argument("paths", nargs="+")
     gather = sub.add_parser("gather")
     gather.add_argument("--dir", required=True, type=Path)
-    gather.add_argument("--product", required=True, choices=PRODUCTS)
+    gather.add_argument("--product", required=True, choices=GATHER_PRODUCTS)
     gather.add_argument("--version", required=True)
     gather.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)

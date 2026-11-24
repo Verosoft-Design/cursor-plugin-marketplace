@@ -23,6 +23,6 @@ BC pages never get a design step, because BC dictates its own UI.
    2. Fill in `site.config.json` and add one HTML page per screen, each with a `<details class="review">` "What to review" note.
    3. Run `node scripts/build-knowledge.mjs`. It refuses to build if a customer name or a secret is found.
    4. Deploy with `vercel deploy --prod --scope verosoft-design`. Its Q&A bot answers from the spec folder, the guide and `team-faq.md`.
-4. **G3 Design approval:** the issue's assignee, or the team lead when nobody is assigned (`@frederick.cleroux` on Verovia, `@stephane.levert` otherwise). For a feature it comes with G2. For major work the team weighs in first. Set `Waiting on: G3 Design approval (@<the assignee>)`.
+4. **G3 Design approval:** the issue's assignee, or the team lead when nobody is assigned (`@alexisturgeon` on Verovia, `@stephane.levert` otherwise). For a feature it comes with G2. For major work the team weighs in first. Set `Waiting on: G3 Design approval (@<the assignee>)`.
 
 Next: step 5.
